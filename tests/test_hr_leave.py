@@ -21,6 +21,18 @@ class TestHrLeaveMissionReport(TransactionCase):
             'requires_allocation': 'no',
         })
 
+    def test_create_mission_without_holiday_status(self):
+        leave = self.env['hr.leave'].create({
+            'employee_id': self.employee.id,
+            'project_id': self.project.id,
+            'holiday_status_id': False,
+            'request_date_from': '2026-08-29',
+            'request_date_to': '2026-08-29',
+        })
+        self.assertTrue(leave.id)
+        self.assertTrue(leave.holiday_status_id)
+        self.assertEqual(leave.holiday_status_id.name, 'Activité')
+
     def test_onchange_project_clears_holiday_status(self):
         leave = self.env['hr.leave'].new({
             'holiday_status_id': self.leave_type.id,
@@ -38,22 +50,12 @@ class TestHrLeaveMissionReport(TransactionCase):
         self.assertFalse(leave.project_id)
 
     def test_constrains_exclusivity(self):
-        # Test both set -> should raise ValidationError
+        # Test both set with standard leave type -> should raise ValidationError
         with self.assertRaises(ValidationError):
             self.env['hr.leave'].create({
                 'employee_id': self.employee.id,
                 'project_id': self.project.id,
                 'holiday_status_id': self.leave_type.id,
-                'request_date_from': '2025-01-01',
-                'request_date_to': '2025-01-01',
-            })
-
-        # Test neither set -> should raise ValidationError
-        with self.assertRaises(ValidationError):
-            self.env['hr.leave'].create({
-                'employee_id': self.employee.id,
-                'project_id': False,
-                'holiday_status_id': False,
                 'request_date_from': '2025-01-01',
                 'request_date_to': '2025-01-01',
             })
