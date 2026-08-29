@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 {
-    'name': 'Mission Report',
+    'name': 'Activité',
     'version': '19.0.1.0.0',
     'summary': 'Activity and mission reports by project based on leaves logic',
     'description': """
         Module mission_report adapting hr_holidays logic for activity and mission reporting by project.
     """,
-    'category': 'Human Resources / Attendance',
+    'category': 'Services/Productivity',
     'author': 'Custom',
     'website': '',
     'license': 'LGPL-3',
