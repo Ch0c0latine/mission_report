@@ -26,7 +26,6 @@ class HrLeave(models.Model):
             leave_type = self.env['hr.leave.type'].create({
                 'name': 'Activité',
                 'requires_allocation': 'no',
-                'validation_type': 'no_validation',
             })
         return leave_type
 
