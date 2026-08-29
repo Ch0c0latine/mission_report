@@ -4,7 +4,7 @@
     <record id="action_mission_report" model="ir.actions.act_window">
         <field name="name">Rapports de Mission</field>
         <field name="res_model">hr.leave</field>
-        <field name="view_mode">calendar,tree,form</field>
+        <field name="view_mode">calendar,list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Créer un nouveau rapport de mission

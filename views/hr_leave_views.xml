@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Vue Formulaire : ajout project_id (obligatoire) et ajustement type de congé -->
+    <!-- Vue Formulaire : ajout project_id (obligatoire) et type de congé -->
     <record id="hr_leave_view_form_inherit_mission_report" model="ir.ui.view">
         <field name="name">hr.leave.view.form.inherit.mission.report</field>
         <field name="model">hr.leave</field>
