@@ -25,19 +25,13 @@
                 <attribute name="string">Congé</attribute>
             </xpath>
 
-            <!-- Rename buttons in creation/approval form ("Soumettre la demande" / validation -> "Valider") -->
+            <!-- Rename approve button in form view ("Approuver" / validation -> "Valider") -->
             <xpath expr="//button[@name='action_approve']" position="attributes">
                 <attribute name="string">Valider</attribute>
             </xpath>
-            <xpath expr="//button[@name='action_validate']" position="attributes" raise_if_not_found="false">
-                <attribute name="string">Valider</attribute>
-            </xpath>
-            <xpath expr="//button[@name='action_draft']" position="attributes">
-                <attribute name="string">Valider</attribute>
-            </xpath>
 
-            <!-- Rename delete action button ("Supprimer le congé" -> "Supprimer") -->
-            <xpath expr="//button[@name='action_refuse']" position="attributes" raise_if_not_found="false">
+            <!-- Rename delete/refuse action button ("Refuser" -> "Supprimer") -->
+            <xpath expr="//button[@name='action_refuse']" position="attributes">
                 <attribute name="string">Supprimer</attribute>
             </xpath>
         </field>
