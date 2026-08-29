@@ -55,7 +55,6 @@
                 <attribute name="event_open_popup">true</attribute>
                 <attribute name="mode">year</attribute>
                 <attribute name="string">Saisie d'activité</attribute>
-                <attribute name="create_name">Saisie d'activité</attribute>
             </xpath>
             <xpath expr="//calendar" position="inside">
                 <field name="project_id"/>
