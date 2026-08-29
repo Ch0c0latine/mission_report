@@ -5,6 +5,7 @@
         <field name="name">Activité</field>
         <field name="res_model">hr.leave</field>
         <field name="view_mode">calendar,list,form</field>
+        <field name="context">{'calendar_default_mode': 'year'}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Créer une nouvelle saisie d'activité
