@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Action pour les Rapports de Mission -->
+    <record id="action_mission_report" model="ir.actions.act_window">
+        <field name="name">Rapports de Mission</field>
+        <field name="res_model">hr.leave</field>
+        <field name="view_mode">calendar,tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer un nouveau rapport de mission
+            </p>
+            <p>
+                Saisissez vos activités et missions associées à vos projets.
+            </p>
+        </field>
+    </record>
+
+    <!-- Entrée de menu dédiée "Rapports de Mission" sous le menu principal HR -->
+    <menuitem id="menu_mission_report_root"
+              name="Rapports de Mission"
+              parent="hr.menu_hr_root"
+              sequence="20"/>
+
+    <menuitem id="menu_mission_report_entries"
+              name="Mes Rapports de Mission"
+              parent="menu_mission_report_root"
+              action="action_mission_report"
+              sequence="10"/>
+</odoo>
