@@ -24,6 +24,22 @@
             <xpath expr="//field[@name='holiday_status_id']" position="attributes">
                 <attribute name="string">Congé</attribute>
             </xpath>
+
+            <!-- Rename buttons in form view -->
+            <xpath expr="//button[@name='action_approve']" position="attributes">
+                <attribute name="string">Valider</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_validate']" position="attributes">
+                <attribute name="string">Valider</attribute>
+            </xpath>
+            <xpath expr="//button[@id='action_draft']" position="attributes">
+                <attribute name="string">Valider</attribute>
+            </xpath>
+
+            <!-- Rename delete/refuse action button -->
+            <xpath expr="//button[@name='action_refuse']" position="attributes">
+                <attribute name="string">Supprimer</attribute>
+            </xpath>
         </field>
     </record>
 
