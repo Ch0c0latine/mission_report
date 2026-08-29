@@ -29,7 +29,7 @@
             <xpath expr="//button[@name='action_approve']" position="attributes">
                 <attribute name="string">Valider</attribute>
             </xpath>
-            <xpath expr="//button[@name='action_validate']" position="attributes">
+            <xpath expr="//button[@name='action_validate']" position="attributes" raise_if_not_found="false">
                 <attribute name="string">Valider</attribute>
             </xpath>
             <xpath expr="//button[@name='action_draft']" position="attributes">
@@ -37,7 +37,7 @@
             </xpath>
 
             <!-- Rename delete action button ("Supprimer le congé" -> "Supprimer") -->
-            <xpath expr="//button[@name='action_refuse']" position="attributes">
+            <xpath expr="//button[@name='action_refuse']" position="attributes" raise_if_not_found="false">
                 <attribute name="string">Supprimer</attribute>
             </xpath>
         </field>
