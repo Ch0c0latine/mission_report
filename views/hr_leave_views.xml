@@ -21,11 +21,6 @@
             <xpath expr="//field[@name='holiday_status_id']" position="attributes">
                 <attribute name="string">Congé</attribute>
             </xpath>
-
-            <!-- Button rename: "Soumettre la demande" -> "Valider" -->
-            <xpath expr="//button[@name='action_confirm']" position="attributes">
-                <attribute name="string">Valider</attribute>
-            </xpath>
         </field>
     </record>
 
