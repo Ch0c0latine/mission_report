@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Action pour la Saisie d'activité -->
+    <record id="action_mission_report" model="ir.actions.act_window">
+        <field name="name">Saisie d'activité</field>
+        <field name="res_model">hr.leave</field>
+        <field name="view_mode">calendar,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer une nouvelle saisie d'activité
+            </p>
+            <p>
+                Saisissez vos activités et missions associées à vos projets.
+            </p>
+        </field>
+    </record>
+
+    <!-- Entrée de menu dédiée "Activité" -->
+    <menuitem id="menu_mission_report_root"
+              name="Activité"
+              web_icon="mission_report,static/description/icon.png"
+              sequence="20"/>
+
+    <menuitem id="menu_mission_report_entries"
+              name="Saisies en attente"
+              parent="menu_mission_report_root"
+              action="action_mission_report"
+              sequence="10"/>
+</odoo>
