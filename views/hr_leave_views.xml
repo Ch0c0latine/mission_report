@@ -20,12 +20,15 @@
                 <field name="employee_id" position="move"/>
             </xpath>
 
-            <!-- Relabel holiday_status_id to "Congé" -->
+            <!-- Relabel holiday_status_id to "Congé" and employee_id to "Employé" -->
             <xpath expr="//field[@name='holiday_status_id']" position="attributes">
                 <attribute name="string">Congé</attribute>
             </xpath>
 
-            <!-- Rename buttons in form view -->
+            <!-- Rename submit button in creation form / popup ("Soumettre la demande" -> "Valider") -->
+            <xpath expr="//button[@name='action_confirm']" position="attributes">
+                <attribute name="string">Valider</attribute>
+            </xpath>
             <xpath expr="//button[@name='action_approve']" position="attributes">
                 <attribute name="string">Valider</attribute>
             </xpath>
@@ -36,7 +39,7 @@
                 <attribute name="string">Valider</attribute>
             </xpath>
 
-            <!-- Rename delete/refuse action button -->
+            <!-- Rename delete action button ("Supprimer le congé" -> "Supprimer") -->
             <xpath expr="//button[@name='action_refuse']" position="attributes">
                 <attribute name="string">Supprimer</attribute>
             </xpath>
