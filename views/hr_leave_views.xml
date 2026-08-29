@@ -24,11 +24,6 @@
             <xpath expr="//field[@name='holiday_status_id']" position="attributes">
                 <attribute name="string">Congé</attribute>
             </xpath>
-
-            <!-- Relabel submit button "Soumettre la demande" to "Valider" -->
-            <xpath expr="//button[@name='action_confirm']" position="attributes">
-                <attribute name="string">Valider</attribute>
-            </xpath>
         </field>
     </record>
 
