@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 {
-    'name': 'Mission Report',
+    'name': 'Activité',
     'version': '19.0.1.0.0',
-    'summary': 'Activity and mission reports by project based on leaves logic',
+    'summary': "Saisie d'activité et de rapports de mission par projet",
     'description': """
-        Module mission_report adapting hr_holidays logic for activity and mission reporting by project.
+        Module Odoo 19 pour la saisie de rapports d'activité et de missions par projet,
+        adaptant la logique du module standard des congés (hr_holidays).
     """,
-    'category': 'Human Resources / Attendance',
+    'category': 'Productivity',
     'author': 'Custom',
     'website': '',
     'license': 'LGPL-3',
@@ -23,4 +24,5 @@
     ],
     'installable': True,
     'application': True,
+    'auto_install': False,
 }
