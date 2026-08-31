@@ -37,7 +37,7 @@
         </field>
     </record>
 
-    <!-- Vue Liste : ajout project_id et modification du nom "Demandes en attente" par "Saisies en attente" -->
+    <!-- Vue Liste : ajout project_id, modification du nom "Demandes en attente" par "Saisies en attente" et masquage du bouton "Nouveaux congés de groupe" -->
     <record id="hr_leave_view_tree_inherit_mission_report" model="ir.ui.view">
         <field name="name">hr.leave.view.list.inherit.mission.report</field>
         <field name="model">hr.leave</field>
@@ -51,6 +51,10 @@
             </xpath>
             <xpath expr="//field[@name='holiday_status_id']" position="attributes">
                 <attribute name="string">Congé</attribute>
+            </xpath>
+            <!-- Hide "Nouveaux congés de groupe" header button -->
+            <xpath expr="//header/button" position="attributes">
+                <attribute name="invisible">1</attribute>
             </xpath>
         </field>
     </record>
