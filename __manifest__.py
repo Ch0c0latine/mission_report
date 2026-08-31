@@ -21,6 +21,11 @@
         'views/hr_leave_views.xml',
         'views/menu_views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'mission_report/static/src/scss/mission_report.scss',
+        ],
+    },
     'installable': True,
     'application': True,
 }
