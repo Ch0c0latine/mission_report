@@ -1,0 +1,10 @@
+// Hide "Nouveaux congés de groupe" button in Time Off views control panel
+.o_time_off_calendar_hr_leave_view,
+.o_time_off_calendar {
+    .o_control_panel_main_buttons {
+        > button.btn-secondary,
+        .o_timeoff_buttons + button {
+            display: none !important;
+        }
+    }
+}
