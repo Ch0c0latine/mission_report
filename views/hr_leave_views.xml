@@ -51,7 +51,7 @@
         </field>
     </record>
 
-    <!-- Vue Calendrier : ajout project_id, renommage et masquage du bouton "Nouveaux congés de groupe" -->
+    <!-- Vue Calendrier : ajout project_id -->
     <record id="hr_leave_view_calendar_inherit_mission_report" model="ir.ui.view">
         <field name="name">hr.leave.view.calendar.inherit.mission.report</field>
         <field name="model">hr.leave</field>
@@ -59,13 +59,6 @@
         <field name="arch" type="xml">
             <xpath expr="//calendar" position="inside">
                 <field name="project_id"/>
-            </xpath>
-            <!-- Hide "Nouveaux congés de groupe" header button in calendar view -->
-            <xpath expr="//header//button[@name='%(hr_holidays.action_hr_leave_generate_multi_wizard)d' or contains(@string, 'groupe') or contains(@string, 'Groupe') or contains(@string, 'Group')]" position="attributes" raise_if_not_found="false">
-                <attribute name="invisible">1</attribute>
-            </xpath>
-            <xpath expr="//button[@name='%(hr_holidays.action_hr_leave_generate_multi_wizard)d' or contains(@string, 'groupe') or contains(@string, 'Groupe') or contains(@string, 'Group')]" position="attributes" raise_if_not_found="false">
-                <attribute name="invisible">1</attribute>
             </xpath>
         </field>
     </record>
