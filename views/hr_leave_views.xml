@@ -32,7 +32,7 @@
         </field>
     </record>
 
-    <!-- Vue Liste : ajout project_id et masquage du bouton "Nouveaux congés de groupe" -->
+    <!-- Vue Liste : ajout project_id, modification du nom "Demandes en attente" par "Saisies en attente" et masquage du bouton "Nouveaux congés de groupe" -->
     <record id="hr_leave_view_tree_inherit_mission_report" model="ir.ui.view">
         <field name="name">hr.leave.view.list.inherit.mission.report</field>
         <field name="model">hr.leave</field>
