@@ -16,6 +16,15 @@
         </field>
     </record>
 
+    <!-- Fixe explicitement le formulaire utilisé (hr_leave_view_form, pas la variante manager) pour éviter
+         toute ambiguïté de résolution de vue selon le groupe de l'utilisateur (risque de champ Employé en double) -->
+    <record id="action_mission_report_view_form" model="ir.actions.act_window.view">
+        <field name="sequence">10</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="hr_holidays.hr_leave_view_form"/>
+        <field name="act_window_id" ref="action_mission_report"/>
+    </record>
+
     <!-- Entrée de menu dédiée "Activité" -->
     <menuitem id="menu_mission_report_root"
               name="Activité"

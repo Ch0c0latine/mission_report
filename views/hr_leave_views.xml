@@ -6,19 +6,34 @@
         <field name="model">hr.leave</field>
         <field name="inherit_id" ref="hr_holidays.hr_leave_view_form"/>
         <field name="arch" type="xml">
-            <!-- Reorder fields: Mission (project_id), Congé (holiday_status_id), Employé (employee_id) -->
+            <!-- Titre du formulaire -->
+            <xpath expr="//form" position="attributes">
+                <attribute name="string">Saisie d'activité</attribute>
+            </xpath>
+
+            <!-- Bascule rapide Mission / Congé, tout en haut du formulaire, avant tout le reste -->
+            <xpath expr="//div[@name='title']" position="before">
+                <field name="entry_type" widget="radio" options="{'horizontal': true}" class="mb-2"/>
+            </xpath>
+
+            <!-- Mission (+ Client dérivé), visible seulement en mode Mission -->
             <xpath expr="//field[@name='holiday_status_id']" position="before">
-                <field name="project_id" string="Mission"/>
-                <field name="partner_id" string="Client" invisible="not project_id"/>
+                <field name="project_id" string="Mission" invisible="entry_type != 'mission'"/>
+                <field name="partner_id" string="Client" invisible="entry_type != 'mission' or not project_id"/>
             </xpath>
 
-            <xpath expr="//field[@name='holiday_status_id']" position="after">
-                <field name="employee_id" position="move"/>
-            </xpath>
-
-            <!-- Relabel holiday_status_id to "Congé" -->
+            <!-- Congé : renommage + visible seulement en mode Congé -->
             <xpath expr="//field[@name='holiday_status_id']" position="attributes">
                 <attribute name="string">Congé</attribute>
+                <attribute name="invisible">entry_type != 'leave'</attribute>
+            </xpath>
+
+            <!-- Employé : rendu visible et repositionné après Congé -->
+            <xpath expr="//field[@name='employee_id']" position="attributes">
+                <attribute name="invisible">0</attribute>
+            </xpath>
+            <xpath expr="//field[@name='holiday_status_id']" position="after">
+                <field name="employee_id" position="move"/>
             </xpath>
 
             <!-- Rename approve button in form view ("Approuver" / validation -> "Valider") -->
