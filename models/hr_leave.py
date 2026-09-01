@@ -26,59 +26,33 @@ class HrLeave(models.Model):
         readonly=True,
         help='Client associé à la mission, dérivé du projet.'
     )
-    entry_type = fields.Selection(
-        [('mission', 'Mission'), ('leave', 'Congé')],
-        string='Type de saisie',
-        compute='_compute_entry_type',
-        inverse='_inverse_entry_type',
-        help="Bascule rapide entre une saisie de Mission et une saisie de Congé."
-    )
-    clear_entry = fields.Boolean(
-        string='Tout supprimer',
-        store=False,
-        help="Vide Mission et Congé : l'enregistrement sera supprimé au clic sur Enregistrer."
+    is_leave_entry = fields.Boolean(
+        string='Congé',
+        compute='_compute_is_leave_entry',
+        inverse='_inverse_is_leave_entry',
+        help="Décoché : saisie de Mission (par défaut). Coché : saisie de Congé."
     )
 
     @api.depends('project_id', 'holiday_status_id')
-    def _compute_entry_type(self):
+    def _compute_is_leave_entry(self):
         activity_type = self._get_default_activity_leave_type()
         for record in self:
-            if record.holiday_status_id and record.holiday_status_id != activity_type:
-                record.entry_type = 'leave'
-            else:
-                record.entry_type = 'mission'
+            record.is_leave_entry = bool(record.holiday_status_id) and record.holiday_status_id != activity_type
 
-    def _inverse_entry_type(self):
+    def _inverse_is_leave_entry(self):
+        default_paid_leave = self.env['hr.leave.type'].search([('name', 'ilike', 'Congé payé')], limit=1)
+        activity_type = self._get_default_activity_leave_type()
         for record in self:
-            if record.entry_type == 'leave':
+            if record.is_leave_entry:
                 record.project_id = False
+                if not record.holiday_status_id or record.holiday_status_id == activity_type:
+                    record.holiday_status_id = default_paid_leave.id if default_paid_leave else False
             else:
                 record.holiday_status_id = False
 
-    @api.onchange('clear_entry')
-    def _onchange_clear_entry(self):
-        if self.clear_entry:
-            self.project_id = False
-            self.holiday_status_id = False
-            self.clear_entry = False
-
-    def write(self, vals):
-        vals.pop('clear_entry', None)
-        activity_type = self._get_default_activity_leave_type()
-        to_delete = self.browse()
-        if 'project_id' in vals or 'holiday_status_id' in vals:
-            for record in self:
-                new_project_id = vals['project_id'] if 'project_id' in vals else record.project_id.id
-                new_holiday_id = vals['holiday_status_id'] if 'holiday_status_id' in vals else record.holiday_status_id.id
-                is_mission = bool(new_project_id)
-                is_leave = bool(new_holiday_id) and new_holiday_id != activity_type.id
-                if not is_mission and not is_leave:
-                    to_delete |= record
-        remaining = self - to_delete
-        result = super(HrLeave, remaining).write(vals) if remaining else True
-        if to_delete:
-            to_delete.unlink()
-        return result
+    def action_delete_entry(self):
+        self.unlink()
+        return {'type': 'ir.actions.act_window_close'}
 
     @api.model
     def _get_default_activity_leave_type(self):

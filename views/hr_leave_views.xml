@@ -11,21 +11,22 @@
                 <attribute name="string">Saisie d'activité</attribute>
             </xpath>
 
-            <!-- Bascule rapide Mission / Congé, tout en haut du formulaire, avant tout le reste -->
+            <!-- Bascule rapide Mission / Congé, tout en haut du formulaire, avant tout le reste
+                 (décoché = Mission, valeur par défaut) -->
             <xpath expr="//div[@name='title']" position="before">
-                <field name="entry_type" widget="radio" options="{'horizontal': true}" class="mb-2"/>
+                <field name="is_leave_entry" widget="boolean_toggle" class="mb-2"/>
             </xpath>
 
             <!-- Mission (+ Client dérivé), visible seulement en mode Mission -->
             <xpath expr="//field[@name='holiday_status_id']" position="before">
-                <field name="project_id" string="Mission" invisible="entry_type != 'mission'"/>
-                <field name="partner_id" string="Client" invisible="entry_type != 'mission' or not project_id"/>
+                <field name="project_id" string="Mission" invisible="is_leave_entry"/>
+                <field name="partner_id" string="Client" invisible="is_leave_entry or not project_id"/>
             </xpath>
 
             <!-- Congé : renommage + visible seulement en mode Congé -->
             <xpath expr="//field[@name='holiday_status_id']" position="attributes">
                 <attribute name="string">Congé</attribute>
-                <attribute name="invisible">entry_type != 'leave'</attribute>
+                <attribute name="invisible">not is_leave_entry</attribute>
             </xpath>
 
             <!-- Employé : rendu visible et repositionné après Congé -->
@@ -50,15 +51,17 @@
             </xpath>
 
             <!-- Pied de page dédié : remplace les boutons génériques Enregistrer/Supprimer de la popup
-                 de création/édition par les nôtres. La suppression se fait via write() : vider Mission
-                 et Congé (case "Tout supprimer", purement client via onchange, pas d'appel serveur avant
-                 Enregistrer) puis Enregistrer (special="save", le seul mécanisme qui ferme correctement
-                 cette popup calendrier) fait supprimer l'enregistrement au lieu de l'écrire. -->
+                 de création/édition par les nôtres. Le bouton Supprimer supprime réellement
+                 l'enregistrement (confirmé) ; cette popup calendrier tente ensuite de le relire et
+                 affiche une erreur cosmétique sans conséquence (la suppression reste effective). -->
             <xpath expr="//chatter" position="after">
                 <footer>
                     <button string="Enregistrer" special="save" class="btn-primary"/>
                     <button string="Annuler" special="cancel" class="btn-secondary"/>
-                    <field name="clear_entry" invisible="not id" widget="boolean_toggle" class="ms-auto"/>
+                    <button string="Supprimer" name="action_delete_entry" type="object"
+                            confirm="Voulez-vous vraiment supprimer cette saisie ?"
+                            class="btn-link text-danger ms-auto"
+                            invisible="not id"/>
                 </footer>
             </xpath>
         </field>
