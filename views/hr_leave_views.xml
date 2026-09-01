@@ -51,8 +51,10 @@
             <xpath expr="//chatter" position="after">
                 <footer>
                     <button string="Enregistrer" special="save" class="btn-primary"/>
-                    <button string="Supprimer" name="unlink" type="object"
+                    <button string="Annuler" special="cancel" class="btn-secondary"/>
+                    <button string="Supprimer" name="action_delete_entry" type="object"
                             confirm="Voulez-vous vraiment supprimer cette saisie ?"
+                            class="btn-link text-danger"
                             invisible="not id"/>
                 </footer>
             </xpath>
