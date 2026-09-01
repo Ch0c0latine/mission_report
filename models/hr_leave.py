@@ -50,6 +50,10 @@ class HrLeave(models.Model):
             else:
                 record.holiday_status_id = False
 
+    def action_delete_entry(self):
+        self.unlink()
+        return {'type': 'ir.actions.act_window_close'}
+
     @api.model
     def _get_default_activity_leave_type(self):
         leave_type = self.env['hr.leave.type'].search([('name', '=', 'Activité')], limit=1)
