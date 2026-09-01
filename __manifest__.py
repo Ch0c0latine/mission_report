@@ -6,7 +6,7 @@
     'description': """
         Module mission_report adapting hr_holidays logic for activity and mission reporting by project.
     """,
-    'category': 'Services/Productivity',
+    'category': 'Human Resources',
     'author': 'Custom',
     'website': '',
     'license': 'LGPL-3',
@@ -20,6 +20,7 @@
         'security/ir.model.access.csv',
         'views/hr_leave_views.xml',
         'views/menu_views.xml',
+        'views/hr_leave_reporting.xml',
     ],
     'assets': {
         'web.assets_backend': [

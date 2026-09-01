@@ -18,6 +18,14 @@ class HrLeave(models.Model):
         ondelete='restrict',
         help='Projet associé à la saisie de rapport de mission.'
     )
+    partner_id = fields.Many2one(
+        'res.partner',
+        string='Client',
+        related='project_id.partner_id',
+        store=True,
+        readonly=True,
+        help='Client associé à la mission, dérivé du projet.'
+    )
 
     @api.model
     def _get_default_activity_leave_type(self):

@@ -13,8 +13,12 @@ class TestHrLeaveMissionReport(TransactionCase):
             'name': 'Test Employee',
             'company_id': cls.company.id,
         })
+        cls.partner = cls.env['res.partner'].create({
+            'name': 'Test Client',
+        })
         cls.project = cls.env['project.project'].create({
             'name': 'Test Project',
+            'partner_id': cls.partner.id,
         })
         cls.leave_type = cls.env['hr.leave.type'].create({
             'name': 'Test Leave Type',
@@ -32,6 +36,19 @@ class TestHrLeaveMissionReport(TransactionCase):
         self.assertTrue(leave.id)
         self.assertTrue(leave.holiday_status_id)
         self.assertEqual(leave.holiday_status_id.name, 'Activité')
+
+    def test_partner_id_follows_project(self):
+        leave = self.env['hr.leave'].create({
+            'employee_id': self.employee.id,
+            'project_id': self.project.id,
+            'holiday_status_id': False,
+            'request_date_from': '2026-08-29',
+            'request_date_to': '2026-08-29',
+        })
+        self.assertEqual(leave.partner_id, self.partner)
+
+        leave.write({'project_id': False, 'holiday_status_id': self.leave_type.id})
+        self.assertFalse(leave.partner_id)
 
     def test_onchange_project_clears_holiday_status(self):
         leave = self.env['hr.leave'].new({

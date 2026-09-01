@@ -9,6 +9,7 @@
             <!-- Reorder fields: Mission (project_id), Congé (holiday_status_id), Employé (employee_id) -->
             <xpath expr="//field[@name='holiday_status_id']" position="before">
                 <field name="project_id" string="Mission"/>
+                <field name="partner_id" string="Client" invisible="not project_id"/>
             </xpath>
 
             <xpath expr="//field[@name='holiday_status_id']" position="after">
@@ -40,6 +41,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='employee_id']" position="after">
                 <field name="project_id" string="Mission" optional="show"/>
+                <field name="partner_id" string="Client" optional="hide"/>
             </xpath>
             <xpath expr="//field[@name='holiday_status_id']" position="attributes">
                 <attribute name="string">Congé</attribute>
