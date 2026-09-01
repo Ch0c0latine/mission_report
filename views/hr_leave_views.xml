@@ -36,14 +36,10 @@
                 <field name="employee_id" position="move"/>
             </xpath>
 
-            <!-- Rename approve button in form view ("Approuver" / validation -> "Valider") -->
-            <xpath expr="//button[@name='action_approve']" position="attributes">
-                <attribute name="string">Valider</attribute>
-            </xpath>
-
-            <!-- Rename delete/refuse action button ("Refuser" -> "Supprimer") -->
-            <xpath expr="//button[@name='action_refuse']" position="attributes">
-                <attribute name="string">Supprimer</attribute>
+            <!-- Masque l'en-tête (statut d'approbation, Valider/Refuser) : hors sujet pour ce formulaire
+                 de saisie simple, et source de confusion avec notre propre pied de page. -->
+            <xpath expr="//header" position="attributes">
+                <attribute name="invisible">1</attribute>
             </xpath>
 
             <!-- Pied de page dédié : remplace les boutons génériques Enregistrer/Supprimer de la popup
@@ -54,7 +50,7 @@
                     <button string="Annuler" special="cancel" class="btn-secondary"/>
                     <button string="Supprimer" name="action_delete_entry" type="object"
                             confirm="Voulez-vous vraiment supprimer cette saisie ?"
-                            class="btn-link text-danger"
+                            class="btn-link text-danger ms-auto"
                             invisible="not id"/>
                 </footer>
             </xpath>
