@@ -45,6 +45,17 @@
             <xpath expr="//button[@name='action_refuse']" position="attributes">
                 <attribute name="string">Supprimer</attribute>
             </xpath>
+
+            <!-- Pied de page dédié : remplace les boutons génériques Enregistrer/Supprimer de la popup
+                 de création/édition par les nôtres, avec le bon libellé et la même fonction. -->
+            <xpath expr="//chatter" position="after">
+                <footer>
+                    <button string="Enregistrer" special="save" class="btn-primary"/>
+                    <button string="Supprimer" name="unlink" type="object"
+                            confirm="Voulez-vous vraiment supprimer cette saisie ?"
+                            invisible="not id"/>
+                </footer>
+            </xpath>
         </field>
     </record>
 
@@ -74,6 +85,13 @@
         <field name="model">hr.leave</field>
         <field name="inherit_id" ref="hr_holidays.hr_leave_view_calendar"/>
         <field name="arch" type="xml">
+            <!-- Titre de la popup de création/édition (dérivé de cet attribut, pas du form) + formulaire
+                 dédié utilisé (au lieu de la popup "dashboard" de hr_holidays qui masque l'en-tête et
+                 duplique le champ Employé) -->
+            <xpath expr="//calendar" position="attributes">
+                <attribute name="string">Saisie d'activité</attribute>
+                <attribute name="form_view_id">%(hr_holidays.hr_leave_view_form)d</attribute>
+            </xpath>
             <xpath expr="//calendar" position="inside">
                 <field name="project_id"/>
             </xpath>
