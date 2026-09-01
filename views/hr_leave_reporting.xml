@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue de recherche dédiée aux rapports, autonome (ne dépend pas des xmlids internes de hr_holidays) -->
+    <record id="hr_leave_view_search_mission_report" model="ir.ui.view">
+        <field name="name">hr.leave.view.search.mission.report</field>
+        <field name="model">hr.leave</field>
+        <field name="arch" type="xml">
+            <search string="Rapport d'activité">
+                <field name="employee_id"/>
+                <field name="project_id" string="Mission"/>
+                <field name="partner_id" string="Client"/>
+                <field name="holiday_status_id" string="Congé"/>
+                <separator/>
+                <filter name="filter_missions" string="Missions uniquement" domain="[('project_id', '!=', False)]"/>
+                <filter name="filter_leaves" string="Congés uniquement" domain="[('project_id', '=', False)]"/>
+                <group expand="0" string="Grouper par">
+                    <filter name="groupby_employee" string="Employé" context="{'group_by': 'employee_id'}"/>
+                    <filter name="groupby_holiday_status" string="Congé" context="{'group_by': 'holiday_status_id'}"/>
+                    <filter name="groupby_project" string="Mission" context="{'group_by': 'project_id'}"/>
+                    <filter name="groupby_partner" string="Client" context="{'group_by': 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Rapport interne : congés + missions combinés -->
+    <record id="action_activity_report_internal" model="ir.actions.act_window">
+        <field name="name">Rapport interne (Congés &amp; Missions)</field>
+        <field name="res_model">hr.leave</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="search_view_id" ref="hr_leave_view_search_mission_report"/>
+        <field name="context">{'search_default_groupby_employee': 1, 'search_default_groupby_holiday_status': 1}</field>
+    </record>
+
+    <!-- Rapport client : missions uniquement, groupées par client -->
+    <record id="action_activity_report_client" model="ir.actions.act_window">
+        <field name="name">Rapport client (Missions)</field>
+        <field name="res_model">hr.leave</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="domain">[('project_id', '!=', False)]</field>
+        <field name="search_view_id" ref="hr_leave_view_search_mission_report"/>
+        <field name="context">{'search_default_groupby_partner': 1, 'search_default_groupby_project': 1}</field>
+    </record>
+
+    <menuitem id="menu_activity_report_internal"
+              name="Rapport interne"
+              parent="hr_holidays.menu_hr_holidays_reporting"
+              action="action_activity_report_internal"
+              sequence="10"/>
+
+    <menuitem id="menu_activity_report_client"
+              name="Rapport client"
+              parent="hr_holidays.menu_hr_holidays_reporting"
+              action="action_activity_report_client"
+              sequence="20"/>
+</odoo>
