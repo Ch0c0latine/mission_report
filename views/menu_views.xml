@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Action pour les Saisies d'activité -->
+    <!-- Action pour les Saisies d'activité avec toutes les vues par défaut de Congés -->
     <record id="action_mission_report" model="ir.actions.act_window">
         <field name="name">Activité</field>
         <field name="res_model">hr.leave</field>
-        <field name="view_mode">calendar,list,form</field>
+        <field name="view_mode">calendar,list,kanban,pivot,graph,form,activity</field>
         <field name="context">{'calendar_default_mode': 'year'}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
@@ -22,9 +22,36 @@
               web_icon="mission_report,static/description/icon.png"
               sequence="20"/>
 
+    <!-- Activation et réorganisation des onglets par défaut de Congés sous l'application Activité -->
+    <menuitem id="hr_holidays.hr_holidays_menu_my_leaves"
+              name="Mon temps"
+              parent="menu_mission_report_root"
+              sequence="10"/>
+
+    <menuitem id="hr_holidays.menu_open_company_allocation"
+              name="Vue d'ensemble"
+              parent="menu_mission_report_root"
+              sequence="20"/>
+
+    <menuitem id="hr_holidays.menu_hr_holidays_approvals"
+              name="Management"
+              parent="menu_mission_report_root"
+              sequence="30"/>
+
+    <menuitem id="hr_holidays.menu_hr_holidays_reporting"
+              name="Analyse"
+              parent="menu_mission_report_root"
+              sequence="40"/>
+
+    <menuitem id="hr_holidays.menu_hr_holidays_configuration"
+              name="Configuration"
+              parent="menu_mission_report_root"
+              sequence="50"/>
+
+    <!-- Saisies d'activité placées dans l'onglet Mon temps -->
     <menuitem id="menu_mission_report_entries"
               name="Saisies d'activité"
-              parent="menu_mission_report_root"
+              parent="hr_holidays.hr_holidays_menu_my_leaves"
               action="action_mission_report"
-              sequence="10"/>
+              sequence="5"/>
 </odoo>
