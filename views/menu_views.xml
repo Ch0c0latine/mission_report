@@ -23,22 +23,22 @@
               sequence="20"/>
 
     <!-- Activation et réorganisation des onglets par défaut de Congés sous l'application Activité -->
-    <menuitem id="hr_holidays.hr_holidays_menu_my_leaves"
+    <menuitem id="hr_holidays.menu_hr_holidays_my_leaves"
               name="Mon temps"
               parent="menu_mission_report_root"
               sequence="10"/>
 
-    <menuitem id="hr_holidays.menu_open_company_allocation"
+    <menuitem id="hr_holidays.menu_hr_holidays_dashboard"
               name="Vue d'ensemble"
               parent="menu_mission_report_root"
               sequence="20"/>
 
-    <menuitem id="hr_holidays.menu_hr_holidays_approvals"
+    <menuitem id="hr_holidays.menu_hr_holidays_management"
               name="Management"
               parent="menu_mission_report_root"
               sequence="30"/>
 
-    <menuitem id="hr_holidays.menu_hr_holidays_reporting"
+    <menuitem id="hr_holidays.menu_hr_holidays_report"
               name="Analyse"
               parent="menu_mission_report_root"
               sequence="40"/>
@@ -51,7 +51,7 @@
     <!-- Saisies d'activité placées dans l'onglet Mon temps -->
     <menuitem id="menu_mission_report_entries"
               name="Saisies d'activité"
-              parent="hr_holidays.hr_holidays_menu_my_leaves"
+              parent="hr_holidays.menu_hr_holidays_my_leaves"
               action="action_mission_report"
               sequence="5"/>
 </odoo>
