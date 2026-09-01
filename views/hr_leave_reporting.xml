@@ -13,7 +13,7 @@
                 <separator/>
                 <filter name="filter_missions" string="Missions uniquement" domain="[('project_id', '!=', False)]"/>
                 <filter name="filter_leaves" string="Congés uniquement" domain="[('project_id', '=', False)]"/>
-                <group expand="0" string="Grouper par">
+                <group>
                     <filter name="groupby_employee" string="Employé" context="{'group_by': 'employee_id'}"/>
                     <filter name="groupby_holiday_status" string="Congé" context="{'group_by': 'holiday_status_id'}"/>
                     <filter name="groupby_project" string="Mission" context="{'group_by': 'project_id'}"/>
