@@ -65,6 +65,29 @@ class TestHrLeaveMissionReport(TransactionCase):
         leave.holiday_status_id = self.leave_type.id
         self.assertEqual(leave.entry_type, 'leave')
 
+    def test_write_with_both_fields_empty_deletes_record(self):
+        leave = self.env['hr.leave'].create({
+            'employee_id': self.employee.id,
+            'project_id': self.project.id,
+            'holiday_status_id': False,
+            'request_date_from': '2026-08-29',
+            'request_date_to': '2026-08-29',
+        })
+        leave_id = leave.id
+        leave.write({'project_id': False, 'holiday_status_id': False})
+        self.assertFalse(self.env['hr.leave'].browse(leave_id).exists())
+
+    def test_onchange_clear_entry_empties_fields(self):
+        leave = self.env['hr.leave'].new({
+            'project_id': self.project.id,
+            'holiday_status_id': False,
+        })
+        leave.clear_entry = True
+        leave._onchange_clear_entry()
+        self.assertFalse(leave.project_id)
+        self.assertFalse(leave.holiday_status_id)
+        self.assertFalse(leave.clear_entry)
+
     def test_onchange_project_clears_holiday_status(self):
         leave = self.env['hr.leave'].new({
             'holiday_status_id': self.leave_type.id,
