@@ -50,17 +50,20 @@ class HrLeave(models.Model):
             else:
                 record.holiday_status_id = False
 
-    def action_delete_entry(self):
-        self.unlink()
-        return {'type': 'ir.actions.act_window_close'}
+    def write(self, vals):
+        if self.env.context.get('mission_report_delete_on_save'):
+            return self.unlink()
+        return super().write(vals)
 
     @api.model
     def _get_default_activity_leave_type(self):
-        leave_type = self.env['hr.leave.type'].search([('name', '=', 'Activité')], limit=1)
+        leave_type = self.env['hr.leave.type'].with_context(active_test=False).search(
+            [('name', '=', 'Activité')], limit=1)
         if not leave_type:
             leave_type = self.env['hr.leave.type'].create({
                 'name': 'Activité',
                 'requires_allocation': 'no',
+                'active': False,
             })
         return leave_type
 
