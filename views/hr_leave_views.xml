@@ -42,13 +42,20 @@
                 <attribute name="invisible">1</attribute>
             </xpath>
 
+            <!-- Masque le panneau de résumé/statistiques (colonne de droite) : sans intérêt ici. -->
+            <xpath expr="//div[hasclass('col_right')]" position="replace"/>
+
             <!-- Pied de page dédié : remplace les boutons génériques Enregistrer/Supprimer de la popup
-                 de création/édition par les nôtres, avec le bon libellé et la même fonction. -->
+                 de création/édition par les nôtres, avec le bon libellé et la même fonction.
+                 Le bouton Supprimer réutilise le mécanisme special="save" (le seul qui ferme
+                 correctement cette popup calendrier sans tenter de relire l'enregistrement après coup) :
+                 le contexte indique à write() de supprimer au lieu d'écrire. -->
             <xpath expr="//chatter" position="after">
                 <footer>
                     <button string="Enregistrer" special="save" class="btn-primary"/>
                     <button string="Annuler" special="cancel" class="btn-secondary"/>
-                    <button string="Supprimer" name="action_delete_entry" type="object"
+                    <button string="Supprimer" special="save"
+                            context="{'mission_report_delete_on_save': True}"
                             confirm="Voulez-vous vraiment supprimer cette saisie ?"
                             class="btn-link text-danger ms-auto"
                             invisible="not id"/>
