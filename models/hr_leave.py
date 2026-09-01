@@ -26,6 +26,29 @@ class HrLeave(models.Model):
         readonly=True,
         help='Client associé à la mission, dérivé du projet.'
     )
+    entry_type = fields.Selection(
+        [('mission', 'Mission'), ('leave', 'Congé')],
+        string='Type de saisie',
+        compute='_compute_entry_type',
+        inverse='_inverse_entry_type',
+        help="Bascule rapide entre une saisie de Mission et une saisie de Congé."
+    )
+
+    @api.depends('project_id', 'holiday_status_id')
+    def _compute_entry_type(self):
+        activity_type = self._get_default_activity_leave_type()
+        for record in self:
+            if record.holiday_status_id and record.holiday_status_id != activity_type:
+                record.entry_type = 'leave'
+            else:
+                record.entry_type = 'mission'
+
+    def _inverse_entry_type(self):
+        for record in self:
+            if record.entry_type == 'leave':
+                record.project_id = False
+            else:
+                record.holiday_status_id = False
 
     @api.model
     def _get_default_activity_leave_type(self):

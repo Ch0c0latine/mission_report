@@ -50,6 +50,21 @@ class TestHrLeaveMissionReport(TransactionCase):
         leave.write({'project_id': False, 'holiday_status_id': self.leave_type.id})
         self.assertFalse(leave.partner_id)
 
+    def test_entry_type_default_and_toggle(self):
+        leave = self.env['hr.leave'].create({
+            'employee_id': self.employee.id,
+            'project_id': self.project.id,
+            'holiday_status_id': False,
+            'request_date_from': '2026-08-29',
+            'request_date_to': '2026-08-29',
+        })
+        self.assertEqual(leave.entry_type, 'mission')
+
+        leave.entry_type = 'leave'
+        self.assertFalse(leave.project_id)
+        leave.holiday_status_id = self.leave_type.id
+        self.assertEqual(leave.entry_type, 'leave')
+
     def test_onchange_project_clears_holiday_status(self):
         leave = self.env['hr.leave'].new({
             'holiday_status_id': self.leave_type.id,
