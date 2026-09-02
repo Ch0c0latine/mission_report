@@ -52,7 +52,7 @@ class HrLeave(models.Model):
 
     def action_delete_entry(self):
         self.unlink()
-        return {'type': 'ir.actions.act_window_close'}
+        return False
 
     @api.model
     def _get_default_activity_leave_type(self):
