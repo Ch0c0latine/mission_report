@@ -52,19 +52,17 @@ class HrLeave(models.Model):
 
     @api.depends('project_id', 'holiday_status_id')
     def _compute_entry_type(self):
-        activity_type = self._get_default_activity_leave_type()
         for record in self:
-            if record.holiday_status_id and record.holiday_status_id != activity_type:
+            if record.holiday_status_id and not self._is_activity_leave_type(record.holiday_status_id):
                 record.entry_type = 'leave'
             else:
                 record.entry_type = 'mission'
 
     @api.onchange('entry_type')
     def _onchange_entry_type(self):
-        activity_type = self._get_default_activity_leave_type()
         if self.entry_type == 'leave':
             self.project_id = False
-            if not self.holiday_status_id or self.holiday_status_id == activity_type:
+            if not self.holiday_status_id or self._is_activity_leave_type(self.holiday_status_id):
                 self.holiday_status_id = self.env['hr.leave.type'].search([], limit=1)
         else:
             self.holiday_status_id = False
@@ -84,17 +82,21 @@ class HrLeave(models.Model):
 
     @api.model
     def _get_default_activity_leave_type(self):
+        # Never write to an existing type: Odoo forbids changing a leave type's
+        # allocation policy once any leave uses it. If the one we find isn't
+        # correctly configured, create a fresh one instead of touching it.
         leave_type = self.env['hr.leave.type'].with_context(active_test=False).search(
-            [('name', '=', 'Activité')], limit=1)
+            [('name', '=', 'Activité'), ('requires_allocation', '=', 'no')], limit=1)
         if not leave_type:
             leave_type = self.env['hr.leave.type'].create({
                 'name': 'Activité',
                 'requires_allocation': 'no',
                 'active': False,
             })
-        elif leave_type.requires_allocation != 'no':
-            leave_type.requires_allocation = 'no'
         return leave_type
+
+    def _is_activity_leave_type(self, leave_type):
+        return bool(leave_type) and leave_type.name == 'Activité'
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -111,16 +113,14 @@ class HrLeave(models.Model):
 
     @api.onchange('holiday_status_id')
     def _onchange_holiday_status_id(self):
-        activity_type = self._get_default_activity_leave_type()
-        if self.holiday_status_id and self.holiday_status_id != activity_type:
+        if self.holiday_status_id and not self._is_activity_leave_type(self.holiday_status_id):
             self.project_id = False
 
     @api.constrains('project_id', 'holiday_status_id')
     def _check_mission_or_leave_exclusive(self):
-        activity_type = self._get_default_activity_leave_type()
         for record in self:
             is_mission = bool(record.project_id)
-            is_leave = bool(record.holiday_status_id) and record.holiday_status_id != activity_type
+            is_leave = bool(record.holiday_status_id) and not self._is_activity_leave_type(record.holiday_status_id)
             if is_mission == is_leave:
                 raise ValidationError(
                     _("Une saisie doit posséder soit une Mission soit un Congé, mais pas les deux ni aucun des deux.")
