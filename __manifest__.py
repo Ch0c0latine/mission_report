@@ -26,6 +26,7 @@
     'assets': {
         'web.assets_backend': [
             'mission_report/static/src/scss/mission_report.scss',
+            'mission_report/static/src/views/view_dialog/form_view_dialog.xml',
         ],
     },
     'installable': True,
