@@ -62,16 +62,11 @@ class TestHrLeaveMissionReport(TransactionCase):
 
         leave.is_leave_entry = True
         self.assertFalse(leave.project_id)
-        self.assertFalse(leave.is_leave_entry)  # no "Congé payé" type in the test DB -> stays empty/mission
-
-        leave.holiday_status_id = self.leave_type.id
+        self.assertTrue(leave.holiday_status_id)
         self.assertTrue(leave.is_leave_entry)
 
-    def test_is_leave_entry_defaults_to_conge_paye(self):
-        paid_leave = self.env['hr.leave.type'].create({
-            'name': 'Congé payé',
-            'requires_allocation': 'no',
-        })
+    def test_is_leave_entry_defaults_to_first_leave_type(self):
+        first_type = self.env['hr.leave.type'].search([], limit=1)
         leave = self.env['hr.leave'].create({
             'employee_id': self.employee.id,
             'project_id': self.project.id,
@@ -80,7 +75,19 @@ class TestHrLeaveMissionReport(TransactionCase):
             'request_date_to': '2026-08-29',
         })
         leave.is_leave_entry = True
-        self.assertEqual(leave.holiday_status_id, paid_leave)
+        self.assertEqual(leave.holiday_status_id, first_type)
+
+    def test_is_leave_entry_false_defaults_to_first_project(self):
+        first_project = self.env['project.project'].search([], limit=1)
+        leave = self.env['hr.leave'].create({
+            'employee_id': self.employee.id,
+            'project_id': False,
+            'holiday_status_id': self.leave_type.id,
+            'request_date_from': '2026-08-29',
+            'request_date_to': '2026-08-29',
+        })
+        leave.is_leave_entry = False
+        self.assertEqual(leave.project_id, first_project)
 
     def test_action_delete_entry_unlinks_record(self):
         leave = self.env['hr.leave'].create({
