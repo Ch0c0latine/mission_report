@@ -12,11 +12,13 @@
             </xpath>
 
             <!-- Bascule rapide Mission / Congé, tout en haut du formulaire, avant tout le reste
-                 (décoché = Mission, valeur par défaut) -->
+                 (décoché = Mission, valeur par défaut). Case à cocher classique : contrairement à
+                 boolean_toggle, elle n'enregistre pas instantanément au clic (ce qui entrait en
+                 course avec la mise à jour de Mission/Congé et déclenchait l'erreur de validation). -->
             <xpath expr="//div[@name='title']" position="before">
                 <div class="d-flex align-items-center gap-2 mb-2">
                     <strong>Mission</strong>
-                    <field name="is_leave_entry" widget="boolean_toggle" nolabel="1"/>
+                    <field name="is_leave_entry" nolabel="1"/>
                     <strong>Congé</strong>
                 </div>
             </xpath>
