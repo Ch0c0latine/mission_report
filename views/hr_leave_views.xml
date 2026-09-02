@@ -19,9 +19,12 @@
                 <field name="entry_type" widget="radio" options="{'horizontal': true}" nolabel="1" class="mb-2"/>
             </xpath>
 
-            <!-- Mission (+ Client dérivé), visible seulement en mode Mission -->
+            <!-- Mission (+ Client dérivé), visible seulement en mode Mission. Limitée aux projets
+                 ayant au moins une tâche assignée à l'employé de la saisie. -->
             <xpath expr="//field[@name='holiday_status_id']" position="before">
-                <field name="project_id" string="Mission" invisible="entry_type != 'mission'"/>
+                <field name="available_project_ids" invisible="1"/>
+                <field name="project_id" string="Mission" invisible="entry_type != 'mission'"
+                       domain="[('id', 'in', available_project_ids)]"/>
                 <field name="partner_id" string="Client" invisible="entry_type != 'mission' or not project_id"/>
             </xpath>
 

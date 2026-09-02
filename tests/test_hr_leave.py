@@ -9,9 +9,15 @@ class TestHrLeaveMissionReport(TransactionCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.company = cls.env.user.company_id
+        cls.user = cls.env['res.users'].create({
+            'name': 'Test User',
+            'login': 'test_user_mission_report@example.com',
+            'email': 'test_user_mission_report@example.com',
+        })
         cls.employee = cls.env['hr.employee'].create({
             'name': 'Test Employee',
             'company_id': cls.company.id,
+            'user_id': cls.user.id,
         })
         cls.partner = cls.env['res.partner'].create({
             'name': 'Test Client',
@@ -19,6 +25,11 @@ class TestHrLeaveMissionReport(TransactionCase):
         cls.project = cls.env['project.project'].create({
             'name': 'Test Project',
             'partner_id': cls.partner.id,
+        })
+        cls.task = cls.env['project.task'].create({
+            'name': 'Test Task',
+            'project_id': cls.project.id,
+            'user_ids': [(6, 0, [cls.user.id])],
         })
         cls.leave_type = cls.env['hr.leave.type'].create({
             'name': 'Test Leave Type',
@@ -75,8 +86,7 @@ class TestHrLeaveMissionReport(TransactionCase):
         leave._onchange_entry_type()
         self.assertEqual(leave.holiday_status_id, first_type)
 
-    def test_entry_type_mission_defaults_to_first_project(self):
-        first_project = self.env['project.project'].search([], limit=1)
+    def test_entry_type_mission_defaults_to_first_available_project(self):
         leave = self.env['hr.leave'].new({
             'employee_id': self.employee.id,
             'project_id': False,
@@ -84,7 +94,25 @@ class TestHrLeaveMissionReport(TransactionCase):
         })
         leave.entry_type = 'mission'
         leave._onchange_entry_type()
-        self.assertEqual(leave.project_id, first_project)
+        self.assertEqual(leave.project_id, leave.available_project_ids[:1])
+        self.assertEqual(leave.project_id, self.project)
+
+    def test_available_project_ids_limited_to_assigned_tasks(self):
+        other_project = self.env['project.project'].create({'name': 'Unassigned Project'})
+        leave = self.env['hr.leave'].new({'employee_id': self.employee.id})
+        self.assertIn(self.project, leave.available_project_ids)
+        self.assertNotIn(other_project, leave.available_project_ids)
+
+    def test_check_employee_assigned_to_project(self):
+        other_project = self.env['project.project'].create({'name': 'Unassigned Project'})
+        with self.assertRaises(ValidationError):
+            self.env['hr.leave'].create({
+                'employee_id': self.employee.id,
+                'project_id': other_project.id,
+                'holiday_status_id': False,
+                'request_date_from': '2026-08-29',
+                'request_date_to': '2026-08-29',
+            })
 
     def test_default_get_forces_empty_holiday_status(self):
         defaults = self.env['hr.leave'].with_context(

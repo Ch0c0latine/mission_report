@@ -27,6 +27,11 @@ class HrLeave(models.Model):
         readonly=True,
         help='Client associé à la mission, dérivé du projet.'
     )
+    available_project_ids = fields.Many2many(
+        'project.project',
+        compute='_compute_available_project_ids',
+        help="Projets ayant au moins une tâche assignée à l'employé de cette saisie."
+    )
     entry_type = fields.Selection(
         [('mission', 'Mission'), ('leave', 'Congé')],
         string='Type de saisie',
@@ -34,6 +39,16 @@ class HrLeave(models.Model):
         readonly=False,
         help="Bascule entre une saisie de Mission (par défaut) et une saisie de Congé."
     )
+
+    @api.depends('employee_id')
+    def _compute_available_project_ids(self):
+        for record in self:
+            user = record.employee_id.user_id
+            if user:
+                tasks = self.env['project.task'].search([('user_ids', 'in', user.id)])
+                record.available_project_ids = tasks.project_id
+            else:
+                record.available_project_ids = self.env['project.project']
 
     @api.depends('project_id', 'holiday_status_id')
     def _compute_entry_type(self):
@@ -54,7 +69,7 @@ class HrLeave(models.Model):
         else:
             self.holiday_status_id = False
             if not self.project_id:
-                self.project_id = self.env['project.project'].search([], limit=1)
+                self.project_id = self.available_project_ids[:1]
 
     @api.model
     def default_get(self, fields_list):
@@ -77,6 +92,8 @@ class HrLeave(models.Model):
                 'requires_allocation': 'no',
                 'active': False,
             })
+        elif leave_type.requires_allocation != 'no':
+            leave_type.requires_allocation = 'no'
         return leave_type
 
     @api.model_create_multi
@@ -107,4 +124,20 @@ class HrLeave(models.Model):
             if is_mission == is_leave:
                 raise ValidationError(
                     _("Une saisie doit posséder soit une Mission soit un Congé, mais pas les deux ni aucun des deux.")
+                )
+
+    @api.constrains('project_id', 'employee_id')
+    def _check_employee_assigned_to_project(self):
+        for record in self:
+            if not record.project_id or not record.employee_id:
+                continue
+            user = record.employee_id.user_id
+            has_task = user and self.env['project.task'].search_count([
+                ('project_id', '=', record.project_id.id),
+                ('user_ids', 'in', user.id),
+            ])
+            if not has_task:
+                raise ValidationError(
+                    _("%(employee)s n'est assigné(e) à aucune tâche du projet %(project)s.",
+                      employee=record.employee_id.name, project=record.project_id.name)
                 )
