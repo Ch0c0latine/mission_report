@@ -14,7 +14,10 @@
             <span t-if="this.record.isNew">Enregistrer</span>
         </xpath>
 
-        <xpath expr="//button[@t-if='canDelete']" position="replace">
+        <!-- Ciblé sur t-on-click plutôt que sur t-if="canDelete" : le template web dont
+             hérite hr_holidays contient lui aussi un bouton avec cette condition, et
+             c'est celui-là qui était atteint. -->
+        <xpath expr="//button[@t-on-click='deleteRecord']" position="replace">
             <button class="btn btn-danger ms-auto" t-if="canDelete" t-on-click="deleteRecord" data-hotkey="v">
                 Supprimer
             </button>
