@@ -12,27 +12,23 @@
             </xpath>
 
             <!-- Bascule rapide Mission / Congé, tout en haut du formulaire, avant tout le reste
-                 (décoché = Mission, valeur par défaut). Case à cocher classique : contrairement à
-                 boolean_toggle, elle n'enregistre pas instantanément au clic (ce qui entrait en
-                 course avec la mise à jour de Mission/Congé et déclenchait l'erreur de validation). -->
+                 (Mission = valeur par défaut). Boutons radio : contrairement à boolean_toggle, ça
+                 n'enregistre pas instantanément au clic (ce qui entrait en course avec la mise à
+                 jour de Mission/Congé et déclenchait l'erreur de validation). -->
             <xpath expr="//div[@name='title']" position="before">
-                <div class="d-flex align-items-center gap-2 mb-2">
-                    <strong>Mission</strong>
-                    <field name="is_leave_entry" nolabel="1"/>
-                    <strong>Congé</strong>
-                </div>
+                <field name="entry_type" widget="radio" options="{'horizontal': true}" nolabel="1" class="mb-2"/>
             </xpath>
 
             <!-- Mission (+ Client dérivé), visible seulement en mode Mission -->
             <xpath expr="//field[@name='holiday_status_id']" position="before">
-                <field name="project_id" string="Mission" invisible="is_leave_entry"/>
-                <field name="partner_id" string="Client" invisible="is_leave_entry or not project_id"/>
+                <field name="project_id" string="Mission" invisible="entry_type != 'mission'"/>
+                <field name="partner_id" string="Client" invisible="entry_type != 'mission' or not project_id"/>
             </xpath>
 
             <!-- Congé : renommage + visible seulement en mode Congé -->
             <xpath expr="//field[@name='holiday_status_id']" position="attributes">
                 <attribute name="string">Congé</attribute>
-                <attribute name="invisible">not is_leave_entry</attribute>
+                <attribute name="invisible">entry_type != 'leave'</attribute>
             </xpath>
 
             <!-- Employé : rendu visible et repositionné après Congé -->

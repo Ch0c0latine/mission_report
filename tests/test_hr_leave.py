@@ -50,7 +50,7 @@ class TestHrLeaveMissionReport(TransactionCase):
         leave.write({'project_id': False, 'holiday_status_id': self.leave_type.id})
         self.assertFalse(leave.partner_id)
 
-    def test_is_leave_entry_default_and_toggle(self):
+    def test_entry_type_default_and_toggle(self):
         leave = self.env['hr.leave'].create({
             'employee_id': self.employee.id,
             'project_id': self.project.id,
@@ -58,14 +58,14 @@ class TestHrLeaveMissionReport(TransactionCase):
             'request_date_from': '2026-08-29',
             'request_date_to': '2026-08-29',
         })
-        self.assertFalse(leave.is_leave_entry)
+        self.assertEqual(leave.entry_type, 'mission')
 
-        leave.is_leave_entry = True
+        leave.entry_type = 'leave'
         self.assertFalse(leave.project_id)
         self.assertTrue(leave.holiday_status_id)
-        self.assertTrue(leave.is_leave_entry)
+        self.assertEqual(leave.entry_type, 'leave')
 
-    def test_is_leave_entry_defaults_to_first_leave_type(self):
+    def test_entry_type_leave_defaults_to_first_leave_type(self):
         first_type = self.env['hr.leave.type'].search([], limit=1)
         leave = self.env['hr.leave'].create({
             'employee_id': self.employee.id,
@@ -74,10 +74,10 @@ class TestHrLeaveMissionReport(TransactionCase):
             'request_date_from': '2026-08-29',
             'request_date_to': '2026-08-29',
         })
-        leave.is_leave_entry = True
+        leave.entry_type = 'leave'
         self.assertEqual(leave.holiday_status_id, first_type)
 
-    def test_is_leave_entry_false_defaults_to_first_project(self):
+    def test_entry_type_mission_defaults_to_first_project(self):
         first_project = self.env['project.project'].search([], limit=1)
         leave = self.env['hr.leave'].create({
             'employee_id': self.employee.id,
@@ -86,7 +86,7 @@ class TestHrLeaveMissionReport(TransactionCase):
             'request_date_from': '2026-08-29',
             'request_date_to': '2026-08-29',
         })
-        leave.is_leave_entry = False
+        leave.entry_type = 'mission'
         self.assertEqual(leave.project_id, first_project)
 
     def test_action_delete_entry_unlinks_record(self):
