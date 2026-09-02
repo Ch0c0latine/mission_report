@@ -61,6 +61,28 @@
         </field>
     </record>
 
+    <!-- Assistant d'annulation (hr.holidays.cancel.leave), ouvert par le bouton "Annuler la saisie"
+         quand la saisie est déjà validée. Ses libellés viennent de la vue serveur, donc héritage ;
+         le titre de la fenêtre, lui, vient du _t("Cancel Time Off") de hr_holidays/static/src/views/hooks.js
+         et est déjà renommé par static/src/js/translation_overrides.js. -->
+    <record id="hr_holidays_cancel_leave_form_inherit_mission_report" model="ir.ui.view">
+        <field name="name">hr.holidays.cancel.leave.form.inherit.mission.report</field>
+        <field name="model">hr.holidays.cancel.leave</field>
+        <field name="inherit_id" ref="hr_holidays.hr_holidays_cancel_leave_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="attributes">
+                <attribute name="string">Annuler la saisie</attribute>
+            </xpath>
+            <xpath expr="//field[@name='reason']" position="attributes">
+                <attribute name="placeholder">Pourquoi souhaitez-vous annuler cette saisie validée ?</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_cancel_leave']" position="attributes">
+                <attribute name="string">Annuler la saisie</attribute>
+            </xpath>
+            <!-- "Ignorer" laissé tel quel (demandé). -->
+        </field>
+    </record>
+
     <!-- Vue Liste : ajout project_id, modification du nom "Demandes en attente" par "Saisies en attente" et masquage du bouton "Nouveaux congés de groupe" -->
     <record id="hr_leave_view_tree_inherit_mission_report" model="ir.ui.view">
         <field name="name">hr.leave.view.list.inherit.mission.report</field>
