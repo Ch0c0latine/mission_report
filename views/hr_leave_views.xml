@@ -58,7 +58,7 @@
                 <footer>
                     <button string="Enregistrer" special="save" class="btn-primary"/>
                     <button string="Annuler" special="cancel" class="btn-secondary"/>
-                    <button string="Supprimer" name="action_delete_entry" type="object"
+                    <button string="Supprimer le congé" name="action_delete_entry" type="object"
                             confirm="Voulez-vous vraiment supprimer cette saisie ?"
                             class="btn-link text-danger ms-auto"
                             invisible="not id"/>
