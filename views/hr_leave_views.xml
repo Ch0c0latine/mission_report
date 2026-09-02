@@ -14,7 +14,11 @@
             <!-- Bascule rapide Mission / Congé, tout en haut du formulaire, avant tout le reste
                  (décoché = Mission, valeur par défaut) -->
             <xpath expr="//div[@name='title']" position="before">
-                <field name="is_leave_entry" widget="boolean_toggle" class="mb-2"/>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <strong>Mission</strong>
+                    <field name="is_leave_entry" widget="boolean_toggle" nolabel="1"/>
+                    <strong>Congé</strong>
+                </div>
             </xpath>
 
             <!-- Mission (+ Client dérivé), visible seulement en mode Mission -->
