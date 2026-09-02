@@ -45,8 +45,7 @@ class TestHrLeaveMissionReport(TransactionCase):
             'request_date_to': '2026-08-29',
         })
         self.assertTrue(leave.id)
-        self.assertTrue(leave.holiday_status_id)
-        self.assertEqual(leave.holiday_status_id.name, 'Activité')
+        self.assertFalse(leave.holiday_status_id)
 
     def test_partner_id_follows_project(self):
         leave = self.env['hr.leave'].create({
