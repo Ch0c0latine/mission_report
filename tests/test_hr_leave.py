@@ -50,35 +50,11 @@ class TestHrLeaveMissionReport(TransactionCase):
         leave.write({'project_id': False, 'holiday_status_id': self.leave_type.id})
         self.assertFalse(leave.partner_id)
 
-    def test_entry_type_default_and_toggle(self):
-        leave = self.env['hr.leave'].create({
-            'employee_id': self.employee.id,
-            'project_id': self.project.id,
-            'holiday_status_id': False,
-            'request_date_from': '2026-08-29',
-            'request_date_to': '2026-08-29',
-        })
+    def test_entry_type_defaults_to_mission_for_new_record(self):
+        leave = self.env['hr.leave'].new({})
         self.assertEqual(leave.entry_type, 'mission')
 
-        leave.entry_type = 'leave'
-        self.assertFalse(leave.project_id)
-        self.assertTrue(leave.holiday_status_id)
-        self.assertEqual(leave.entry_type, 'leave')
-
-    def test_entry_type_leave_defaults_to_first_leave_type(self):
-        first_type = self.env['hr.leave.type'].search([], limit=1)
-        leave = self.env['hr.leave'].create({
-            'employee_id': self.employee.id,
-            'project_id': self.project.id,
-            'holiday_status_id': False,
-            'request_date_from': '2026-08-29',
-            'request_date_to': '2026-08-29',
-        })
-        leave.entry_type = 'leave'
-        self.assertEqual(leave.holiday_status_id, first_type)
-
-    def test_entry_type_mission_defaults_to_first_project(self):
-        first_project = self.env['project.project'].search([], limit=1)
+    def test_entry_type_reflects_existing_leave(self):
         leave = self.env['hr.leave'].create({
             'employee_id': self.employee.id,
             'project_id': False,
@@ -86,8 +62,35 @@ class TestHrLeaveMissionReport(TransactionCase):
             'request_date_from': '2026-08-29',
             'request_date_to': '2026-08-29',
         })
+        self.assertEqual(leave.entry_type, 'leave')
+
+    def test_entry_type_leave_defaults_to_first_leave_type(self):
+        first_type = self.env['hr.leave.type'].search([], limit=1)
+        leave = self.env['hr.leave'].new({
+            'employee_id': self.employee.id,
+            'project_id': self.project.id,
+            'holiday_status_id': False,
+        })
+        leave.entry_type = 'leave'
+        leave._onchange_entry_type()
+        self.assertEqual(leave.holiday_status_id, first_type)
+
+    def test_entry_type_mission_defaults_to_first_project(self):
+        first_project = self.env['project.project'].search([], limit=1)
+        leave = self.env['hr.leave'].new({
+            'employee_id': self.employee.id,
+            'project_id': False,
+            'holiday_status_id': self.leave_type.id,
+        })
         leave.entry_type = 'mission'
+        leave._onchange_entry_type()
         self.assertEqual(leave.project_id, first_project)
+
+    def test_default_get_forces_empty_holiday_status(self):
+        defaults = self.env['hr.leave'].with_context(
+            default_holiday_status_id=self.leave_type.id
+        ).default_get(['holiday_status_id'])
+        self.assertFalse(defaults.get('holiday_status_id'))
 
     def test_action_delete_entry_unlinks_record(self):
         leave = self.env['hr.leave'].create({

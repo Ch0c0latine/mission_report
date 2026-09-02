@@ -31,7 +31,7 @@ class HrLeave(models.Model):
         [('mission', 'Mission'), ('leave', 'Congé')],
         string='Type de saisie',
         compute='_compute_entry_type',
-        inverse='_inverse_entry_type',
+        readonly=False,
         help="Bascule entre une saisie de Mission (par défaut) et une saisie de Congé."
     )
 
@@ -44,19 +44,24 @@ class HrLeave(models.Model):
             else:
                 record.entry_type = 'mission'
 
-    def _inverse_entry_type(self):
+    @api.onchange('entry_type')
+    def _onchange_entry_type(self):
         activity_type = self._get_default_activity_leave_type()
-        for record in self:
-            if record.entry_type == 'leave':
-                record.project_id = False
-                if not record.holiday_status_id or record.holiday_status_id == activity_type:
-                    default_leave_type = self.env['hr.leave.type'].search([], limit=1)
-                    record.holiday_status_id = default_leave_type.id if default_leave_type else False
-            else:
-                record.holiday_status_id = False
-                if not record.project_id:
-                    default_project = self.env['project.project'].search([], limit=1)
-                    record.project_id = default_project.id if default_project else False
+        if self.entry_type == 'leave':
+            self.project_id = False
+            if not self.holiday_status_id or self.holiday_status_id == activity_type:
+                self.holiday_status_id = self.env['hr.leave.type'].search([], limit=1)
+        else:
+            self.holiday_status_id = False
+            if not self.project_id:
+                self.project_id = self.env['project.project'].search([], limit=1)
+
+    @api.model
+    def default_get(self, fields_list):
+        res = super().default_get(fields_list)
+        if 'holiday_status_id' in res:
+            res['holiday_status_id'] = False
+        return res
 
     def action_delete_entry(self):
         self.unlink()
