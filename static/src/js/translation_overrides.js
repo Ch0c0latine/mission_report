@@ -19,6 +19,9 @@ const OVERRIDES = {
     // hr_holidays/static/src/views/view_dialog/form_view_dialog.xml
     "Submit Request": "Enregistrer",
     "Delete Time Off": "Supprimer",
+    // Affiché à la place de "Supprimer" quand la saisie est déjà validée : ne
+    // supprime pas l'enregistrement mais le passe en état annulé.
+    "Cancel Time Off": "Annuler la saisie",
 };
 
 translationIsReady.then(() => {
