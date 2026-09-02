@@ -15,6 +15,10 @@ import { translatedTerms, translatedTermsGlobal, translationIsReady } from "@web
 const OVERRIDES = {
     // Titre du popup de saisie, passé par hr_holidays/static/src/views/calendar/calendar_controller.js
     "Time Off Request": "Saisie d'activité",
+    // Boutons du pied de page du popup, définis dans
+    // hr_holidays/static/src/views/view_dialog/form_view_dialog.xml
+    "Submit Request": "Enregistrer",
+    "Delete Time Off": "Supprimer",
 };
 
 translationIsReady.then(() => {
