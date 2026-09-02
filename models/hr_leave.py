@@ -82,23 +82,24 @@ class HrLeave(models.Model):
 
     @api.model
     def _get_default_activity_leave_type(self):
-        # This record is normally installed as stable, already-committed data
-        # (data/hr_leave_type_data.xml) - creating it lazily inside hr.leave's
-        # own create() proved unreliable (Odoo's allocation check behaved
-        # inconsistently for a type created in the same transaction as the
-        # leave referencing it). The search/create below is only a fallback
-        # for databases that installed this module before that data file
-        # existed. Never write to an existing type: Odoo forbids changing a
-        # leave type's allocation policy once any leave uses it.
+        # requires_allocation is a Boolean (hr_leave_type.py:88), so it must be
+        # False - not 'no', which is a truthy string and made every mission
+        # entry fail hr_holidays' allocation check.
+        # The type normally comes from data/hr_leave_type_data.xml. That record
+        # is noupdate, so a pre-existing one created with the wrong value never
+        # gets corrected by a module update: check it here and fall back to a
+        # correctly configured type instead. Never write to an existing type -
+        # Odoo forbids changing a leave type's allocation policy once any leave
+        # uses it.
         leave_type = self.env.ref('mission_report.hr_leave_type_activite', raise_if_not_found=False)
-        if leave_type:
+        if leave_type and not leave_type.requires_allocation:
             return leave_type
         leave_type = self.env['hr.leave.type'].with_context(active_test=False).search(
-            [('name', '=', 'Activité'), ('requires_allocation', '=', 'no')], limit=1)
+            [('name', '=', 'Activité'), ('requires_allocation', '=', False)], limit=1)
         if not leave_type:
             leave_type = self.env['hr.leave.type'].create({
                 'name': 'Activité',
-                'requires_allocation': 'no',
+                'requires_allocation': False,
                 'leave_validation_type': 'no_validation',
                 'active': False,
             })

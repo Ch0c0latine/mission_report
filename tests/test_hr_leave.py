@@ -33,7 +33,7 @@ class TestHrLeaveMissionReport(TransactionCase):
         })
         cls.leave_type = cls.env['hr.leave.type'].create({
             'name': 'Test Leave Type',
-            'requires_allocation': 'no',
+            'requires_allocation': False,
         })
 
     def test_create_mission_without_holiday_status(self):

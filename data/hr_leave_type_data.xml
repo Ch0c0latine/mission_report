@@ -7,7 +7,7 @@
     <data noupdate="1">
         <record id="hr_leave_type_activite" model="hr.leave.type">
             <field name="name">Activité</field>
-            <field name="requires_allocation">no</field>
+            <field name="requires_allocation" eval="False"/>
             <field name="leave_validation_type">no_validation</field>
             <field name="active" eval="False"/>
         </record>
