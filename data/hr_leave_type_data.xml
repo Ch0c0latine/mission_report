@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Type de congé interne servant de marqueur pour les saisies de Mission.
+         noupdate="1" : recréé automatiquement s'il a été supprimé, mais jamais
+         modifié une fois qu'il existe (Odoo interdit de changer certains
+         réglages d'un type de congé déjà référencé par des congés). -->
+    <data noupdate="1">
+        <record id="hr_leave_type_activite" model="hr.leave.type">
+            <field name="name">Activité</field>
+            <field name="requires_allocation">no</field>
+            <field name="leave_validation_type">no_validation</field>
+            <field name="active" eval="False"/>
+        </record>
+    </data>
+</odoo>

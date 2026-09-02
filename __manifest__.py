@@ -18,6 +18,7 @@
     ],
     'data': [
         'security/ir.model.access.csv',
+        'data/hr_leave_type_data.xml',
         'views/hr_leave_views.xml',
         'views/menu_views.xml',
         'views/hr_leave_reporting.xml',
