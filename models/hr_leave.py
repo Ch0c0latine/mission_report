@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api, _
-from odoo.exceptions import MissingError, ValidationError
+from odoo.exceptions import ValidationError
 
 
 class HrLeave(models.Model):
@@ -53,12 +53,6 @@ class HrLeave(models.Model):
     def action_delete_entry(self):
         self.unlink()
         return {'type': 'ir.actions.act_window_close'}
-
-    def web_read(self, *args, **kwargs):
-        try:
-            return super().web_read(*args, **kwargs)
-        except MissingError:
-            return []
 
     @api.model
     def _get_default_activity_leave_type(self):
