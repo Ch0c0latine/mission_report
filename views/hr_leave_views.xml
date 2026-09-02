@@ -50,18 +50,14 @@
                 <attribute name="class" remove="col-md-6" separator=" "/>
             </xpath>
 
-            <!-- Pied de page dédié : remplace les boutons génériques Enregistrer/Supprimer de la popup
-                 de création/édition par les nôtres. Le bouton Supprimer supprime réellement
-                 l'enregistrement (confirmé) ; cette popup calendrier tente ensuite de le relire et
-                 affiche une erreur cosmétique sans conséquence (la suppression reste effective). -->
+            <!-- Pied de page dédié : remplace les boutons génériques de la popup de création/édition.
+                 Pas de bouton Supprimer ici : on laisse le contrôle natif d'Odoo reprendre la main
+                 pour la suppression (à vérifier après test - le pied de page personnalisé remplace
+                 peut-être le pied de page natif en bloc). -->
             <xpath expr="//chatter" position="after">
                 <footer>
                     <button string="Enregistrer" special="save" class="btn-primary"/>
                     <button string="Annuler" special="cancel" class="btn-secondary"/>
-                    <button string="Supprimer le congé" name="action_delete_entry" type="object"
-                            confirm="Voulez-vous vraiment supprimer cette saisie ?"
-                            class="btn-link text-danger ms-auto"
-                            invisible="not id"/>
                 </footer>
             </xpath>
         </field>
