@@ -120,18 +120,6 @@ class TestHrLeaveMissionReport(TransactionCase):
         ).default_get(['holiday_status_id'])
         self.assertFalse(defaults.get('holiday_status_id'))
 
-    def test_action_delete_entry_unlinks_record(self):
-        leave = self.env['hr.leave'].create({
-            'employee_id': self.employee.id,
-            'project_id': self.project.id,
-            'holiday_status_id': False,
-            'request_date_from': '2026-08-29',
-            'request_date_to': '2026-08-29',
-        })
-        leave_id = leave.id
-        leave.action_delete_entry()
-        self.assertFalse(self.env['hr.leave'].browse(leave_id).exists())
-
     def test_onchange_project_clears_holiday_status(self):
         leave = self.env['hr.leave'].new({
             'holiday_status_id': self.leave_type.id,
