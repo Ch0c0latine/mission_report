@@ -74,7 +74,7 @@
                 <attribute name="string">Annuler la saisie</attribute>
             </xpath>
             <xpath expr="//field[@name='reason']" position="attributes">
-                <attribute name="placeholder">Pourquoi souhaitez-vous annuler cette saisie validée ?</attribute>
+                <attribute name="placeholder">Pourquoi souhaitez-vous annuler cette saisie ?</attribute>
             </xpath>
             <xpath expr="//button[@name='action_cancel_leave']" position="attributes">
                 <attribute name="string">Annuler la saisie</attribute>

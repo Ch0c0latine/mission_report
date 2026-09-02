@@ -1,30 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Action pour les Saisies d'activité avec toutes les vues par défaut de Congés -->
-    <record id="action_mission_report" model="ir.actions.act_window">
-        <field name="name">Activité</field>
-        <field name="res_model">hr.leave</field>
-        <field name="view_mode">calendar,list,kanban,pivot,graph,form,activity</field>
-        <field name="context">{'calendar_default_mode': 'year'}</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Créer une nouvelle saisie d'activité
-            </p>
-            <p>
-                Saisissez vos activités et missions associées à vos projets.
-            </p>
-        </field>
-    </record>
-
-    <!-- Fixe explicitement le formulaire utilisé (hr_leave_view_form, pas la variante manager) pour éviter
-         toute ambiguïté de résolution de vue selon le groupe de l'utilisateur (risque de champ Employé en double) -->
-    <record id="action_mission_report_view_form" model="ir.actions.act_window.view">
-        <field name="sequence">10</field>
-        <field name="view_mode">form</field>
-        <field name="view_id" ref="hr_holidays.hr_leave_view_form"/>
-        <field name="act_window_id" ref="action_mission_report"/>
-    </record>
-
     <!-- Entrée de menu dédiée "Activité" -->
     <menuitem id="menu_mission_report_root"
               name="Activité"
@@ -57,10 +32,6 @@
               parent="menu_mission_report_root"
               sequence="50"/>
 
-    <!-- Saisies d'activité placées dans l'onglet Mon temps -->
-    <menuitem id="menu_mission_report_entries"
-              name="Saisies d'activité"
-              parent="hr_holidays.menu_hr_holidays_my_leaves"
-              action="action_mission_report"
-              sequence="5"/>
+    <!-- Pas de sous-menu "Saisies d'activité" ni d'action dédiée : les onglets natifs réparentés
+         ci-dessus couvrent déjà la saisie, ce doublon n'apportait rien. -->
 </odoo>
