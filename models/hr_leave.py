@@ -106,6 +106,20 @@ class HrLeave(models.Model):
                 vals['holiday_status_id'] = activity_type.id
         return super().create(vals_list)
 
+    def write(self, vals):
+        # Self-heal records still pointing at a stale/misconfigured Activité type
+        # (e.g. created before _get_default_activity_leave_type started avoiding
+        # writes to existing types) *before* the real write, so Odoo's own
+        # allocation check (which runs on every save, not just when
+        # holiday_status_id itself changes) doesn't see the stale value.
+        if 'holiday_status_id' not in vals:
+            activity_type = self._get_default_activity_leave_type()
+            for record in self:
+                project_id = vals.get('project_id', record.project_id.id)
+                if project_id and record.holiday_status_id != activity_type:
+                    super(HrLeave, record).write({'holiday_status_id': activity_type.id})
+        return super().write(vals)
+
     @api.onchange('project_id')
     def _onchange_project_id(self):
         if self.project_id:
