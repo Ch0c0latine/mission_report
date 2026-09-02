@@ -32,6 +32,24 @@
               parent="menu_mission_report_root"
               sequence="50"/>
 
+    <!-- Renommage des sous-menus natifs. On redonne parent/action/sequence à l'identique :
+         un <menuitem> sans parent repart de parent_id=False et deviendrait une application
+         racine - il ne suffit donc pas de ne fournir que le nom. -->
+
+    <!-- Mon temps > "Mes congés" (libellé hérité de l'action, le menuitem natif n'en porte pas) -->
+    <menuitem id="hr_holidays.hr_leave_menu_my"
+              name="Mes saisies"
+              parent="hr_holidays.menu_hr_holidays_my_leaves"
+              action="hr_holidays.hr_leave_action_my"
+              sequence="2"/>
+
+    <!-- Management > "Congés" -->
+    <menuitem id="hr_holidays.menu_open_department_leave_approve"
+              name="Saisies"
+              parent="hr_holidays.menu_hr_holidays_management"
+              action="hr_holidays.hr_leave_action_action_approve_department"
+              sequence="5"/>
+
     <!-- Pas de sous-menu "Saisies d'activité" ni d'action dédiée : les onglets natifs réparentés
          ci-dessus couvrent déjà la saisie, ce doublon n'apportait rien. -->
 </odoo>

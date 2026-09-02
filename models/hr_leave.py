@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from markupsafe import Markup
+
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 
@@ -160,4 +162,51 @@ class HrLeave(models.Model):
                 raise ValidationError(
                     _("%(employee)s n'est assigné(e) à aucune tâche du projet %(project)s.",
                       employee=record.employee_id.name, project=record.project_id.name)
+                )
+
+    # --- Vocabulaire : "congé" -> "activité" dans les textes produits par hr_holidays ---
+    #
+    # Ces chaînes viennent du code Python d'hr_holidays. Un module ne peut pas
+    # traduire les chaînes de code d'un autre module (chaque catalogue est chargé
+    # depuis le .po du module qui le déclare), et ce ne sont ni des vues ni des
+    # libellés de champs : on réécrit donc le texte une fois produit.
+    #
+    # Les substitutions portent sur le français, seule langue de ce module. Dans
+    # une autre langue elles ne trouvent rien et sont sans effet - le texte
+    # d'origine reste affiché, rien ne casse.
+    _ACTIVITY_WORDING = {
+        # Posté par create() quand le type ne demande aucune validation, ce qui
+        # est le cas de toutes les missions.
+        "Le congé a été automatiquement approuvé":
+            "La saisie a été automatiquement approuvée",
+        # Bandeau de chevauchement. Fragment commun aux deux variantes du
+        # message ("Vous avez déjà..." et "Un employé a déjà...").
+        "réservé un congé": "saisi une activité",
+    }
+
+    def _apply_activity_wording(self, text):
+        for source, replacement in self._ACTIVITY_WORDING.items():
+            text = text.replace(source, replacement)
+        return text
+
+    def _creation_message(self):
+        # Chatter : le message natif est "<nom du modèle> créé", soit
+        # "Congés créé" - mauvais vocabulaire et mauvais genre.
+        self.ensure_one()
+        return _("Activité créée")
+
+    def message_post(self, **kwargs):
+        body = kwargs.get('body')
+        if body:
+            rewritten = self._apply_activity_wording(str(body))
+            if rewritten != str(body):
+                kwargs['body'] = Markup(rewritten) if isinstance(body, Markup) else rewritten
+        return super().message_post(**kwargs)
+
+    def _compute_dashboard_warning_message(self):
+        super()._compute_dashboard_warning_message()
+        for record in self:
+            if record.dashboard_warning_message:
+                record.dashboard_warning_message = self._apply_activity_wording(
+                    record.dashboard_warning_message
                 )
