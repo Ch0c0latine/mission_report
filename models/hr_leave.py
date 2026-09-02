@@ -10,6 +10,7 @@ class HrLeave(models.Model):
         'hr.leave.type',
         string='Congé',
         required=False,
+        default=False,
     )
     project_id = fields.Many2one(
         'project.project',
