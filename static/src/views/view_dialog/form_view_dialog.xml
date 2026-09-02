@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- Renomme les libellés du pied de page de la popup de saisie, définis dans
+         hr_holidays/static/src/views/view_dialog/form_view_dialog.xml. Ces chaînes
+         viennent d'un template OWL : ni l'héritage de vues ni une surcharge de
+         traduction (testée, sans effet) ne peuvent les atteindre - seul l'héritage
+         de template le permet.
+         Le bouton "Save" (enregistrement existant) affiche déjà "Enregistrer" via la
+         traduction standard : seul le cas "nouvelle saisie" est à corriger. -->
+    <t t-inherit="hr_holidays.FormViewDialog.buttons" t-inherit-mode="extension">
+
+        <xpath expr="//button[hasclass('o_form_button_save')]/span[1]" position="replace">
+            <span t-if="this.record.isNew">Enregistrer</span>
+        </xpath>
+
+        <xpath expr="//button[@t-if='canDelete']" position="replace">
+            <button class="btn btn-danger ms-auto" t-if="canDelete" t-on-click="deleteRecord" data-hotkey="v">
+                Supprimer
+            </button>
+        </xpath>
+
+    </t>
+</templates>
