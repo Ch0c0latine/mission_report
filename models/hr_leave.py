@@ -40,15 +40,18 @@ class HrLeave(models.Model):
             record.is_leave_entry = bool(record.holiday_status_id) and record.holiday_status_id != activity_type
 
     def _inverse_is_leave_entry(self):
-        default_paid_leave = self.env['hr.leave.type'].search([('name', 'ilike', 'Congé payé')], limit=1)
         activity_type = self._get_default_activity_leave_type()
         for record in self:
             if record.is_leave_entry:
                 record.project_id = False
                 if not record.holiday_status_id or record.holiday_status_id == activity_type:
-                    record.holiday_status_id = default_paid_leave.id if default_paid_leave else False
+                    default_leave_type = self.env['hr.leave.type'].search([], limit=1)
+                    record.holiday_status_id = default_leave_type.id if default_leave_type else False
             else:
                 record.holiday_status_id = False
+                if not record.project_id:
+                    default_project = self.env['project.project'].search([], limit=1)
+                    record.project_id = default_project.id if default_project else False
 
     def action_delete_entry(self):
         self.unlink()
