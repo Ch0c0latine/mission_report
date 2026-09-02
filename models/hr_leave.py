@@ -76,10 +76,6 @@ class HrLeave(models.Model):
             res['holiday_status_id'] = False
         return res
 
-    def action_delete_entry(self):
-        self.unlink()
-        return {'type': 'ir.actions.act_window_close'}
-
     @api.model
     def _get_default_activity_leave_type(self):
         # requires_allocation is a Boolean (hr_leave_type.py:88), so it must be
