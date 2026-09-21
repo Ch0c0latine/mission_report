@@ -39,17 +39,23 @@
 
     <!-- The month grid. Shared by the PDF reports and the form preview.
          data: see mission.activity.report._get_render_data.
-         lines: 'all' (missions and time off) or 'missions'. -->
+         lines: 'all' (missions and time off) or 'missions'.
+         preview: rendered in the form, where the html field shows it in an
+         iframe without Odoo's styles: the font must then be set here. In the
+         PDF, the grid keeps the company's report font. -->
     <template id="activity_report_grid">
         <style>
-            .o_activity_grid { border-collapse: collapse; width: 100%; font-size: 9px; table-layout: fixed; }
-            .o_activity_grid td, .o_activity_grid th { border: 1px solid #808080; padding: 1px 2px; text-align: center; }
+            .o_activity_preview { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, "Noto Sans", Arial, sans-serif; color: #212529; }
+            .o_activity_preview .o_activity_grid { font-size: 12px; }
+            .o_activity_grid { border-collapse: collapse; width: 100%; font-size: 10.5px; color: #212529; table-layout: fixed; }
+            .o_activity_grid td, .o_activity_grid th { border: 1px solid #A6A6A6; padding: 2px 1px; text-align: center; font-weight: normal; }
+            .o_activity_grid th { font-weight: 600; }
             .o_activity_grid .o_label { text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             .o_activity_grid .o_weekend { background-color: #D9D9D9; }
             .o_activity_grid .o_holiday { background-color: #FFF2CC; }
             .o_activity_grid .o_absence { background-color: #C6EFCE; }
-            .o_activity_grid .o_section { font-weight: bold; }
-            .o_activity_grid .o_total { font-weight: bold; }
+            .o_activity_grid .o_section { font-weight: 600; }
+            .o_activity_grid .o_total td { font-weight: 600; }
             .o_activity_legend span { display: inline-block; width: 28px; height: 10px; border: 1px solid #808080; vertical-align: middle; margin: 0 4px 0 12px; }
         </style>
         <t t-set="show_absences" t-value="lines == 'all'"/>
@@ -57,6 +63,7 @@
         <!-- Fixed layout: every day column gets the same width, whatever its
              content ("10", "D", "1"...). -->
         <t t-set="day_width" t-value="str(round(64.0 / len(days), 3))"/>
+        <div t-att-class="'o_activity_preview' if preview else None">
         <table class="o_activity_grid">
             <colgroup>
                 <col style="width: 17%;"/>
@@ -116,6 +123,7 @@
                     t-out="format_days((data['totals'] if show_absences else data['mission_totals'])[day_index])"/>
             </tr>
         </table>
+        </div>
     </template>
 
     <!-- One report page: header, legend, grid, signatures. -->

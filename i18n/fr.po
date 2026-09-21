@@ -924,13 +924,13 @@ msgstr "Aperçu"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
-msgid "Print"
-msgstr "Imprimer"
+msgid "Export PDF"
+msgstr "Exporter pdf"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
-msgid "Print for the client"
-msgstr "Imprimer pour le client"
+msgid "Export client PDF"
+msgstr "Exporter pdf client"
 
 #. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_hr_leave__project_id
@@ -1366,3 +1366,37 @@ msgstr "« Colonne du jour 1 » attend une lettre de colonne, par exemple D."
 #: code:addons/mission_report/models/activity_report.py:0
 msgid "Activity report created"
 msgstr "Compte rendu d'activité créé"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+msgid "Total days"
+msgstr "Total jours"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+msgid "Weekend"
+msgstr "Week-end"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+msgid "Manager signature"
+msgstr "Signature du responsable"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+msgid "Employee signature"
+msgstr "Signature du collaborateur"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__file_generated
+msgid "File Generated"
+msgstr "Classeur fabriqué par le module"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report_template__file_generated
+msgid "The workbook is the module's blank one: module updates remake it."
+msgstr "Le classeur est celui fabriqué par le module : les mises à jour du module le refont."
