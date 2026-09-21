@@ -42,9 +42,9 @@
          lines: 'all' (missions and time off) or 'missions'. -->
     <template id="activity_report_grid">
         <style>
-            .o_activity_grid { border-collapse: collapse; width: 100%; font-size: 9px; }
+            .o_activity_grid { border-collapse: collapse; width: 100%; font-size: 9px; table-layout: fixed; }
             .o_activity_grid td, .o_activity_grid th { border: 1px solid #808080; padding: 1px 2px; text-align: center; }
-            .o_activity_grid .o_label { text-align: left; white-space: nowrap; overflow: hidden; max-width: 220px; }
+            .o_activity_grid .o_label { text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             .o_activity_grid .o_weekend { background-color: #D9D9D9; }
             .o_activity_grid .o_holiday { background-color: #FFF2CC; }
             .o_activity_grid .o_absence { background-color: #C6EFCE; }
@@ -54,7 +54,16 @@
         </style>
         <t t-set="show_absences" t-value="lines == 'all'"/>
         <t t-set="days" t-value="data['days']"/>
+        <!-- Fixed layout: every day column gets the same width, whatever its
+             content ("10", "D", "1"...). -->
+        <t t-set="day_width" t-value="'%.3f%%' % (64.0 / len(days))"/>
         <table class="o_activity_grid">
+            <colgroup>
+                <col style="width: 17%;"/>
+                <col style="width: 15%;"/>
+                <col style="width: 4%;"/>
+                <col t-foreach="days" t-as="day" t-att-style="'width: %s;' % day_width"/>
+            </colgroup>
             <tr>
                 <td colspan="3" class="o_label" style="border: none; text-align: right;">Week</td>
                 <td t-foreach="data['weeks']" t-as="week" t-att-colspan="week['span']" style="text-align: left;" t-out="week['week']"/>
