@@ -55,12 +55,21 @@ class HrEmployee(models.Model):
                 'presence_holiday_absent', 'presence_holiday_present'))
         if not on_leave:
             return
-        current = on_leave._get_current_entries()
-        # Un congé en cours l'emporte : il reste le motif d'absence à afficher.
-        on_activity_ids = set(current.filtered('project_id').employee_id.ids)
-        on_activity_ids -= set(current.filtered(lambda leave: not leave.project_id).employee_id.ids)
-        on_leave.filtered(lambda employee: employee.id in on_activity_ids).update({
+        on_mission = on_leave._get_current_entries()._get_mission_only_employees()
+        (on_leave & on_mission).update({
             'hr_icon_display': 'presence_holiday_activity',
+        })
+
+    def _compute_leave_status(self):
+        # leave_date_to est le jour de retour d'un congé. Discuss l'affiche en
+        # "De retour le ..." (carte d'avatar, bandeau de conversation, mentions) :
+        # sans objet pour un salarié en mission, qui travaille. is_absent reste
+        # vrai : c'est lui qui déclenche le badge de présence.
+        super()._compute_leave_status()
+        on_mission = self._get_current_entries()._get_mission_only_employees()
+        (self & on_mission).update({
+            'leave_date_from': False,
+            'leave_date_to': False,
         })
 
 

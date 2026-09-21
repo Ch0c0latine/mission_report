@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!-- Carte ouverte en cliquant sur l'avatar d'un employé (fiches, projets).
+         hr et hr_holidays n'y prévoient une icône que pour leurs propres valeurs
+         de présence : sans cet ajout, un salarié en mission n'en aurait aucune. -->
+    <t t-inherit="resource_mail.AvatarCardResourcePopover" t-inherit-mode="extension">
+        <xpath expr="//span[@name='icon'][hasclass('o_employee_presence_status')]" position="inside">
+            <i t-if="record.hr_icon_display === 'presence_holiday_activity'" class="fa fa-fw fa-wrench text-success me-1" title="En mission" role="img" aria-label="En mission"/>
+        </xpath>
+    </t>
+</templates>

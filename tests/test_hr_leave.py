@@ -266,3 +266,39 @@ class TestHrLeaveMissionReport(TransactionCase):
         self.assertTrue(self.employee.is_absent)
         self.assertNotEqual(self.employee.hr_icon_display, 'presence_holiday_activity')
         self.assertFalse(self.employee.activity_date_to)
+
+    @freeze_time('2026-09-23 12:00:00')
+    def test_mission_keeps_the_normal_discuss_status(self):
+        # Discuss affichait un avion et "De retour le ..." pendant une mission.
+        self.env['hr.leave'].create({
+            'employee_id': self.employee.id,
+            'project_id': self.project.id,
+            'holiday_status_id': False,
+            'request_date_from': '2026-09-23',
+            'request_date_to': '2026-09-23',
+        })
+        self.env.invalidate_all()
+        self.assertFalse(self.employee.leave_date_to)
+        self.assertFalse(self.user.im_status.startswith('leave_'))
+        self.assertFalse(self.user.partner_id.im_status.startswith('leave_'))
+        # Le badge de présence, lui, signale toujours la mission.
+        self.assertEqual(self.employee.hr_icon_display, 'presence_holiday_activity')
+
+    @freeze_time('2026-09-23 12:00:00')
+    def test_leave_keeps_the_on_leave_discuss_status(self):
+        leave_type = self.env['hr.leave.type'].create({
+            'name': 'Congé de test sans validation',
+            'requires_allocation': False,
+            'leave_validation_type': 'no_validation',
+        })
+        self.env['hr.leave'].create({
+            'employee_id': self.employee.id,
+            'project_id': False,
+            'holiday_status_id': leave_type.id,
+            'request_date_from': '2026-09-23',
+            'request_date_to': '2026-09-23',
+        })
+        self.env.invalidate_all()
+        self.assertTrue(self.employee.leave_date_to)
+        self.assertTrue(self.user.im_status.startswith('leave_'))
+        self.assertTrue(self.user.partner_id.im_status.startswith('leave_'))
