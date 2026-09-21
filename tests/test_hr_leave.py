@@ -43,8 +43,8 @@ class TestHrLeaveMissionReport(TransactionCase):
             'employee_id': self.employee.id,
             'project_id': self.project.id,
             'holiday_status_id': False,
-            'request_date_from': '2026-08-29',
-            'request_date_to': '2026-08-29',
+            'request_date_from': '2026-08-26',
+            'request_date_to': '2026-08-26',
         })
         self.assertTrue(leave.id)
         self.assertTrue(leave.holiday_status_id)
@@ -55,8 +55,8 @@ class TestHrLeaveMissionReport(TransactionCase):
             'employee_id': self.employee.id,
             'project_id': self.project.id,
             'holiday_status_id': False,
-            'request_date_from': '2026-08-29',
-            'request_date_to': '2026-08-29',
+            'request_date_from': '2026-08-26',
+            'request_date_to': '2026-08-26',
         })
         self.assertEqual(leave.partner_id, self.partner)
 
@@ -72,8 +72,8 @@ class TestHrLeaveMissionReport(TransactionCase):
             'employee_id': self.employee.id,
             'project_id': False,
             'holiday_status_id': self.leave_type.id,
-            'request_date_from': '2026-08-29',
-            'request_date_to': '2026-08-29',
+            'request_date_from': '2026-08-26',
+            'request_date_to': '2026-08-26',
         })
         self.assertEqual(leave.entry_type, 'leave')
 
@@ -97,13 +97,15 @@ class TestHrLeaveMissionReport(TransactionCase):
         leave.entry_type = 'mission'
         leave._onchange_entry_type()
         self.assertEqual(leave.project_id, leave.available_project_ids[:1])
-        self.assertEqual(leave.project_id, self.project)
+        self.assertEqual(leave.project_id._origin, self.project)
 
     def test_available_project_ids_limited_to_assigned_tasks(self):
         other_project = self.env['project.project'].create({'name': 'Unassigned Project'})
         leave = self.env['hr.leave'].new({'employee_id': self.employee.id})
-        self.assertIn(self.project, leave.available_project_ids)
-        self.assertNotIn(other_project, leave.available_project_ids)
+        # available_project_ids porte des NewId sur un enregistrement virtuel :
+        # _origin ramène les projets réels.
+        self.assertIn(self.project, leave.available_project_ids._origin)
+        self.assertNotIn(other_project, leave.available_project_ids._origin)
 
     def test_check_employee_assigned_to_project(self):
         other_project = self.env['project.project'].create({'name': 'Unassigned Project'})
@@ -112,8 +114,8 @@ class TestHrLeaveMissionReport(TransactionCase):
                 'employee_id': self.employee.id,
                 'project_id': other_project.id,
                 'holiday_status_id': False,
-                'request_date_from': '2026-08-29',
-                'request_date_to': '2026-08-29',
+                'request_date_from': '2026-08-26',
+                'request_date_to': '2026-08-26',
             })
 
     def test_default_get_forces_empty_holiday_status(self):
@@ -145,8 +147,8 @@ class TestHrLeaveMissionReport(TransactionCase):
                 'employee_id': self.employee.id,
                 'project_id': self.project.id,
                 'holiday_status_id': self.leave_type.id,
-                'request_date_from': '2025-01-01',
-                'request_date_to': '2025-01-01',
+                'request_date_from': '2025-01-08',
+                'request_date_to': '2025-01-08',
             })
 
         # Test only project_id set -> should pass without error
@@ -154,18 +156,20 @@ class TestHrLeaveMissionReport(TransactionCase):
             'employee_id': self.employee.id,
             'project_id': self.project.id,
             'holiday_status_id': False,
-            'request_date_from': '2025-01-01',
-            'request_date_to': '2025-01-01',
+            'request_date_from': '2025-01-08',
+            'request_date_to': '2025-01-08',
         })
         self.assertTrue(leave_mission.id)
 
-        # Test only holiday_status_id set -> should pass without error
+        # Test only holiday_status_id set -> should pass without error.
+        # Un autre jour que la mission ci-dessus : deux saisies qui se
+        # chevauchent sont refusées par hr_holidays.
         leave_holiday = self.env['hr.leave'].create({
             'employee_id': self.employee.id,
             'project_id': False,
             'holiday_status_id': self.leave_type.id,
-            'request_date_from': '2025-01-01',
-            'request_date_to': '2025-01-01',
+            'request_date_from': '2025-01-09',
+            'request_date_to': '2025-01-09',
         })
         self.assertTrue(leave_holiday.id)
 
