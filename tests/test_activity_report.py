@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import base64
 import io
 from datetime import date
 
@@ -51,7 +50,7 @@ class TestActivityReport(TransactionCase):
             'year': YEAR, 'company_id': cls.company.id})._generate()
         # May 2031: 1st, 8th and 22nd (Ascension) are public holidays, all
         # on Thursdays. 22 weekdays - 3 = 19 working days.
-        cls._entry(cls.project_a, '2031-05-05', '2031-05-16')   # 10 days
+        cls._entry(cls.project_a, '2031-05-05', '2031-05-16')   # 9 days: 8 May is off
         cls._entry(cls.project_b, '2031-05-26', '2031-05-27')   # 2 days
         cls._entry(False, '2031-05-19', '2031-05-19')           # 1 day off
         cls.report = cls.env['mission.activity.report'].create({
@@ -92,19 +91,19 @@ class TestActivityReport(TransactionCase):
         self.assertEqual(data['potential_days'], 19)
         self.assertEqual([line['project'] for line in data['missions']], ['Project A', 'Project B'])
         line_a = data['missions'][0]
-        self.assertEqual(line_a['total'], 10)
+        self.assertEqual(line_a['total'], 9)
         self.assertIsNone(line_a['values'][0], "1 May is a public holiday")
         self.assertIsNone(line_a['values'][2], "3 May is a Saturday")
         self.assertEqual(line_a['values'][4], 1, "5 May is a mission day")
         self.assertEqual(line_a['values'][1], 0, "2 May is a working day without mission")
-        self.assertEqual(data['mission_total'], 12)
+        self.assertEqual(data['mission_total'], 11)
         self.assertEqual(data['absence_total'], 1)
         self.assertEqual(data['absences'][0]['label'], 'Report test time off')
         self.assertTrue(data['days'][0]['holiday'])
         self.assertTrue(data['days'][18]['absence'])
         self.assertEqual(data['totals'][18], 1)
         self.assertEqual(data['totals'][19], 0)
-        self.assertEqual(self.report.mission_days, 12)
+        self.assertEqual(self.report.mission_days, 11)
 
     def test_client_data_keeps_one_client(self):
         self.assertEqual(self.report._get_client_partner_ids(), [self.client_a.id, self.client_b.id])
@@ -126,10 +125,10 @@ class TestActivityReport(TransactionCase):
         self.assertEqual(self.report.state, 'validated')
         # A validated report keeps its figures.
         self._entry(self.project_a, '2031-05-28', '2031-05-28')
-        self.assertEqual(self.report._get_report_data()['mission_total'], 12)
+        self.assertEqual(self.report._get_report_data()['mission_total'], 11)
         self.report.with_user(self.manager).action_reset_to_draft()
         self.assertEqual(self.report.state, 'draft')
-        self.assertEqual(self.report._get_report_data()['mission_total'], 13)
+        self.assertEqual(self.report._get_report_data()['mission_total'], 12)
 
     def test_one_report_per_employee_and_month(self):
         with self.assertRaises(Exception), self.cr.savepoint():
