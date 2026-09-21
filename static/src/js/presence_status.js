@@ -11,6 +11,11 @@
  * peuvent les atteindre, d'où ce patch. Il ne porte que sur notre propre valeur
  * de hr_icon_display ; tout le reste est délégué à hr_holidays, y compris les
  * vrais congés.
+ *
+ * Le dernier patch appliqué est consulté en premier. hr_holidays_homeworking
+ * (et hr_homeworking pour le lieu de travail) interceptent notre valeur avant
+ * de déléguer : ce fichier doit donc être chargé après eux, ce que garantit la
+ * dépendance déclarée dans le manifeste.
  */
 import { _t } from "@web/core/l10n/translation";
 import { patch } from "@web/core/utils/patch";
