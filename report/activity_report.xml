@@ -56,13 +56,13 @@
         <t t-set="days" t-value="data['days']"/>
         <!-- Fixed layout: every day column gets the same width, whatever its
              content ("10", "D", "1"...). -->
-        <t t-set="day_width" t-value="'%.3f%%' % (64.0 / len(days))"/>
+        <t t-set="day_width" t-value="str(round(64.0 / len(days), 3))"/>
         <table class="o_activity_grid">
             <colgroup>
                 <col style="width: 17%;"/>
                 <col style="width: 15%;"/>
                 <col style="width: 4%;"/>
-                <col t-foreach="days" t-as="day" t-att-style="'width: %s;' % day_width"/>
+                <col t-foreach="days" t-as="day" t-attf-style="width: {{day_width}}%;"/>
             </colgroup>
             <tr>
                 <td colspan="3" class="o_label" style="border: none; text-align: right;">Week</td>
