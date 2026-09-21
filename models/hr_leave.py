@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
+import re
+
 from markupsafe import Markup
 
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
+from odoo.tools import format_date
+from odoo.tools.translate import code_translations
 
 
 class HrLeave(models.Model):
@@ -208,9 +212,40 @@ class HrLeave(models.Model):
         self.ensure_one()
         return _("Activité créée")
 
+    # Posté par _validate_leave_request() à la validation, immédiate pour une
+    # mission. En français : "Votre Activité planifié le 2026-09-28 08:00:00 a
+    # été accepté" - accord masculin écrit pour un nom de congé, date brute.
+    _ACCEPTED_MESSAGE = 'Your %(leave_type)s planned on %(date)s has been accepted'
+
+    def _is_accepted_message(self, text):
+        # Le gabarit est lu dans le catalogue d'hr_holidays, dans la langue du
+        # message : la reconnaissance vaut quelle que soit la langue.
+        template = code_translations.get_python_translations('hr_holidays', self.env.lang or 'en_US').get(
+            self._ACCEPTED_MESSAGE, self._ACCEPTED_MESSAGE)
+        pattern = ''
+        for index, part in enumerate(re.split(r'%\((leave_type|date)\)s', template)):
+            if index % 2 == 0:
+                pattern += re.escape(part)
+            elif part == 'leave_type':
+                pattern += re.escape(self.holiday_status_id.display_name or '')
+            else:
+                pattern += '.+?'
+        return bool(re.fullmatch(pattern, text.strip()))
+
+    def _get_accepted_mission_message(self):
+        self.ensure_one()
+        date_from = format_date(self.env, self.request_date_from)
+        if self.request_date_to and self.request_date_to != self.request_date_from:
+            return _("Votre activité du %(date_from)s au %(date_to)s a été enregistrée",
+                     date_from=date_from, date_to=format_date(self.env, self.request_date_to))
+        return _("Votre activité du %(date)s a été enregistrée", date=date_from)
+
     def message_post(self, **kwargs):
         body = kwargs.get('body')
         if body:
+            if len(self) == 1 and self.project_id and self._is_accepted_message(str(body)):
+                kwargs['body'] = self._get_accepted_mission_message()
+                return super().message_post(**kwargs)
             rewritten = self._apply_activity_wording(str(body))
             if rewritten != str(body):
                 kwargs['body'] = Markup(rewritten) if isinstance(body, Markup) else rewritten
