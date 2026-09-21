@@ -169,3 +169,18 @@ class TestActivityReport(TransactionCase):
             'mission_report.action_report_activity_client', self.report.ids)
         self.assertNotIn(b'Report test time off', html)
         self.assertIn(b'B Client', html)
+
+    def test_employee_downloads_own_reports(self):
+        # An employee without any HR right prints and exports their own report.
+        report = self.report.with_user(self.user)
+        for xmlid in ('mission_report.action_report_activity_internal',
+                      'mission_report.action_report_activity_client'):
+            html, _kind = self.env['ir.actions.report'].with_user(self.user)._render_qweb_html(
+                xmlid, report.ids)
+            self.assertIn(b'Report Employee', html)
+        template = self.env.ref('mission_report.activity_report_template_internal')
+        template.action_generate_file()
+        wizard = self.env['mission.activity.report.export'].with_user(self.user).create({
+            'report_ids': [(6, 0, report.ids)], 'template_id': template.id})
+        self.assertEqual(wizard.action_export()['type'], 'ir.actions.act_url')
+        self.assertTrue(report.preview_html)
