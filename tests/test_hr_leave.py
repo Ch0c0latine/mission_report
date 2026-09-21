@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from freezegun import freeze_time
+
 from odoo.tests.common import TransactionCase
 from odoo.exceptions import ValidationError
 
@@ -166,3 +168,78 @@ class TestHrLeaveMissionReport(TransactionCase):
             'request_date_to': '2025-01-01',
         })
         self.assertTrue(leave_holiday.id)
+
+    def test_mission_meeting_speaks_of_activite(self):
+        # L'événement Calendrier est créé à la validation, immédiate pour une
+        # mission : c'est lui qui affichait "<salarié> en congé".
+        leave = self.env['hr.leave'].create({
+            'employee_id': self.employee.id,
+            'project_id': self.project.id,
+            'holiday_status_id': False,
+            'request_date_from': '2026-08-26',
+            'request_date_to': '2026-08-26',
+        })
+        self.assertTrue(leave.meeting_id, "La saisie de mission doit créer un événement Calendrier.")
+        self.assertIn('en activité', leave.meeting_id.name)
+        self.assertNotIn('congé', leave.meeting_id.name)
+
+    def test_leave_meeting_keeps_the_native_wording(self):
+        leave_type = self.env['hr.leave.type'].create({
+            'name': 'Congé de test sans validation',
+            'requires_allocation': False,
+            'leave_validation_type': 'no_validation',
+        })
+        leave = self.env['hr.leave'].create({
+            'employee_id': self.employee.id,
+            'project_id': False,
+            'holiday_status_id': leave_type.id,
+            'request_date_from': '2026-08-27',
+            'request_date_to': '2026-08-27',
+        })
+        self.assertTrue(leave.meeting_id)
+        self.assertNotIn('activité', leave.meeting_id.name)
+
+    def test_mission_resource_leave_speaks_of_activite(self):
+        leave = self.env['hr.leave'].create({
+            'employee_id': self.employee.id,
+            'project_id': self.project.id,
+            'holiday_status_id': False,
+            'request_date_from': '2026-08-28',
+            'request_date_to': '2026-08-28',
+        })
+        resource_leave = self.env['resource.calendar.leaves'].search([('holiday_id', '=', leave.id)])
+        self.assertTrue(resource_leave)
+        self.assertIn('activité', resource_leave.name)
+
+    @freeze_time('2026-09-23 12:00:00')
+    def test_presence_badge_says_activite_during_a_mission(self):
+        # Mercredi, en pleine journée de travail : le badge de présence passe à
+        # "En congé" chez hr_holidays dès qu'une saisie est en cours.
+        self.env['hr.leave'].create({
+            'employee_id': self.employee.id,
+            'project_id': self.project.id,
+            'holiday_status_id': False,
+            'request_date_from': '2026-09-23',
+            'request_date_to': '2026-09-23',
+        })
+        self.employee.invalidate_recordset()
+        self.assertTrue(self.employee.is_absent)
+        self.assertEqual(self.employee.hr_icon_display, 'presence_holiday_activity')
+
+    @freeze_time('2026-09-23 12:00:00')
+    def test_presence_badge_unchanged_during_a_leave(self):
+        leave_type = self.env['hr.leave.type'].create({
+            'name': 'Congé de test sans validation',
+            'requires_allocation': False,
+            'leave_validation_type': 'no_validation',
+        })
+        self.env['hr.leave'].create({
+            'employee_id': self.employee.id,
+            'project_id': False,
+            'holiday_status_id': leave_type.id,
+            'request_date_from': '2026-09-23',
+            'request_date_to': '2026-09-23',
+        })
+        self.employee.invalidate_recordset()
+        self.assertTrue(self.employee.is_absent)
+        self.assertNotEqual(self.employee.hr_icon_display, 'presence_holiday_activity')
