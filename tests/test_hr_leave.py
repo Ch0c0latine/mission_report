@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from datetime import date
+
 from freezegun import freeze_time
 
 from odoo.tests.common import TransactionCase
@@ -242,6 +244,9 @@ class TestHrLeaveMissionReport(TransactionCase):
         self.employee.invalidate_recordset()
         self.assertTrue(self.employee.is_absent)
         self.assertEqual(self.employee.hr_icon_display, 'presence_holiday_activity')
+        # Le badge annonce une fin d'activité, pas un retour de congé : c'est le
+        # dernier jour de la saisie, pas le jour de reprise.
+        self.assertEqual(self.employee.activity_date_to, date(2026, 9, 23))
 
     @freeze_time('2026-09-23 12:00:00')
     def test_presence_badge_unchanged_during_a_leave(self):
@@ -260,3 +265,4 @@ class TestHrLeaveMissionReport(TransactionCase):
         self.employee.invalidate_recordset()
         self.assertTrue(self.employee.is_absent)
         self.assertNotEqual(self.employee.hr_icon_display, 'presence_holiday_activity')
+        self.assertFalse(self.employee.activity_date_to)
