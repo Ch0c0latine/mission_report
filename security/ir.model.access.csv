@@ -1,3 +1,10 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_hr_leave_user_mission_report,hr.leave.user.mission_report,hr_holidays.model_hr_leave,base.group_user,1,1,1,0
 access_hr_leave_manager_mission_report,hr.leave.manager.mission_report,hr_holidays.model_hr_leave,hr_holidays.group_hr_holidays_user,1,1,1,1
+access_mission_activity_report_user,mission.activity.report.user,model_mission_activity_report,base.group_user,1,1,1,1
+access_mission_activity_report_template_user,mission.activity.report.template.user,model_mission_activity_report_template,base.group_user,1,0,0,0
+access_mission_activity_report_template_manager,mission.activity.report.template.manager,model_mission_activity_report_template,hr_holidays.group_hr_holidays_manager,1,1,1,1
+access_mission_activity_report_template_cell_user,mission.activity.report.template.cell.user,model_mission_activity_report_template_cell,base.group_user,1,0,0,0
+access_mission_activity_report_template_cell_manager,mission.activity.report.template.cell.manager,model_mission_activity_report_template_cell,hr_holidays.group_hr_holidays_manager,1,1,1,1
+access_mission_activity_report_export_user,mission.activity.report.export.user,model_mission_activity_report_export,base.group_user,1,1,1,1
+access_mission_public_holiday_wizard_manager,mission.public.holiday.wizard.manager,model_mission_public_holiday_wizard,hr_holidays.group_hr_holidays_manager,1,1,1,1
