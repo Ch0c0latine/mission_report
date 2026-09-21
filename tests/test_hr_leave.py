@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+from datetime import date
+
+from freezegun import freeze_time
+
 from odoo.tests.common import TransactionCase
 from odoo.exceptions import ValidationError
 
@@ -41,8 +45,8 @@ class TestHrLeaveMissionReport(TransactionCase):
             'employee_id': self.employee.id,
             'project_id': self.project.id,
             'holiday_status_id': False,
-            'request_date_from': '2026-08-29',
-            'request_date_to': '2026-08-29',
+            'request_date_from': '2026-08-26',
+            'request_date_to': '2026-08-26',
         })
         self.assertTrue(leave.id)
         self.assertTrue(leave.holiday_status_id)
@@ -53,13 +57,26 @@ class TestHrLeaveMissionReport(TransactionCase):
             'employee_id': self.employee.id,
             'project_id': self.project.id,
             'holiday_status_id': False,
-            'request_date_from': '2026-08-29',
-            'request_date_to': '2026-08-29',
+            'request_date_from': '2026-08-26',
+            'request_date_to': '2026-08-26',
         })
         self.assertEqual(leave.partner_id, self.partner)
 
-        leave.write({'project_id': False, 'holiday_status_id': self.leave_type.id})
-        self.assertFalse(leave.partner_id)
+        # Changer de mission doit faire suivre le client. On ne bascule pas vers
+        # un congé ici : cela changerait le type, donc les dates, ce qu'hr_holidays
+        # interdit sur une saisie validée - et une mission l'est dès sa création.
+        other_partner = self.env['res.partner'].create({'name': 'Other Client'})
+        other_project = self.env['project.project'].create({
+            'name': 'Other Project',
+            'partner_id': other_partner.id,
+        })
+        self.env['project.task'].create({
+            'name': 'Other Task',
+            'project_id': other_project.id,
+            'user_ids': [(6, 0, [self.user.id])],
+        })
+        leave.write({'project_id': other_project.id})
+        self.assertEqual(leave.partner_id, other_partner)
 
     def test_entry_type_defaults_to_mission_for_new_record(self):
         leave = self.env['hr.leave'].new({})
@@ -70,8 +87,8 @@ class TestHrLeaveMissionReport(TransactionCase):
             'employee_id': self.employee.id,
             'project_id': False,
             'holiday_status_id': self.leave_type.id,
-            'request_date_from': '2026-08-29',
-            'request_date_to': '2026-08-29',
+            'request_date_from': '2026-08-26',
+            'request_date_to': '2026-08-26',
         })
         self.assertEqual(leave.entry_type, 'leave')
 
@@ -95,13 +112,15 @@ class TestHrLeaveMissionReport(TransactionCase):
         leave.entry_type = 'mission'
         leave._onchange_entry_type()
         self.assertEqual(leave.project_id, leave.available_project_ids[:1])
-        self.assertEqual(leave.project_id, self.project)
+        self.assertEqual(leave.project_id._origin, self.project)
 
     def test_available_project_ids_limited_to_assigned_tasks(self):
         other_project = self.env['project.project'].create({'name': 'Unassigned Project'})
         leave = self.env['hr.leave'].new({'employee_id': self.employee.id})
-        self.assertIn(self.project, leave.available_project_ids)
-        self.assertNotIn(other_project, leave.available_project_ids)
+        # available_project_ids porte des NewId sur un enregistrement virtuel :
+        # _origin ramène les projets réels.
+        self.assertIn(self.project, leave.available_project_ids._origin)
+        self.assertNotIn(other_project, leave.available_project_ids._origin)
 
     def test_check_employee_assigned_to_project(self):
         other_project = self.env['project.project'].create({'name': 'Unassigned Project'})
@@ -110,8 +129,8 @@ class TestHrLeaveMissionReport(TransactionCase):
                 'employee_id': self.employee.id,
                 'project_id': other_project.id,
                 'holiday_status_id': False,
-                'request_date_from': '2026-08-29',
-                'request_date_to': '2026-08-29',
+                'request_date_from': '2026-08-26',
+                'request_date_to': '2026-08-26',
             })
 
     def test_default_get_forces_empty_holiday_status(self):
@@ -143,8 +162,8 @@ class TestHrLeaveMissionReport(TransactionCase):
                 'employee_id': self.employee.id,
                 'project_id': self.project.id,
                 'holiday_status_id': self.leave_type.id,
-                'request_date_from': '2025-01-01',
-                'request_date_to': '2025-01-01',
+                'request_date_from': '2025-01-08',
+                'request_date_to': '2025-01-08',
             })
 
         # Test only project_id set -> should pass without error
@@ -152,17 +171,184 @@ class TestHrLeaveMissionReport(TransactionCase):
             'employee_id': self.employee.id,
             'project_id': self.project.id,
             'holiday_status_id': False,
-            'request_date_from': '2025-01-01',
-            'request_date_to': '2025-01-01',
+            'request_date_from': '2025-01-08',
+            'request_date_to': '2025-01-08',
         })
         self.assertTrue(leave_mission.id)
 
-        # Test only holiday_status_id set -> should pass without error
+        # Test only holiday_status_id set -> should pass without error.
+        # Un autre jour que la mission ci-dessus : deux saisies qui se
+        # chevauchent sont refusées par hr_holidays.
         leave_holiday = self.env['hr.leave'].create({
             'employee_id': self.employee.id,
             'project_id': False,
             'holiday_status_id': self.leave_type.id,
-            'request_date_from': '2025-01-01',
-            'request_date_to': '2025-01-01',
+            'request_date_from': '2025-01-09',
+            'request_date_to': '2025-01-09',
         })
         self.assertTrue(leave_holiday.id)
+
+    def test_mission_meeting_speaks_of_activite(self):
+        # L'événement Calendrier est créé à la validation, immédiate pour une
+        # mission : c'est lui qui affichait "<salarié> en congé".
+        leave = self.env['hr.leave'].create({
+            'employee_id': self.employee.id,
+            'project_id': self.project.id,
+            'holiday_status_id': False,
+            'request_date_from': '2026-08-26',
+            'request_date_to': '2026-08-26',
+        })
+        self.assertTrue(leave.meeting_id, "La saisie de mission doit créer un événement Calendrier.")
+        self.assertIn('en activité', leave.meeting_id.name)
+        self.assertNotIn('congé', leave.meeting_id.name)
+
+    def test_leave_meeting_keeps_the_native_wording(self):
+        leave_type = self.env['hr.leave.type'].create({
+            'name': 'Congé de test sans validation',
+            'requires_allocation': False,
+            'leave_validation_type': 'no_validation',
+        })
+        leave = self.env['hr.leave'].create({
+            'employee_id': self.employee.id,
+            'project_id': False,
+            'holiday_status_id': leave_type.id,
+            'request_date_from': '2026-08-27',
+            'request_date_to': '2026-08-27',
+        })
+        self.assertTrue(leave.meeting_id)
+        self.assertNotIn('activité', leave.meeting_id.name)
+
+    def test_mission_resource_leave_speaks_of_activite(self):
+        leave = self.env['hr.leave'].create({
+            'employee_id': self.employee.id,
+            'project_id': self.project.id,
+            'holiday_status_id': False,
+            'request_date_from': '2026-08-28',
+            'request_date_to': '2026-08-28',
+        })
+        resource_leave = self.env['resource.calendar.leaves'].search([('holiday_id', '=', leave.id)])
+        self.assertTrue(resource_leave)
+        self.assertIn('activité', resource_leave.name)
+
+    @freeze_time('2026-09-23 12:00:00')
+    def test_presence_badge_says_activite_during_a_mission(self):
+        # Mercredi, en pleine journée de travail : le badge de présence passe à
+        # "En congé" chez hr_holidays dès qu'une saisie est en cours.
+        self.env['hr.leave'].create({
+            'employee_id': self.employee.id,
+            'project_id': self.project.id,
+            'holiday_status_id': False,
+            'request_date_from': '2026-09-23',
+            'request_date_to': '2026-09-23',
+        })
+        self.employee.invalidate_recordset()
+        self.assertTrue(self.employee.is_absent)
+        self.assertEqual(self.employee.hr_icon_display, 'presence_holiday_activity')
+        # Le badge annonce une fin d'activité, pas un retour de congé : c'est le
+        # dernier jour de la saisie, pas le jour de reprise.
+        self.assertEqual(self.employee.activity_date_to, date(2026, 9, 23))
+
+    @freeze_time('2026-09-23 12:00:00')
+    def test_presence_badge_unchanged_during_a_leave(self):
+        leave_type = self.env['hr.leave.type'].create({
+            'name': 'Congé de test sans validation',
+            'requires_allocation': False,
+            'leave_validation_type': 'no_validation',
+        })
+        self.env['hr.leave'].create({
+            'employee_id': self.employee.id,
+            'project_id': False,
+            'holiday_status_id': leave_type.id,
+            'request_date_from': '2026-09-23',
+            'request_date_to': '2026-09-23',
+        })
+        self.employee.invalidate_recordset()
+        self.assertTrue(self.employee.is_absent)
+        self.assertNotEqual(self.employee.hr_icon_display, 'presence_holiday_activity')
+        self.assertFalse(self.employee.activity_date_to)
+
+    @freeze_time('2026-09-23 12:00:00')
+    def test_mission_keeps_the_normal_discuss_status(self):
+        # Discuss affichait un avion et "De retour le ..." pendant une mission.
+        self.env['hr.leave'].create({
+            'employee_id': self.employee.id,
+            'project_id': self.project.id,
+            'holiday_status_id': False,
+            'request_date_from': '2026-09-23',
+            'request_date_to': '2026-09-23',
+        })
+        self.env.invalidate_all()
+        self.assertFalse(self.employee.leave_date_to)
+        self.assertFalse(self.user.im_status.startswith('leave_'))
+        self.assertFalse(self.user.partner_id.im_status.startswith('leave_'))
+        # Le badge de présence, lui, signale toujours la mission.
+        self.assertEqual(self.employee.hr_icon_display, 'presence_holiday_activity')
+
+    @freeze_time('2026-09-23 12:00:00')
+    def test_leave_keeps_the_on_leave_discuss_status(self):
+        leave_type = self.env['hr.leave.type'].create({
+            'name': 'Congé de test sans validation',
+            'requires_allocation': False,
+            'leave_validation_type': 'no_validation',
+        })
+        self.env['hr.leave'].create({
+            'employee_id': self.employee.id,
+            'project_id': False,
+            'holiday_status_id': leave_type.id,
+            'request_date_from': '2026-09-23',
+            'request_date_to': '2026-09-23',
+        })
+        self.env.invalidate_all()
+        self.assertTrue(self.employee.leave_date_to)
+        self.assertTrue(self.user.im_status.startswith('leave_'))
+        self.assertTrue(self.user.partner_id.im_status.startswith('leave_'))
+
+    def test_renamed_actions_and_menus_in_french(self):
+        # En français, la traduction d'hr_holidays l'emportait sur le nom
+        # redéfini en XML : "Mes congés" restait affiché.
+        self.env['res.lang']._activate_lang('fr_FR')
+        self.env['hr.leave']._sync_renamed_records_translations()
+        action = self.env.ref('hr_holidays.hr_leave_action_my').with_context(lang='fr_FR')
+        self.assertEqual(action.name, 'Mes saisies')
+        menu = self.env.ref('hr_holidays.menu_open_department_leave_approve').with_context(lang='fr_FR')
+        self.assertEqual(menu.name, 'Saisies')
+        # Titre du filtre du calendrier de saisie : "Type de congés" restait affiché.
+        field = self.env['ir.model.fields']._get('hr.leave', 'holiday_status_id').with_context(lang='fr_FR')
+        self.assertEqual(field.field_description, 'Type de saisie')
+
+    def test_mission_accepted_message_speaks_of_activite(self):
+        # "Votre Activité planifié le 2026-09-28 08:00:00 a été accepté" :
+        # accord écrit pour un nom de congé, et date brute.
+        # Une saisie par langue, à des dates distinctes : deux saisies qui se
+        # chevauchent sont refusées par hr_holidays.
+        for lang, date_from, date_to in (
+            ('en_US', '2026-09-28', '2026-09-29'),
+            ('fr_FR', '2026-10-05', '2026-10-06'),
+        ):
+            self.env['res.lang']._activate_lang(lang)
+            leave = self.env['hr.leave'].with_context(lang=lang).create({
+                'employee_id': self.employee.id,
+                'project_id': self.project.id,
+                'holiday_status_id': False,
+                'request_date_from': date_from,
+                'request_date_to': date_to,
+            })
+            bodies = leave.message_ids.mapped(lambda message: str(message.body))
+            self.assertTrue(any('a été enregistrée' in body for body in bodies), bodies)
+            self.assertFalse(any('planned on' in body or 'planifié le' in body for body in bodies), bodies)
+
+    def test_leave_accepted_message_keeps_the_native_wording(self):
+        leave_type = self.env['hr.leave.type'].create({
+            'name': 'Congé de test sans validation',
+            'requires_allocation': False,
+            'leave_validation_type': 'no_validation',
+        })
+        leave = self.env['hr.leave'].create({
+            'employee_id': self.employee.id,
+            'project_id': False,
+            'holiday_status_id': leave_type.id,
+            'request_date_from': '2026-09-28',
+            'request_date_to': '2026-09-28',
+        })
+        bodies = leave.message_ids.mapped(lambda message: str(message.body))
+        self.assertFalse(any('a été enregistrée' in body for body in bodies), bodies)

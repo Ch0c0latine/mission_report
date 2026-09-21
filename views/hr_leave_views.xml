@@ -49,8 +49,13 @@
             </xpath>
 
             <!-- Masque le panneau de résumé/statistiques (colonne de droite) : sans intérêt ici,
-                 et élargit la colonne de gauche restante à toute la largeur. -->
-            <xpath expr="//div[hasclass('col_right')]" position="replace"/>
+                 et élargit la colonne de gauche restante à toute la largeur.
+                 On le rend invisible au lieu de le supprimer : hr_leave_view_form_dashboard, une
+                 vue primary dérivée de celle-ci, le supprime elle aussi, et son xpath ne trouvait
+                 plus rien si on l'avait déjà retiré (le chargement du module échouait). -->
+            <xpath expr="//div[hasclass('col_right')]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
             <xpath expr="//div[hasclass('col_left')]" position="attributes">
                 <attribute name="class" remove="col-md-6" separator=" "/>
             </xpath>
@@ -93,9 +98,8 @@
                 <field name="project_id" string="Mission" optional="show"/>
                 <field name="partner_id" string="Client" optional="hide"/>
             </xpath>
-            <xpath expr="//field[@name='holiday_status_id']" position="attributes">
-                <attribute name="string">Congé</attribute>
-            </xpath>
+            <!-- La colonne du type de saisie (Activité pour une mission) garde le
+                 libellé du champ : "Type de saisie". -->
             <!-- Hide "Nouveaux congés de groupe" header button -->
             <xpath expr="//header/button" position="attributes">
                 <attribute name="invisible">1</attribute>
@@ -120,6 +124,47 @@
             <xpath expr="//calendar" position="inside">
                 <field name="project_id"/>
             </xpath>
+        </field>
+    </record>
+
+    <!-- Barre de recherche commune à "Mon temps > Mes saisies" et
+         "Management > Saisies" -->
+    <record id="hr_leave_view_search_inherit_mission_report" model="ir.ui.view">
+        <field name="name">hr.leave.view.search.inherit.mission.report</field>
+        <field name="model">hr.leave</field>
+        <field name="inherit_id" ref="hr_holidays.view_hr_holidays_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="attributes">
+                <attribute name="string">Rechercher une saisie</attribute>
+            </xpath>
+            <xpath expr="//filter[@name='my_leaves']" position="attributes">
+                <attribute name="string">Mes saisies</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Noms des actions natives. Le fil d'Ariane et le titre de l'écran les
+         reprennent, et non le libellé du menu : renommer les menuitems dans
+         menu_views.xml ne suffisait donc pas. -->
+    <record id="hr_holidays.hr_leave_action_my" model="ir.actions.act_window">
+        <field name="name">Mes saisies</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucune saisie pour l'instant.
+            </p><p>
+                Enregistrez ici vos journées d'activité par mission, ainsi que vos congés.
+            </p>
+        </field>
+    </record>
+
+    <record id="hr_holidays.hr_leave_action_action_approve_department" model="ir.actions.act_window">
+        <field name="name">Saisies</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucune saisie à afficher.
+            </p><p>
+                Suivez ici les activités et les congés saisis par vos collaborateurs.
+            </p>
         </field>
     </record>
 </odoo>

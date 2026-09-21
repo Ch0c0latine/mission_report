@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Activité > Vue d'ensemble.
+         Cet écran ne repose pas sur hr.leave mais sur hr.leave.report.calendar,
+         une vue SQL construite au-dessus : les renommages faits sur hr.leave ne
+         l'atteignent pas, et tout son vocabulaire était resté celui des congés. -->
+
+    <!-- Calendrier mensuel -->
+    <record id="hr_leave_report_calendar_view_inherit_mission_report" model="ir.ui.view">
+        <field name="name">hr.leave.report.calendar.view.inherit.mission.report</field>
+        <field name="model">hr.leave.report.calendar</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_report_calendar_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//calendar" position="attributes">
+                <attribute name="string">Saisies</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Calendrier annuel -->
+    <record id="hr_leave_report_calendar_year_view_inherit_mission_report" model="ir.ui.view">
+        <field name="name">hr.leave.report.calendar.year.view.inherit.mission.report</field>
+        <field name="model">hr.leave.report.calendar</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_report_calendar_year_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//calendar" position="attributes">
+                <attribute name="string">Saisies</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Popup ouverte en cliquant sur une saisie du calendrier -->
+    <record id="hr_leave_report_calendar_view_form_inherit_mission_report" model="ir.ui.view">
+        <field name="name">hr.leave.report.calendar.view.form.inherit.mission.report</field>
+        <field name="model">hr.leave.report.calendar</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_report_calendar_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="attributes">
+                <attribute name="string">Saisie</attribute>
+            </xpath>
+            <!-- "Type de congés" : le type vaut "Activité" pour une mission. -->
+            <xpath expr="//field[@name='holiday_status_id']" position="attributes">
+                <attribute name="string">Type de saisie</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Barre de recherche -->
+    <record id="hr_leave_report_calendar_view_search_inherit_mission_report" model="ir.ui.view">
+        <field name="name">hr.leave.report.calendar.view.search.inherit.mission.report</field>
+        <field name="model">hr.leave.report.calendar</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_report_calendar_view_search"/>
+        <field name="arch" type="xml">
+            <!-- Le filtre porte sur is_absent, vrai pour un congé comme pour une
+                 activité : "Absent aujourd'hui" décrivait mal ce qu'il liste. -->
+            <xpath expr="//filter[@name='off_today']" position="attributes">
+                <attribute name="string">Saisie en cours aujourd'hui</attribute>
+                <attribute name="help">Employés ayant une saisie en cours aujourd'hui</attribute>
+            </xpath>
+            <xpath expr="//filter[@name='groupby_time_off_type']" position="attributes">
+                <attribute name="string">Type de saisie</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Nom de l'action : c'est lui qui s'affiche dans le fil d'Ariane, pas le
+         libellé du menu. -->
+    <record id="hr_holidays.action_hr_holidays_dashboard" model="ir.actions.act_window">
+        <field name="name">Vue d'ensemble</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Personne ici ? Tout le monde est au travail sur cette période.
+            </p>
+        </field>
+    </record>
+</odoo>
