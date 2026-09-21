@@ -98,7 +98,7 @@ class MissionActivityReport(models.Model):
                 continue
             report.preview_html = self.env['ir.qweb']._render(
                 'mission_report.activity_report_grid',
-                {'data': report._get_render_data(), 'lines': 'all',
+                {'data': report._get_render_data(), 'lines': 'all', 'preview': True,
                  'format_days': report._format_days})
 
     def _creation_message(self):

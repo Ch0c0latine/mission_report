@@ -82,6 +82,9 @@ class MissionActivityReportTemplate(models.Model):
         help="A client report is exported once per client of the month.")
     file = fields.Binary(string="Excel file", attachment=True)
     filename = fields.Char()
+    file_generated = fields.Boolean(
+        readonly=True, copy=False,
+        help="The workbook is the module's blank one: module updates remake it.")
     sheet_name = fields.Char(string="Sheet", help="Empty: the first sheet of the workbook.")
     first_day_column = fields.Char(
         string="Day 1 column", required=True, default='D',
@@ -126,109 +129,253 @@ class MissionActivityReportTemplate(models.Model):
     def action_generate_file(self):
         """Blank workbook laid out after the template's settings and mappings."""
         for template in self:
-            template.write({
+            template.with_context(mission_report_blank_file=True).write({
                 'file': base64.b64encode(template._blank_workbook()),
                 'filename': "%s.xlsx" % re.sub(r'[\\/:*?"<>|]+', '-', template.name),
+                'file_generated': True,
             })
         return True
 
+    def write(self, vals):
+        # A workbook uploaded by the user is theirs: module updates must not
+        # replace it with a blank one.
+        if 'file' in vals and not self.env.context.get('mission_report_blank_file'):
+            vals['file_generated'] = False
+        return super().write(vals)
+
     @api.model
     def _fill_blank_files(self):
-        """Blank workbook of the shipped templates that have none yet."""
+        """(Re)make the blank workbook of the shipped templates.
+
+        Run on every module update: a template whose workbook was never
+        replaced by the user follows the module's layout and the company's
+        language.
+        """
         try:
             import openpyxl  # noqa: F401, PLC0415
         except ImportError:
             _logger.warning("openpyxl missing: activity report templates shipped without workbook")
             return
+        lang = self.env.company.partner_id.lang or self.env.user.lang or 'en_US'
         for xmlid in ('mission_report.activity_report_template_internal',
                       'mission_report.activity_report_template_client'):
             template = self.env.ref(xmlid, raise_if_not_found=False)
-            if template and not template.file:
-                template.action_generate_file()
+            if template and (not template.file or template.file_generated):
+                template.with_context(lang=lang).action_generate_file()
+
+    def _blank_labels(self):
+        """Labels of the blank workbook, in the context's language."""
+        header = {
+            'employee': _("Employee"),
+            'company': _("Company"),
+            'month': _("Month"),
+            'month_label': _("Month"),
+            'potential_days': _("Working days"),
+            'status': _("Status"),
+            'submit_date': _("Submission date"),
+            'validate_date': _("Validation date"),
+            'client': _("Client"),
+            'mission_total': _("Mission days"),
+            'absence_total': _("Time off days"),
+            'total': _("Total days"),
+        }
+        line = {
+            'label': _("Client"),
+            'client': _("Client"),
+            'project': _("Mission"),
+            'leave_type': _("Time off type"),
+            'total': _("Total"),
+        }
+        return header, line
 
     def _blank_workbook(self):
+        """A month grid laid out like the PDF report.
+
+        Title, header values with their labels, a colour legend, the day
+        header rows, the mission and time off blocks, a total line and two
+        signature boxes; A4 landscape, one page wide.
+        """
         self.ensure_one()
         openpyxl = _import_openpyxl()
         from openpyxl.styles import Alignment, Border, Font, PatternFill, Side  # noqa: PLC0415
         from openpyxl.utils import column_index_from_string, get_column_letter  # noqa: PLC0415
 
-        labels = dict(VALUES)
-        header_labels = dict(HEADER_VALUES)
+        header_labels, line_labels = self._blank_labels()
         book = openpyxl.Workbook()
         sheet = book.active
         sheet.title = (self.sheet_name or _("Activity"))[:31]
-        thin = Side(style='thin', color='808080')
-        box = Border(left=thin, right=thin, top=thin, bottom=thin)
-        title_fill = PatternFill('solid', start_color='DDE7F0')
-        bold = Font(bold=True)
-        center = Alignment(horizontal='center', vertical='center')
 
-        sheet['A1'] = _("Monthly activity report")
-        sheet['A1'].font = Font(bold=True, size=14)
+        font_name = 'Calibri'
+        base = Font(name=font_name, size=9)
+        bold = Font(name=font_name, size=9, bold=True)
+        thin = Side(style='thin', color='A6A6A6')
+        medium = Side(style='medium', color='595959')
+        box = Border(left=thin, right=thin, top=thin, bottom=thin)
+        head_fill = PatternFill('solid', start_color='E7EEF6')
+        section_fill = PatternFill('solid', start_color='F2F2F2')
+        center = Alignment(horizontal='center', vertical='center')
+        left = Alignment(horizontal='left', vertical='center', indent=1)
+        right = Alignment(horizontal='right', vertical='center')
+
+        first_day = column_index_from_string(self.first_day_column.strip().upper())
+        last_column = first_day + MAX_DAYS - 1
+        day_columns = range(first_day, last_column + 1)
+        # One mapping per column, the missions' one first: a column can hold
+        # the client for missions and the time off type below.
+        line_columns = {}
+        for cell_map in self.cell_ids.filtered(lambda c: c.kind == 'line' and c.value):
+            column = column_index_from_string(cell_map.cell.strip().upper())
+            if column not in line_columns or line_columns[column].block == 'absence':
+                line_columns[column] = cell_map
+        label_columns = range(1, first_day)
+
+        # Title, across the whole grid.
+        sheet.merge_cells(start_row=1, start_column=1, end_row=1, end_column=last_column)
+        title = sheet.cell(row=1, column=1, value=_("Monthly activity report"))
+        title.font = Font(name=font_name, size=14, bold=True)
+        title.alignment = center
+        sheet.row_dimensions[1].height = 24
 
         # Header: each value, and its label in the cell on its left.
+        header_rows = set()
         for cell_map in self.cell_ids.filtered(lambda c: c.kind == 'header' and c.value):
             cell = sheet[cell_map.cell.strip().upper()]
+            header_rows.add(cell.row)
+            cell.font = Font(name=font_name, size=10)
+            cell.alignment = Alignment(horizontal='left', vertical='center')
             if cell.column > 1:
-                label = sheet.cell(row=cell.row, column=cell.column - 1)
-                label.value = header_labels.get(cell_map.value, labels[cell_map.value])
-                label.font = bold
+                label = sheet.cell(row=cell.row, column=cell.column - 1,
+                                   value="%s :" % header_labels[cell_map.value]
+                                   if self.env.lang and self.env.lang.startswith('fr')
+                                   else "%s:" % header_labels[cell_map.value])
+                label.font = Font(name=font_name, size=10, bold=True)
+                label.alignment = right
             if cell_map.value in ('month', 'submit_date', 'validate_date'):
                 cell.number_format = 'DD/MM/YYYY'
 
-        first_day = column_index_from_string(self.first_day_column.strip().upper())
-        day_columns = range(first_day, first_day + MAX_DAYS)
-        line_columns = {column_index_from_string(c.cell.strip().upper()): c
-                        for c in self.cell_ids if c.kind == 'line' and c.value}
-        title_row = self.mission_first_row - 1
-        for row, title in ((self.week_row, _("Week")), (self.day_row, _("Day")),
-                           (self.weekday_row, '')):
-            if row and first_day > 1 and title:
-                sheet.cell(row=row, column=first_day - 1, value=title).font = bold
-            for column in (day_columns if row else ()):
+        # Colour legend, just above the grid when that row is free.
+        grid_rows = [row for row in (self.week_row, self.day_row, self.weekday_row,
+                                     self.mission_first_row - 1) if row]
+        legend_row = min(grid_rows) - 1
+        if self.color_days and legend_row > 1 and legend_row not in header_rows:
+            legend = [(self.weekend_color, _("Weekend")), (self.holiday_color, _("Public holiday"))]
+            if self.kind == 'internal':
+                legend.append((self.absence_color, _("Time off")))
+            column = first_day
+            for color, text in legend:
+                swatch = sheet.cell(row=legend_row, column=column)
+                swatch.fill = PatternFill('solid', start_color=color)
+                swatch.border = box
+                label = sheet.cell(row=legend_row, column=column + 1, value=text)
+                label.font = base
+                column += 6
+
+        # Day header rows: week numbers, day numbers, weekdays.
+        for row, title_text in ((self.week_row, _("Week")), (self.day_row, _("Day")),
+                                (self.weekday_row, '')):
+            if not row:
+                continue
+            if first_day > 1 and title_text:
+                label = sheet.cell(row=row, column=first_day - 1, value=title_text)
+                label.font = bold
+                label.alignment = right
+            for column in day_columns:
                 cell = sheet.cell(row=row, column=column)
                 cell.font = bold
                 cell.alignment = center
                 cell.border = box
-        # Column titles above the mission lines, unless a day row is there.
+                cell.fill = head_fill
+
+        # Column titles above the mission lines.
+        title_row = self.mission_first_row - 1
         if title_row >= 1:
             for column, cell_map in line_columns.items():
-                if cell_map.block != 'absence':
-                    head = sheet.cell(row=title_row, column=column, value=labels[cell_map.value])
-                    head.font = bold
-                    head.fill = title_fill
-                    head.border = box
+                if cell_map.block == 'absence':
+                    continue
+                head = sheet.cell(row=title_row, column=column, value=line_labels[cell_map.value])
+                head.font = bold
+                head.fill = head_fill
+                head.border = box
+                head.alignment = center
 
         blocks = [('mission', self.mission_first_row, self.mission_last_row)]
         if self.absence_first_row:
-            section = sheet.cell(row=self.absence_first_row - 1, column=1, value=_("Time off"))
+            section_row = self.absence_first_row - 1
+            for column in range(1, last_column + 1):
+                cell = sheet.cell(row=section_row, column=column)
+                cell.fill = section_fill
+                cell.border = box
+            section = sheet.cell(row=section_row, column=1, value=_("Time off"))
             section.font = bold
+            section.alignment = left
             blocks.append(('absence', self.absence_first_row, self.absence_last_row))
         for block, first, last in blocks:
             for row in range(first, last + 1):
-                for column in list(day_columns) + [c for c, m in line_columns.items()
-                                                   if m.block in (block, 'both')]:
+                for column in list(label_columns) + list(day_columns):
                     cell = sheet.cell(row=row, column=column)
                     cell.border = box
-                    if column in day_columns:
+                    cell.font = base
+                    cell_map = line_columns.get(column)
+                    if column in day_columns or (cell_map and cell_map.value == 'total'):
                         cell.alignment = center
+                        cell.number_format = '0.##'
+                    else:
+                        cell.alignment = left
+                    if cell_map and cell_map.value == 'total':
+                        cell.font = bold
 
         # Total line: day by day, sum of the blocks above.
         total_row = blocks[-1][2] + 1
-        sheet.cell(row=total_row, column=1, value=_("Total")).font = bold
+        top = Border(left=thin, right=thin, top=medium, bottom=thin)
+        for column in list(label_columns) + list(day_columns):
+            cell = sheet.cell(row=total_row, column=column)
+            cell.border = top
+            cell.fill = head_fill
+            cell.font = bold
+            cell.alignment = center
+            cell.number_format = '0.##'
+        sheet.cell(row=total_row, column=1, value=_("Total")).alignment = left
         for column in day_columns:
             letter = get_column_letter(column)
             ranges = ["%s%s:%s%s" % (letter, first, letter, last) for _block, first, last in blocks]
-            cell = sheet.cell(row=total_row, column=column,
-                              value="=%s" % "+".join("SUM(%s)" % item for item in ranges))
-            cell.font = bold
-            cell.border = box
-            cell.alignment = center
-            sheet.column_dimensions[letter].width = 4.5
+            sheet.cell(row=total_row, column=column).value = \
+                "=%s" % "+".join("SUM(%s)" % item for item in ranges)
         for column, cell_map in line_columns.items():
-            sheet.column_dimensions[get_column_letter(column)].width = \
-                7 if cell_map.value == 'total' else 28
+            if cell_map.value == 'total':
+                letter = get_column_letter(column)
+                ranges = ["%s%s:%s%s" % (letter, first, letter, last) for _block, first, last in blocks]
+                sheet.cell(row=total_row, column=column).value = \
+                    "=%s" % "+".join("SUM(%s)" % item for item in ranges)
+
+        # Signature boxes, two rows below the total.
+        box_top = total_row + 2
+        boxes = [(1, max(first_day - 2, 1), _("Manager signature")),
+                 (first_day + 8, first_day + 20, _("Employee signature"))]
+        for start, end, text in boxes:
+            sheet.merge_cells(start_row=box_top, start_column=start, end_row=box_top + 5, end_column=end)
+            for row in range(box_top, box_top + 6):
+                for column in range(start, end + 1):
+                    sheet.cell(row=row, column=column).border = box
+            cell = sheet.cell(row=box_top, column=start, value=text)
+            cell.font = bold
+            cell.alignment = Alignment(horizontal='left', vertical='top', indent=1)
+
+        # Widths, frozen panes, printing.
+        for column in label_columns:
+            cell_map = line_columns.get(column)
+            width = 7 if cell_map and cell_map.value == 'total' else 28
+            sheet.column_dimensions[get_column_letter(column)].width = width
+        for column in day_columns:
+            sheet.column_dimensions[get_column_letter(column)].width = 4.3
         sheet.freeze_panes = sheet.cell(row=self.mission_first_row, column=first_day)
+        sheet.page_setup.orientation = 'landscape'
+        sheet.page_setup.paperSize = sheet.PAPERSIZE_A4
+        sheet.page_setup.fitToWidth = 1
+        sheet.page_setup.fitToHeight = 0
+        sheet.sheet_properties.pageSetUpPr.fitToPage = True
+        sheet.page_margins.left = sheet.page_margins.right = 0.4
+        sheet.page_margins.top = sheet.page_margins.bottom = 0.5
+        sheet.print_options.horizontalCentered = True
 
         output = io.BytesIO()
         book.save(output)
@@ -497,8 +644,11 @@ class MissionActivityReportExport(models.TransientModel):
             'res_model': self._name,
             'res_id': self.id,
         })
+        # target 'new' with close: the download starts and the export dialog
+        # closes ('self' left the dialog open over the report).
         return {
             'type': 'ir.actions.act_url',
             'url': '/web/content/%s?download=true' % attachment.id,
-            'target': 'self',
+            'target': 'new',
+            'close': True,
         }

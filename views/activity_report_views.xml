@@ -34,9 +34,9 @@
                             invisible="state == 'draft'"
                             confirm="The report goes back to the employee, who can correct and submit it again."/>
                     <button name="%(mission_report.action_report_activity_internal)d" type="action"
-                            string="Print" invisible="not id"/>
+                            string="Export PDF" invisible="not id"/>
                     <button name="%(mission_report.action_report_activity_client)d" type="action"
-                            string="Print for the client" invisible="not id"/>
+                            string="Export client PDF" invisible="not id"/>
                     <button name="action_open_export" type="object" string="Export to Excel"
                             invisible="not id"/>
                     <field name="state" widget="statusbar"/>
