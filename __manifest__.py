@@ -28,6 +28,7 @@
         'views/hr_leave_report_calendar_views.xml',
         'views/hr_leave_reporting.xml',
         'views/hr_employee_views.xml',
+        'data/wording_data.xml',
     ],
     'assets': {
         'web.assets_backend': [
