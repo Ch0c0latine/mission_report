@@ -122,4 +122,45 @@
             </xpath>
         </field>
     </record>
+
+    <!-- Barre de recherche commune à "Mon temps > Mes saisies" et
+         "Management > Saisies" -->
+    <record id="hr_leave_view_search_inherit_mission_report" model="ir.ui.view">
+        <field name="name">hr.leave.view.search.inherit.mission.report</field>
+        <field name="model">hr.leave</field>
+        <field name="inherit_id" ref="hr_holidays.view_hr_holidays_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="attributes">
+                <attribute name="string">Rechercher une saisie</attribute>
+            </xpath>
+            <xpath expr="//filter[@name='my_leaves']" position="attributes">
+                <attribute name="string">Mes saisies</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Noms des actions natives. Le fil d'Ariane et le titre de l'écran les
+         reprennent, et non le libellé du menu : renommer les menuitems dans
+         menu_views.xml ne suffisait donc pas. -->
+    <record id="hr_holidays.hr_leave_action_my" model="ir.actions.act_window">
+        <field name="name">Mes saisies</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucune saisie pour l'instant.
+            </p><p>
+                Enregistrez ici vos journées d'activité par mission, ainsi que vos congés.
+            </p>
+        </field>
+    </record>
+
+    <record id="hr_holidays.hr_leave_action_action_approve_department" model="ir.actions.act_window">
+        <field name="name">Saisies</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucune saisie à afficher.
+            </p><p>
+                Suivez ici les activités et les congés saisis par vos collaborateurs.
+            </p>
+        </field>
+    </record>
 </odoo>

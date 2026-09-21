@@ -21,6 +21,7 @@
         'data/hr_leave_type_data.xml',
         'views/hr_leave_views.xml',
         'views/menu_views.xml',
+        'views/hr_leave_report_calendar_views.xml',
         'views/hr_leave_reporting.xml',
     ],
     'assets': {
