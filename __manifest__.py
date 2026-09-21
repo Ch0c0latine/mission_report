@@ -28,6 +28,7 @@
         'web.assets_backend': [
             'mission_report/static/src/scss/mission_report.scss',
             'mission_report/static/src/js/translation_overrides.js',
+            'mission_report/static/src/js/presence_status.js',
         ],
     },
     'installable': True,
