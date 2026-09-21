@@ -363,7 +363,7 @@ class MissionActivityReportTemplate(models.Model):
         # Widths, frozen panes, printing.
         for column in label_columns:
             cell_map = line_columns.get(column)
-            width = 7 if cell_map and cell_map.value == 'total' else 28
+            width = 10 if cell_map and cell_map.value == 'total' else 28
             sheet.column_dimensions[get_column_letter(column)].width = width
         for column in day_columns:
             sheet.column_dimensions[get_column_letter(column)].width = 4.3
@@ -376,6 +376,7 @@ class MissionActivityReportTemplate(models.Model):
         sheet.page_margins.left = sheet.page_margins.right = 0.4
         sheet.page_margins.top = sheet.page_margins.bottom = 0.5
         sheet.print_options.horizontalCentered = True
+        sheet.print_area = "A1:%s%s" % (get_column_letter(last_column), box_top + 5)
 
         output = io.BytesIO()
         book.save(output)
@@ -462,6 +463,10 @@ class MissionActivityReportTemplate(models.Model):
                     for first, last in filled_rows:
                         for row in range(first, last + 1):
                             sheet.cell(row=row, column=column).fill = fill
+
+        # The blocks were resized: the print area follows the sheet's used
+        # range (hidden day columns are not printed).
+        sheet.print_area = "A1:%s%s" % (get_column_letter(sheet.max_column), sheet.max_row)
 
         output = io.BytesIO()
         book.save(output)
