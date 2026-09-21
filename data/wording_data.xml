@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Chargé en dernier, après les menus et actions renommés : voir
+         hr.leave._sync_renamed_records_translations. Rejoué à chaque mise à
+         jour du module. -->
+    <function model="hr.leave" name="_sync_renamed_records_translations"/>
+</odoo>

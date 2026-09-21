@@ -1,16 +1,22 @@
 # -*- coding: utf-8 -*-
+import re
+
 from markupsafe import Markup
 
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
+from odoo.tools import format_date
+from odoo.tools.translate import code_translations
 
 
 class HrLeave(models.Model):
     _inherit = 'hr.leave'
 
+    # "Type de saisie" : le type vaut "Activité" pour une mission. Le formulaire,
+    # où le champ n'apparaît qu'en mode congé, affiche "Congé".
     holiday_status_id = fields.Many2one(
         'hr.leave.type',
-        string='Congé',
+        string='Type de saisie',
         required=False,
         default=False,
     )
@@ -36,7 +42,7 @@ class HrLeave(models.Model):
     )
     entry_type = fields.Selection(
         [('mission', 'Mission'), ('leave', 'Congé')],
-        string='Type de saisie',
+        string='Nature de la saisie',
         compute='_compute_entry_type',
         readonly=False,
         help="Bascule entre une saisie de Mission (par défaut) et une saisie de Congé."
@@ -105,6 +111,17 @@ class HrLeave(models.Model):
 
     def _is_activity_leave_type(self, leave_type):
         return bool(leave_type) and leave_type.name == 'Activité'
+
+    def _get_mission_only_employees(self):
+        """Parmi ces saisies, les employés qui n'ont que des missions.
+
+        Un congé l'emporte sur une mission : il reste le motif d'absence à
+        afficher. Le critère mission est project_id : entry_type est calculé
+        et non stocké.
+        """
+        on_mission = self.filtered('project_id').employee_id
+        on_leave = self.filtered(lambda leave: not leave.project_id).employee_id
+        return on_mission - on_leave
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -195,9 +212,40 @@ class HrLeave(models.Model):
         self.ensure_one()
         return _("Activité créée")
 
+    # Posté par _validate_leave_request() à la validation, immédiate pour une
+    # mission. En français : "Votre Activité planifié le 2026-09-28 08:00:00 a
+    # été accepté" - accord masculin écrit pour un nom de congé, date brute.
+    _ACCEPTED_MESSAGE = 'Your %(leave_type)s planned on %(date)s has been accepted'
+
+    def _is_accepted_message(self, text):
+        # Le gabarit est lu dans le catalogue d'hr_holidays, dans la langue du
+        # message : la reconnaissance vaut quelle que soit la langue.
+        template = code_translations.get_python_translations('hr_holidays', self.env.lang or 'en_US').get(
+            self._ACCEPTED_MESSAGE, self._ACCEPTED_MESSAGE)
+        pattern = ''
+        for index, part in enumerate(re.split(r'%\((leave_type|date)\)s', template)):
+            if index % 2 == 0:
+                pattern += re.escape(part)
+            elif part == 'leave_type':
+                pattern += re.escape(self.holiday_status_id.display_name or '')
+            else:
+                pattern += '.+?'
+        return bool(re.fullmatch(pattern, text.strip()))
+
+    def _get_accepted_mission_message(self):
+        self.ensure_one()
+        date_from = format_date(self.env, self.request_date_from)
+        if self.request_date_to and self.request_date_to != self.request_date_from:
+            return _("Votre activité du %(date_from)s au %(date_to)s a été enregistrée",
+                     date_from=date_from, date_to=format_date(self.env, self.request_date_to))
+        return _("Votre activité du %(date)s a été enregistrée", date=date_from)
+
     def message_post(self, **kwargs):
         body = kwargs.get('body')
         if body:
+            if len(self) == 1 and self.project_id and self._is_accepted_message(str(body)):
+                kwargs['body'] = self._get_accepted_mission_message()
+                return super().message_post(**kwargs)
             rewritten = self._apply_activity_wording(str(body))
             if rewritten != str(body):
                 kwargs['body'] = Markup(rewritten) if isinstance(body, Markup) else rewritten
@@ -210,3 +258,89 @@ class HrLeave(models.Model):
                 record.dashboard_warning_message = self._apply_activity_wording(
                     record.dashboard_warning_message
                 )
+
+    # --- Vocabulaire : "congé" -> "activité" dans les autres applications ---
+    #
+    # À la validation, hr_holidays crée pour chaque saisie un événement dans
+    # l'application Calendrier et une absence dans le calendrier de ressources.
+    # Leurs noms sont construits en Python par hr_holidays : ils disent "congé"
+    # même pour une mission. On les renomme plutôt que de recopier les méthodes
+    # d'origine - si leur signature changeait, seul le nom resterait celui
+    # d'hr_holidays, sans rien casser.
+    #
+    # Le critère est project_id : entry_type est calculé et non stocké.
+
+    def _get_activity_meeting_name(self):
+        self.ensure_one()
+        return _(
+            "%(employee)s en activité : %(duration)s",
+            employee=self.employee_id.name,
+            duration=self.duration_display,
+        )
+
+    def _prepare_holidays_meeting_values(self):
+        values_by_user = super()._prepare_holidays_meeting_values()
+        missions = {leave.id: leave for leave in self if leave.project_id}
+        for meeting_values in values_by_user.values():
+            for values in meeting_values:
+                # res_id porte l'identifiant de la saisie d'origine.
+                leave = missions.get(values.get('res_id'))
+                if leave:
+                    values['name'] = leave._get_activity_meeting_name()
+        return values_by_user
+
+    def _prepare_resource_leave_vals(self):
+        values = super()._prepare_resource_leave_vals()
+        if self.project_id:
+            values['name'] = _("%s : activité", self.employee_id.name)
+        return values
+
+    # --- Vocabulaire : menus, actions et champs d'hr_holidays renommés par ce module ---
+    #
+    # Redéfinir en XML le nom d'un menu ou d'une action d'un autre module n'écrit
+    # que la valeur anglaise : la traduction française d'hr_holidays reste en
+    # place et l'emporte ("Mes congés", "Tous les congés" dans les menus et le
+    # fil d'Ariane). Même chose pour le libellé d'un champ redéfini en Python.
+    # On recopie donc, à chaque mise à jour du module, notre valeur vers les
+    # autres langues installées.
+    #
+    # Seuls les champs traduits d'un bloc sont concernés : les vues et les textes
+    # d'aide sont traduits par fragments, et nos textes n'y ont pas de traduction.
+    _RENAMED_RECORDS = (
+        # views/menu_views.xml
+        'hr_holidays.menu_hr_holidays_my_leaves',
+        'hr_holidays.menu_hr_holidays_dashboard',
+        'hr_holidays.menu_hr_holidays_management',
+        'hr_holidays.menu_hr_holidays_report',
+        'hr_holidays.menu_hr_holidays_configuration',
+        'hr_holidays.hr_leave_menu_my',
+        'hr_holidays.menu_open_department_leave_approve',
+        # views/hr_leave_views.xml
+        'hr_holidays.hr_leave_action_my',
+        'hr_holidays.hr_leave_action_action_approve_department',
+        # views/hr_leave_report_calendar_views.xml
+        'hr_holidays.action_hr_holidays_dashboard',
+    )
+    _RENAMED_FIELDS = (
+        # Titre du filtre du calendrier de saisie, qui ne lit que le libellé du
+        # champ : "Type de congés" d'hr_holidays.
+        ('hr.leave', 'holiday_status_id'),
+    )
+
+    @api.model
+    def _sync_renamed_records_translations(self):
+        langs = [code for code, _name in self.env['res.lang'].get_installed() if code != 'en_US']
+        if not langs:
+            return
+        for xmlid in self._RENAMED_RECORDS:
+            record = self.env.ref(xmlid, raise_if_not_found=False)
+            if not record:
+                continue
+            name = record.with_context(lang='en_US').name
+            record.update_field_translations('name', {lang: name for lang in langs})
+        for model_name, field_name in self._RENAMED_FIELDS:
+            field = self.env['ir.model.fields']._get(model_name, field_name)
+            description = field.with_context(lang='en_US').field_description
+            field.update_field_translations('field_description', {lang: description for lang in langs})
+        # Les libellés de champs sont mis en cache par le registre.
+        self.env.registry.clear_cache()

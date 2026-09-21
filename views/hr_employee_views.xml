@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Bouton "Congé" en haut de la fiche employé : il ouvre le calendrier des
+         saisies de l'employé, missions comprises. Le compteur de jours affiché
+         au-dessus, quand il y a des allocations, reste le solde de congés. -->
+    <record id="hr_employee_view_form_inherit_mission_report" model="ir.ui.view">
+        <field name="name">hr.employee.view.form.inherit.mission.report</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr_holidays.view_employee_form_leave_inherit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_time_off_dashboard']" position="attributes">
+                <attribute name="help">Activités et congés saisis par l'employé</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_time_off_dashboard']//span[hasclass('o_stat_text')]" position="replace">
+                <span class="o_stat_text">Activités</span>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -13,8 +13,11 @@
 import { translatedTerms, translatedTermsGlobal, translationIsReady } from "@web/core/l10n/translation";
 
 const OVERRIDES = {
-    // Titre du popup de saisie, passé par hr_holidays/static/src/views/calendar/calendar_controller.js
+    // Titres du popup de saisie, passés par
+    // hr_holidays/static/src/views/calendar/calendar_controller.js : le premier
+    // à l'ouverture d'une saisie existante, le second à la création.
     "Time Off Request": "Saisie d'activité",
+    "New Time Off": "Nouvelle saisie",
     // Boutons du pied de page du popup, définis dans
     // hr_holidays/static/src/views/view_dialog/form_view_dialog.xml
     "Submit Request": "Enregistrer",
