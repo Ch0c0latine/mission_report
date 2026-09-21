@@ -98,9 +98,8 @@
                 <field name="project_id" string="Mission" optional="show"/>
                 <field name="partner_id" string="Client" optional="hide"/>
             </xpath>
-            <xpath expr="//field[@name='holiday_status_id']" position="attributes">
-                <attribute name="string">Congé</attribute>
-            </xpath>
+            <!-- La colonne du type de saisie (Activité pour une mission) garde le
+                 libellé du champ : "Type de saisie". -->
             <!-- Hide "Nouveaux congés de groupe" header button -->
             <xpath expr="//header/button" position="attributes">
                 <attribute name="invisible">1</attribute>

@@ -8,9 +8,11 @@ from odoo.exceptions import ValidationError
 class HrLeave(models.Model):
     _inherit = 'hr.leave'
 
+    # "Type de saisie" : le type vaut "Activité" pour une mission. Le formulaire,
+    # où le champ n'apparaît qu'en mode congé, affiche "Congé".
     holiday_status_id = fields.Many2one(
         'hr.leave.type',
-        string='Congé',
+        string='Type de saisie',
         required=False,
         default=False,
     )
@@ -258,13 +260,14 @@ class HrLeave(models.Model):
             values['name'] = _("%s : activité", self.employee_id.name)
         return values
 
-    # --- Vocabulaire : menus et actions d'hr_holidays renommés par ce module ---
+    # --- Vocabulaire : menus, actions et champs d'hr_holidays renommés par ce module ---
     #
     # Redéfinir en XML le nom d'un menu ou d'une action d'un autre module n'écrit
     # que la valeur anglaise : la traduction française d'hr_holidays reste en
     # place et l'emporte ("Mes congés", "Tous les congés" dans les menus et le
-    # fil d'Ariane). On recopie donc, à chaque mise à jour du module, la valeur
-    # définie dans nos XML vers les autres langues installées.
+    # fil d'Ariane). Même chose pour le libellé d'un champ redéfini en Python.
+    # On recopie donc, à chaque mise à jour du module, notre valeur vers les
+    # autres langues installées.
     #
     # Seuls les champs traduits d'un bloc sont concernés : les vues et les textes
     # d'aide sont traduits par fragments, et nos textes n'y ont pas de traduction.
@@ -283,6 +286,11 @@ class HrLeave(models.Model):
         # views/hr_leave_report_calendar_views.xml
         'hr_holidays.action_hr_holidays_dashboard',
     )
+    _RENAMED_FIELDS = (
+        # Titre du filtre du calendrier de saisie, qui ne lit que le libellé du
+        # champ : "Type de congés" d'hr_holidays.
+        ('hr.leave', 'holiday_status_id'),
+    )
 
     @api.model
     def _sync_renamed_records_translations(self):
@@ -295,3 +303,9 @@ class HrLeave(models.Model):
                 continue
             name = record.with_context(lang='en_US').name
             record.update_field_translations('name', {lang: name for lang in langs})
+        for model_name, field_name in self._RENAMED_FIELDS:
+            field = self.env['ir.model.fields']._get(model_name, field_name)
+            description = field.with_context(lang='en_US').field_description
+            field.update_field_translations('field_description', {lang: description for lang in langs})
+        # Les libellés de champs sont mis en cache par le registre.
+        self.env.registry.clear_cache()
