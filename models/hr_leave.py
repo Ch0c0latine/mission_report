@@ -210,3 +210,39 @@ class HrLeave(models.Model):
                 record.dashboard_warning_message = self._apply_activity_wording(
                     record.dashboard_warning_message
                 )
+
+    # --- Vocabulaire : "congé" -> "activité" dans les autres applications ---
+    #
+    # À la validation, hr_holidays crée pour chaque saisie un événement dans
+    # l'application Calendrier et une absence dans le calendrier de ressources.
+    # Leurs noms sont construits en Python par hr_holidays : ils disent "congé"
+    # même pour une mission. On les renomme plutôt que de recopier les méthodes
+    # d'origine - si leur signature changeait, seul le nom resterait celui
+    # d'hr_holidays, sans rien casser.
+    #
+    # Le critère est project_id : entry_type est calculé et non stocké.
+
+    def _get_activity_meeting_name(self):
+        self.ensure_one()
+        return _(
+            "%(employee)s en activité : %(duration)s",
+            employee=self.employee_id.name,
+            duration=self.duration_display,
+        )
+
+    def _prepare_holidays_meeting_values(self):
+        values_by_user = super()._prepare_holidays_meeting_values()
+        missions = {leave.id: leave for leave in self if leave.project_id}
+        for meeting_values in values_by_user.values():
+            for values in meeting_values:
+                # res_id porte l'identifiant de la saisie d'origine.
+                leave = missions.get(values.get('res_id'))
+                if leave:
+                    values['name'] = leave._get_activity_meeting_name()
+        return values_by_user
+
+    def _prepare_resource_leave_vals(self):
+        values = super()._prepare_resource_leave_vals()
+        if self.project_id:
+            values['name'] = _("%s : activité", self.employee_id.name)
+        return values
