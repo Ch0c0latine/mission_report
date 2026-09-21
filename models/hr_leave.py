@@ -106,6 +106,17 @@ class HrLeave(models.Model):
     def _is_activity_leave_type(self, leave_type):
         return bool(leave_type) and leave_type.name == 'Activité'
 
+    def _get_mission_only_employees(self):
+        """Parmi ces saisies, les employés qui n'ont que des missions.
+
+        Un congé l'emporte sur une mission : il reste le motif d'absence à
+        afficher. Le critère mission est project_id : entry_type est calculé
+        et non stocké.
+        """
+        on_mission = self.filtered('project_id').employee_id
+        on_leave = self.filtered(lambda leave: not leave.project_id).employee_id
+        return on_mission - on_leave
+
     @api.model_create_multi
     def create(self, vals_list):
         activity_type = self._get_default_activity_leave_type()

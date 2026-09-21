@@ -27,12 +27,14 @@
         'views/menu_views.xml',
         'views/hr_leave_report_calendar_views.xml',
         'views/hr_leave_reporting.xml',
+        'views/hr_employee_views.xml',
     ],
     'assets': {
         'web.assets_backend': [
             'mission_report/static/src/scss/mission_report.scss',
             'mission_report/static/src/js/translation_overrides.js',
             'mission_report/static/src/js/presence_status.js',
+            'mission_report/static/src/xml/avatar_card_resource_popover.xml',
         ],
     },
     'installable': True,
