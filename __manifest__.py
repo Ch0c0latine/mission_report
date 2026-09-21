@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Activité',
-    'version': '19.0.1.1.1',
+    'version': '19.0.1.2.0',
     'summary': 'Activity and mission reports by project based on leaves logic',
     'description': """
         Module mission_report adapting hr_holidays logic for activity and mission reporting by project.
@@ -12,6 +12,7 @@
     'license': 'LGPL-3',
     'depends': [
         'base',
+        'mail',
         'hr',
         'hr_holidays',
         # Pont auto-installé avec hr_holidays. Il patche lui aussi le badge de
@@ -28,6 +29,10 @@
         'views/hr_leave_report_calendar_views.xml',
         'views/hr_leave_reporting.xml',
         'views/hr_employee_views.xml',
+        'security/activity_report_security.xml',
+        'report/activity_report.xml',
+        'views/activity_report_views.xml',
+        'data/activity_report_template_data.xml',
         'data/wording_data.xml',
     ],
     'assets': {
