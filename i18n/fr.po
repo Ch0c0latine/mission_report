@@ -324,6 +324,8 @@ msgid "Christmas Day"
 msgstr "Noël"
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
 #: model:ir.model.fields,field_description:mission_report.field_hr_leave__partner_id
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__client
 #: model_terms:ir.ui.view,arch_db:mission_report.activity_report_grid
@@ -370,6 +372,8 @@ msgid "Column or cell"
 msgstr "Colonne ou cellule"
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__company_id
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__company_id
 #: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__company_id
@@ -484,6 +488,8 @@ msgid "Easter Monday"
 msgstr "Lundi de Pâques"
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
 #: model:ir.model,name:mission_report.model_hr_employee
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__employee_id
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__employee
@@ -741,6 +747,8 @@ msgid "Messages"
 msgstr "Messages"
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
 #: model:ir.model.fields,field_description:mission_report.field_hr_leave__project_id
 #: model:ir.model.fields.selection,name:mission_report.selection__hr_leave__entry_type__mission
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__project
@@ -752,6 +760,8 @@ msgid "Mission"
 msgstr "Mission"
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__mission_days
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__mission_total
 msgid "Mission days"
@@ -768,6 +778,8 @@ msgid "Missions uniquement"
 msgstr ""
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__date_from
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_search
 msgid "Month"
@@ -1059,6 +1071,8 @@ msgid "St. Stephen's Day"
 msgstr "Saint-Étienne"
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__state
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__status
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_search
@@ -1066,6 +1080,8 @@ msgid "Status"
 msgstr "Statut"
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__submit_date
 msgid "Submission date"
 msgstr "Date de soumission"
@@ -1172,12 +1188,16 @@ msgid "Time off"
 msgstr "Absences"
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__absence_days
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__absence_total
 msgid "Time off days"
 msgstr "Jours de congé"
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__leave_type
 msgid "Time off type"
 msgstr "Type de congé"
@@ -1249,6 +1269,8 @@ msgid "Validated on %s"
 msgstr "Validé le %s"
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__validate_date
 msgid "Validation date"
 msgstr "Date de validation"
@@ -1315,6 +1337,8 @@ msgid "Whit Monday"
 msgstr "Lundi de Pentecôte"
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__potential_days
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__potential_days
 msgid "Working days"
@@ -1360,7 +1384,6 @@ msgstr "« %s » : une lettre de colonne (A) ou une cellule (B3)."
 msgid "“Day 1 column” takes a column letter, such as D."
 msgstr "« Colonne du jour 1 » attend une lettre de colonne, par exemple D."
 
-
 #. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report.py:0
@@ -1400,3 +1423,4 @@ msgstr "Classeur fabriqué par le module"
 #: model:ir.model.fields,help:mission_report.field_mission_activity_report_template__file_generated
 msgid "The workbook is the module's blank one: module updates remake it."
 msgstr "Le classeur est celui fabriqué par le module : les mises à jour du module le refont."
+
