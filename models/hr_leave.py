@@ -38,7 +38,7 @@ class HrLeave(models.Model):
     )
     entry_type = fields.Selection(
         [('mission', 'Mission'), ('leave', 'Congé')],
-        string='Type de saisie',
+        string='Nature de la saisie',
         compute='_compute_entry_type',
         readonly=False,
         help="Bascule entre une saisie de Mission (par défaut) et une saisie de Congé."
