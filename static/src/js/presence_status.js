@@ -60,10 +60,16 @@ const activityPatch = () => ({
     },
 });
 
-// Les variantes "pill" redéfinissent la couleur en classes de bouton.
+// Les variantes "pill" redéfinissent la couleur en classes de bouton. Le
+// libellé est aussi redéfini directement sur la variante privée (fiche
+// employé), par hr_holidays et hr_holidays_homeworking : celui hérité de
+// HrPresenceStatus n'y est donc jamais consulté.
 const activityPillPatch = () => ({
     get color() {
         return this.value === ACTIVITY ? "btn-outline-success" : super.color;
+    },
+    get label() {
+        return this.value === ACTIVITY ? activityLabel(this.props.record) : super.label;
     },
 });
 
