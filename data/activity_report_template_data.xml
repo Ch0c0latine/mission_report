@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Neutral templates: every useful value, in a blank workbook made at
+         installation. Download it, lay it out to the company's style, then
+         upload it back - or duplicate it for a client. -->
+    <data noupdate="1">
+        <record id="activity_report_template_internal" model="mission.activity.report.template">
+            <field name="name">Activity report (internal)</field>
+            <field name="sequence">1</field>
+            <field name="kind">internal</field>
+            <field name="first_day_column">D</field>
+            <field name="week_row">7</field>
+            <field name="day_row">8</field>
+            <field name="weekday_row">9</field>
+            <field name="mission_first_row">10</field>
+            <field name="mission_last_row">12</field>
+            <field name="absence_first_row">14</field>
+            <field name="absence_last_row">15</field>
+            <field name="note">Workbook shipped with the module: download it from the “Excel file” field, lay it out (logo, colours, extra rows), then upload it back. Keep the day columns side by side from “Day 1 column” on, and the total line right below the time off lines: the export adds or removes lines and the totals follow. “Blank workbook” makes a new one after the settings and mappings.</field>
+        </record>
+        <record id="activity_report_template_internal_employee" model="mission.activity.report.template.cell">
+            <field name="template_id" ref="activity_report_template_internal"/>
+            <field name="cell">B3</field>
+            <field name="value">employee</field>
+        </record>
+        <record id="activity_report_template_internal_month" model="mission.activity.report.template.cell">
+            <field name="template_id" ref="activity_report_template_internal"/>
+            <field name="cell">B4</field>
+            <field name="value">month_label</field>
+        </record>
+        <record id="activity_report_template_internal_potential" model="mission.activity.report.template.cell">
+            <field name="template_id" ref="activity_report_template_internal"/>
+            <field name="cell">B5</field>
+            <field name="value">potential_days</field>
+        </record>
+        <record id="activity_report_template_internal_status" model="mission.activity.report.template.cell">
+            <field name="template_id" ref="activity_report_template_internal"/>
+            <field name="cell">H3</field>
+            <field name="value">status</field>
+        </record>
+        <record id="activity_report_template_internal_total" model="mission.activity.report.template.cell">
+            <field name="template_id" ref="activity_report_template_internal"/>
+            <field name="cell">H4</field>
+            <field name="value">total</field>
+        </record>
+        <record id="activity_report_template_internal_client" model="mission.activity.report.template.cell">
+            <field name="template_id" ref="activity_report_template_internal"/>
+            <field name="cell">A</field>
+            <field name="block">mission</field>
+            <field name="value">client</field>
+        </record>
+        <record id="activity_report_template_internal_project" model="mission.activity.report.template.cell">
+            <field name="template_id" ref="activity_report_template_internal"/>
+            <field name="cell">B</field>
+            <field name="block">mission</field>
+            <field name="value">project</field>
+        </record>
+        <record id="activity_report_template_internal_leave_type" model="mission.activity.report.template.cell">
+            <field name="template_id" ref="activity_report_template_internal"/>
+            <field name="cell">A</field>
+            <field name="block">absence</field>
+            <field name="value">leave_type</field>
+        </record>
+        <record id="activity_report_template_internal_line_total" model="mission.activity.report.template.cell">
+            <field name="template_id" ref="activity_report_template_internal"/>
+            <field name="cell">C</field>
+            <field name="block">both</field>
+            <field name="value">total</field>
+        </record>
+
+        <record id="activity_report_template_client" model="mission.activity.report.template">
+            <field name="name">Activity report (client)</field>
+            <field name="sequence">2</field>
+            <field name="kind">client</field>
+            <field name="first_day_column">D</field>
+            <field name="week_row">7</field>
+            <field name="day_row">8</field>
+            <field name="weekday_row">9</field>
+            <field name="mission_first_row">10</field>
+            <field name="mission_last_row">12</field>
+            <field name="note">Exported once per client of the month, with that client's missions only.</field>
+        </record>
+        <record id="activity_report_template_client_employee" model="mission.activity.report.template.cell">
+            <field name="template_id" ref="activity_report_template_client"/>
+            <field name="cell">B3</field>
+            <field name="value">employee</field>
+        </record>
+        <record id="activity_report_template_client_month" model="mission.activity.report.template.cell">
+            <field name="template_id" ref="activity_report_template_client"/>
+            <field name="cell">B4</field>
+            <field name="value">month_label</field>
+        </record>
+        <record id="activity_report_template_client_potential" model="mission.activity.report.template.cell">
+            <field name="template_id" ref="activity_report_template_client"/>
+            <field name="cell">B5</field>
+            <field name="value">potential_days</field>
+        </record>
+        <record id="activity_report_template_client_status" model="mission.activity.report.template.cell">
+            <field name="template_id" ref="activity_report_template_client"/>
+            <field name="cell">H3</field>
+            <field name="value">status</field>
+        </record>
+        <record id="activity_report_template_client_partner" model="mission.activity.report.template.cell">
+            <field name="template_id" ref="activity_report_template_client"/>
+            <field name="cell">H4</field>
+            <field name="value">client</field>
+        </record>
+        <record id="activity_report_template_client_total" model="mission.activity.report.template.cell">
+            <field name="template_id" ref="activity_report_template_client"/>
+            <field name="cell">H5</field>
+            <field name="value">mission_total</field>
+        </record>
+        <record id="activity_report_template_client_client" model="mission.activity.report.template.cell">
+            <field name="template_id" ref="activity_report_template_client"/>
+            <field name="cell">A</field>
+            <field name="block">mission</field>
+            <field name="value">client</field>
+        </record>
+        <record id="activity_report_template_client_project" model="mission.activity.report.template.cell">
+            <field name="template_id" ref="activity_report_template_client"/>
+            <field name="cell">B</field>
+            <field name="block">mission</field>
+            <field name="value">project</field>
+        </record>
+        <record id="activity_report_template_client_line_total" model="mission.activity.report.template.cell">
+            <field name="template_id" ref="activity_report_template_client"/>
+            <field name="cell">C</field>
+            <field name="block">mission</field>
+            <field name="value">total</field>
+        </record>
+    </data>
+
+    <!-- Blank workbook of the shipped templates, once. -->
+    <function model="mission.activity.report.template" name="_fill_blank_files"/>
+</odoo>

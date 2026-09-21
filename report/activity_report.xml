@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="paperformat_activity_report" model="report.paperformat">
+        <field name="name">Activity report (A4 landscape)</field>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">28</field>
+        <field name="margin_bottom">18</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">22</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_activity_internal" model="ir.actions.report">
+        <field name="name">Activity report (internal)</field>
+        <field name="model">mission.activity.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">mission_report.report_activity_internal</field>
+        <field name="report_file">mission_report.report_activity_internal</field>
+        <field name="print_report_name">'%s' % object.name</field>
+        <field name="paperformat_id" ref="paperformat_activity_report"/>
+        <field name="binding_model_id" ref="model_mission_activity_report"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <record id="action_report_activity_client" model="ir.actions.report">
+        <field name="name">Activity report (client)</field>
+        <field name="model">mission.activity.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">mission_report.report_activity_client</field>
+        <field name="report_file">mission_report.report_activity_client</field>
+        <field name="print_report_name">'%s - client' % object.name</field>
+        <field name="paperformat_id" ref="paperformat_activity_report"/>
+        <field name="binding_model_id" ref="model_mission_activity_report"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- The month grid. Shared by the PDF reports and the form preview.
+         data: see mission.activity.report._get_render_data.
+         lines: 'all' (missions and time off) or 'missions'.
+         preview: rendered in the form, where the html field shows it in an
+         iframe without Odoo's styles: the font must then be set here. In the
+         PDF, the grid keeps the company's report font. -->
+    <template id="activity_report_grid">
+        <style>
+            .o_activity_preview { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, "Noto Sans", Arial, sans-serif; color: #212529; }
+            .o_activity_preview .o_activity_grid { font-size: 12px; }
+            .o_activity_grid { border-collapse: collapse; width: 100%; font-size: 10.5px; color: #212529; table-layout: fixed; }
+            .o_activity_grid td, .o_activity_grid th { border: 1px solid #A6A6A6; padding: 2px 1px; text-align: center; font-weight: normal; }
+            .o_activity_grid th { font-weight: 600; }
+            .o_activity_grid .o_label { text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .o_activity_grid .o_weekend { background-color: #D9D9D9; }
+            .o_activity_grid .o_holiday { background-color: #FFF2CC; }
+            .o_activity_grid .o_absence { background-color: #C6EFCE; }
+            .o_activity_grid .o_section { font-weight: 600; }
+            .o_activity_grid .o_total td { font-weight: 600; }
+            .o_activity_legend span { display: inline-block; width: 28px; height: 10px; border: 1px solid #808080; vertical-align: middle; margin: 0 4px 0 12px; }
+        </style>
+        <t t-set="show_absences" t-value="lines == 'all'"/>
+        <t t-set="days" t-value="data['days']"/>
+        <!-- Fixed layout: every day column gets the same width, whatever its
+             content ("10", "D", "1"...). -->
+        <t t-set="day_width" t-value="str(round(64.0 / len(days), 3))"/>
+        <div t-att-class="'o_activity_preview' if preview else None">
+        <table class="o_activity_grid">
+            <colgroup>
+                <col style="width: 17%;"/>
+                <col style="width: 15%;"/>
+                <col style="width: 4%;"/>
+                <col t-foreach="days" t-as="day" t-attf-style="width: {{day_width}}%;"/>
+            </colgroup>
+            <tr>
+                <td colspan="3" class="o_label" style="border: none; text-align: right;">Week</td>
+                <td t-foreach="data['weeks']" t-as="week" t-att-colspan="week['span']" style="text-align: left;" t-out="week['week']"/>
+            </tr>
+            <tr>
+                <td colspan="3" style="border: none; text-align: right;">Day</td>
+                <th t-foreach="days" t-as="day"
+                    t-attf-class="#{'o_weekend' if day['weekend'] else ('o_holiday' if day['holiday'] else ('o_absence' if day['absence'] and show_absences else ''))}"
+                    t-att-title="day['holiday'] or None" t-out="day['day']"/>
+            </tr>
+            <tr>
+                <th>Client</th>
+                <th>Mission</th>
+                <th>Total</th>
+                <th t-foreach="days" t-as="day"
+                    t-attf-class="#{'o_weekend' if day['weekend'] else ('o_holiday' if day['holiday'] else ('o_absence' if day['absence'] and show_absences else ''))}"
+                    t-out="day['weekday_label']"/>
+            </tr>
+            <tr t-foreach="data['missions']" t-as="line">
+                <td class="o_label" t-out="line['partner']"/>
+                <td class="o_label" t-out="line['project']"/>
+                <td t-out="format_days(line['total'])"/>
+                <td t-foreach="days" t-as="day"
+                    t-attf-class="#{'o_weekend' if day['weekend'] else ('o_holiday' if day['holiday'] else ('o_absence' if day['absence'] and show_absences else ''))}"
+                    t-out="format_days(line['values'][day_index])"/>
+            </tr>
+            <tr t-if="not data['missions']">
+                <td colspan="3" class="o_label"><i>No mission this month.</i></td>
+                <td t-foreach="days" t-as="day"
+                    t-attf-class="#{'o_weekend' if day['weekend'] else ('o_holiday' if day['holiday'] else '')}"/>
+            </tr>
+            <t t-if="show_absences">
+                <tr>
+                    <td colspan="3" class="o_section">Time off</td>
+                    <td t-att-colspan="len(days)" style="border-left: none; border-right: none;"/>
+                </tr>
+                <tr t-foreach="data['absences']" t-as="line">
+                    <td colspan="2" class="o_label" t-out="line['label']"/>
+                    <td t-out="format_days(line['total'])"/>
+                    <td t-foreach="days" t-as="day"
+                        t-attf-class="#{'o_weekend' if day['weekend'] else ('o_holiday' if day['holiday'] else ('o_absence' if day['absence'] else ''))}"
+                        t-out="format_days(line['values'][day_index])"/>
+                </tr>
+            </t>
+            <tr class="o_total">
+                <td colspan="2">Total</td>
+                <td t-out="format_days(data['mission_total'] + (data['absence_total'] if show_absences else 0))"/>
+                <td t-foreach="days" t-as="day"
+                    t-attf-class="#{'o_weekend' if day['weekend'] else ('o_holiday' if day['holiday'] else ('o_absence' if day['absence'] and show_absences else ''))}"
+                    t-out="format_days((data['totals'] if show_absences else data['mission_totals'])[day_index])"/>
+            </tr>
+        </table>
+        </div>
+    </template>
+
+    <!-- One report page: header, legend, grid, signatures. -->
+    <template id="activity_report_page">
+        <t t-call="web.external_layout">
+            <div class="page">
+                <h4 class="text-center">Monthly activity report</h4>
+                <div class="row mt-2" style="font-size: 12px;">
+                    <div class="col-3"><strong>Employee: </strong><span t-out="data['employee']"/></div>
+                    <div class="col-3"><strong>Month: </strong><span t-out="data['month_label']"/></div>
+                    <div class="col-2"><strong>Working days: </strong><span t-out="format_days(data['potential_days'])"/></div>
+                    <div class="col-4"><strong>Status: </strong><span t-out="data['status']"/></div>
+                </div>
+                <div t-if="lines == 'missions'" class="row" style="font-size: 12px;">
+                    <div class="col-12"><strong>Client: </strong><span t-out="data.get('partner') or ''"/></div>
+                </div>
+                <div class="o_activity_legend mt-2 mb-2" style="font-size: 10px;">
+                    <span class="o_weekend" style="background-color: #D9D9D9;"/>Weekend
+                    <span class="o_holiday" style="background-color: #FFF2CC;"/>Public holiday
+                    <t t-if="lines == 'all'"><span class="o_absence" style="background-color: #C6EFCE;"/>Time off</t>
+                </div>
+                <t t-call="mission_report.activity_report_grid"/>
+                <div class="row mt-4" style="font-size: 11px;">
+                    <div class="col-4 offset-1" style="border: 1px solid #000; height: 110px; padding: 4px;">
+                        <strong>Manager signature</strong>
+                    </div>
+                    <div class="col-4 offset-1" style="border: 1px solid #000; height: 110px; padding: 4px;">
+                        <strong>Employee signature</strong>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_activity_internal">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="format_days" t-value="o._format_days"/>
+                <t t-set="data" t-value="o._get_render_data()"/>
+                <t t-set="lines" t-value="'all'"/>
+                <t t-call="mission_report.activity_report_page"/>
+            </t>
+        </t>
+    </template>
+
+    <!-- One page per client of the month, with that client's missions only. -->
+    <template id="report_activity_client">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="format_days" t-value="o._format_days"/>
+                <t t-foreach="o._get_client_partner_ids() or [False]" t-as="partner_id">
+                    <t t-set="data" t-value="o._get_render_data(partner_id=partner_id)"/>
+                    <t t-set="lines" t-value="'missions'"/>
+                    <t t-call="mission_report.activity_report_page"/>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
