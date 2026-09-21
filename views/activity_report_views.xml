@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Activity reports -->
+    <record id="mission_activity_report_view_list" model="ir.ui.view">
+        <field name="name">mission.activity.report.list</field>
+        <field name="model">mission.activity.report</field>
+        <field name="arch" type="xml">
+            <list string="Activity reports">
+                <field name="employee_id" widget="many2one_avatar_employee"/>
+                <field name="date_from" widget="date" options="{'format': 'MM/yyyy'}"/>
+                <field name="potential_days" optional="show"/>
+                <field name="mission_days" optional="show"/>
+                <field name="absence_days" optional="show"/>
+                <field name="submit_date" optional="hide"/>
+                <field name="validate_date" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'submitted'" decoration-success="state == 'validated'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="mission_activity_report_view_form" model="ir.ui.view">
+        <field name="name">mission.activity.report.form</field>
+        <field name="model">mission.activity.report</field>
+        <field name="arch" type="xml">
+            <form string="Activity report">
+                <header>
+                    <button name="action_submit" type="object" string="Submit" class="btn-primary"
+                            invisible="state != 'draft' or not id"/>
+                    <button name="action_validate" type="object" string="Validate" class="btn-primary"
+                            invisible="state != 'submitted'"/>
+                    <button name="action_reset_to_draft" type="object" string="Back to draft"
+                            invisible="state == 'draft'"
+                            confirm="The report goes back to the employee, who can correct and submit it again."/>
+                    <button name="%(mission_report.action_report_activity_internal)d" type="action"
+                            string="Export PDF" invisible="not id"/>
+                    <button name="%(mission_report.action_report_activity_client)d" type="action"
+                            string="Export client PDF" invisible="not id"/>
+                    <button name="action_open_export" type="object" string="Export to Excel"
+                            invisible="not id"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="employee_id" readonly="state != 'draft'"/>
+                            <field name="date_from" readonly="state != 'draft'"
+                                   options="{'format': 'MM/yyyy'}"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="potential_days"/>
+                            <field name="mission_days"/>
+                            <field name="absence_days"/>
+                        </group>
+                        <group>
+                            <field name="submit_date" invisible="not submit_date"/>
+                            <field name="submitted_by_id" invisible="not submitted_by_id"/>
+                        </group>
+                        <group>
+                            <field name="validate_date" invisible="not validate_date"/>
+                            <field name="validated_by_id" invisible="not validated_by_id"/>
+                        </group>
+                    </group>
+                    <div invisible="state != 'validated'" class="alert alert-info" role="status">
+                        This report shows the figures it was validated with. Put it back to draft to
+                        take later changes to the entries into account.
+                    </div>
+                    <field name="preview_html" nolabel="1" readonly="1"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="mission_activity_report_view_search" model="ir.ui.view">
+        <field name="name">mission.activity.report.search</field>
+        <field name="model">mission.activity.report</field>
+        <field name="arch" type="xml">
+            <search string="Activity reports">
+                <field name="employee_id"/>
+                <filter name="my_reports" string="My reports" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="submitted" string="To validate" domain="[('state', '=', 'submitted')]"/>
+                <filter name="validated" string="Validated" domain="[('state', '=', 'validated')]"/>
+                <separator/>
+                <filter name="date_from" string="Month" date="date_from"/>
+                <group>
+                    <filter name="groupby_employee" string="Employee" context="{'group_by': 'employee_id'}"/>
+                    <filter name="groupby_month" string="Month" context="{'group_by': 'date_from:month'}"/>
+                    <filter name="groupby_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_mission_activity_report_my" model="ir.actions.act_window">
+        <field name="name">My activity reports</field>
+        <field name="res_model">mission.activity.report</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('user_id', '=', uid)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No activity report yet.</p>
+            <p>Create the report of a month: it gathers your missions and time off day by day.
+               Submit it for validation once the month is complete.</p>
+        </field>
+    </record>
+
+    <record id="action_mission_activity_report_all" model="ir.actions.act_window">
+        <field name="name">Activity reports</field>
+        <field name="res_model">mission.activity.report</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_submitted': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No activity report to show.</p>
+        </field>
+    </record>
+
+    <!-- Excel templates -->
+    <record id="mission_activity_report_template_view_list" model="ir.ui.view">
+        <field name="name">mission.activity.report.template.list</field>
+        <field name="model">mission.activity.report.template</field>
+        <field name="arch" type="xml">
+            <list string="Activity report templates">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="kind"/>
+                <field name="filename"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="mission_activity_report_template_view_form" model="ir.ui.view">
+        <field name="name">mission.activity.report.template.form</field>
+        <field name="model">mission.activity.report.template</field>
+        <field name="arch" type="xml">
+            <form string="Activity report template">
+                <header>
+                    <button name="action_generate_file" type="object" string="Blank workbook"
+                            confirm="This replaces the template's Excel file with a blank workbook laid out after the settings below."/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="e.g. Client report"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="kind"/>
+                            <field name="file" filename="filename"/>
+                            <field name="filename" invisible="1"/>
+                            <field name="sheet_name"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group string="Month grid">
+                            <field name="first_day_column"/>
+                            <field name="week_row"/>
+                            <field name="day_row"/>
+                            <field name="weekday_row"/>
+                            <field name="mission_first_row"/>
+                            <field name="mission_last_row"/>
+                            <field name="absence_first_row" invisible="kind == 'client'"/>
+                            <field name="absence_last_row" invisible="kind == 'client' or not absence_first_row"/>
+                        </group>
+                        <group string="Colours">
+                            <field name="color_days"/>
+                            <field name="weekend_color" invisible="not color_days"/>
+                            <field name="holiday_color" invisible="not color_days"/>
+                            <field name="absence_color" invisible="not color_days or kind == 'client'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Mappings" name="mappings">
+                            <field name="cell_ids">
+                                <list editable="bottom">
+                                    <field name="cell"/>
+                                    <field name="kind"/>
+                                    <field name="block" invisible="kind == 'header'"/>
+                                    <field name="value"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note" placeholder="How to adapt this template…"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mission_activity_report_template" model="ir.actions.act_window">
+        <field name="name">Activity report templates</field>
+        <field name="res_model">mission.activity.report.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No Excel template.</p>
+            <p>Download a template's workbook, lay it out in Excel or LibreOffice, then upload it back.</p>
+        </field>
+    </record>
+
+    <!-- Export wizard -->
+    <record id="mission_activity_report_export_view_form" model="ir.ui.view">
+        <field name="name">mission.activity.report.export.form</field>
+        <field name="model">mission.activity.report.export</field>
+        <field name="arch" type="xml">
+            <form string="Export to Excel">
+                <group>
+                    <field name="template_id"/>
+                    <field name="report_ids" widget="many2many_tags" readonly="1"/>
+                </group>
+                <footer>
+                    <button name="action_export" type="object" string="Export" class="btn-primary"/>
+                    <button special="cancel" string="Discard"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mission_activity_report_export" model="ir.actions.act_window">
+        <field name="name">Export to Excel</field>
+        <field name="res_model">mission.activity.report.export</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="model_mission_activity_report"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="context">{'default_report_ids': active_ids}</field>
+    </record>
+
+    <!-- Public holidays wizard -->
+    <record id="mission_public_holiday_wizard_view_form" model="ir.ui.view">
+        <field name="name">mission.public.holiday.wizard.form</field>
+        <field name="model">mission.public.holiday.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Generate French public holidays">
+                <group>
+                    <field name="year" options="{'format': false}"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <field name="alsace_moselle"/>
+                </group>
+                <div class="alert alert-warning" role="alert">
+                    Odoo recomputes the entries a new public holiday overlaps: their duration
+                    decreases, and an entry left without any day is refused.
+                </div>
+                <footer>
+                    <button name="action_generate" type="object" string="Generate" class="btn-primary"/>
+                    <button special="cancel" string="Discard"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mission_public_holiday_wizard" model="ir.actions.act_window">
+        <field name="name">Generate French public holidays</field>
+        <field name="res_model">mission.public.holiday.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Menus -->
+    <menuitem id="menu_mission_activity_report_my"
+              name="My activity reports"
+              parent="hr_holidays.menu_hr_holidays_my_leaves"
+              action="action_mission_activity_report_my"
+              sequence="5"/>
+    <menuitem id="menu_mission_activity_report_all"
+              name="Activity reports"
+              parent="hr_holidays.menu_hr_holidays_management"
+              action="action_mission_activity_report_all"
+              groups="hr_holidays.group_hr_holidays_user"
+              sequence="3"/>
+    <menuitem id="menu_mission_activity_report_template"
+              name="Activity report templates"
+              parent="hr_holidays.menu_hr_holidays_configuration"
+              action="action_mission_activity_report_template"
+              groups="hr_holidays.group_hr_holidays_manager"
+              sequence="90"/>
+    <menuitem id="menu_mission_public_holiday_wizard"
+              name="Generate French public holidays"
+              parent="hr_holidays.menu_hr_holidays_configuration"
+              action="action_mission_public_holiday_wizard"
+              groups="hr_holidays.group_hr_holidays_manager"
+              sequence="91"/>
+</odoo>

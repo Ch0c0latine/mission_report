@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Employees see their own reports, and those they approve or manage. -->
+    <record id="mission_activity_report_rule_user" model="ir.rule">
+        <field name="name">Activity reports: own, approved or managed</field>
+        <field name="model_id" ref="model_mission_activity_report"/>
+        <field name="domain_force">['|', '|',
+            ('employee_id.user_id', '=', user.id),
+            ('employee_id.leave_manager_id', '=', user.id),
+            ('employee_id.parent_id.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!-- Time off officers see every report. -->
+    <record id="mission_activity_report_rule_officer" model="ir.rule">
+        <field name="name">Activity reports: all</field>
+        <field name="model_id" ref="model_mission_activity_report"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('hr_holidays.group_hr_holidays_user'))]"/>
+    </record>
+
+    <record id="mission_activity_report_rule_company" model="ir.rule">
+        <field name="name">Activity reports: allowed companies</field>
+        <field name="model_id" ref="model_mission_activity_report"/>
+        <field name="global" eval="True"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>
