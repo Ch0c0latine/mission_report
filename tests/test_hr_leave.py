@@ -60,8 +60,21 @@ class TestHrLeaveMissionReport(TransactionCase):
         })
         self.assertEqual(leave.partner_id, self.partner)
 
-        leave.write({'project_id': False, 'holiday_status_id': self.leave_type.id})
-        self.assertFalse(leave.partner_id)
+        # Changer de mission doit faire suivre le client. On ne bascule pas vers
+        # un congé ici : cela changerait le type, donc les dates, ce qu'hr_holidays
+        # interdit sur une saisie validée - et une mission l'est dès sa création.
+        other_partner = self.env['res.partner'].create({'name': 'Other Client'})
+        other_project = self.env['project.project'].create({
+            'name': 'Other Project',
+            'partner_id': other_partner.id,
+        })
+        self.env['project.task'].create({
+            'name': 'Other Task',
+            'project_id': other_project.id,
+            'user_ids': [(6, 0, [self.user.id])],
+        })
+        leave.write({'project_id': other_project.id})
+        self.assertEqual(leave.partner_id, other_partner)
 
     def test_entry_type_defaults_to_mission_for_new_record(self):
         leave = self.env['hr.leave'].new({})
