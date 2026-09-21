@@ -101,6 +101,12 @@ class MissionActivityReport(models.Model):
                 {'data': report._get_render_data(), 'lines': 'all',
                  'format_days': report._format_days})
 
+    def _creation_message(self):
+        # The native one is "<model description> created", with no agreement
+        # in French.
+        self.ensure_one()
+        return _("Activity report created")
+
     # ------------------------------------------------------------------
     # The month is always stored as its first day.
     # ------------------------------------------------------------------
