@@ -14,6 +14,10 @@
         'base',
         'hr',
         'hr_holidays',
+        # Pont auto-installé avec hr_holidays. Il patche lui aussi le badge de
+        # présence : en dépendre charge notre patch après le sien, sans quoi il
+        # affiche l'avion pour toute valeur contenant "holiday".
+        'hr_holidays_homeworking',
         'project',
     ],
     'data': [
