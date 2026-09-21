@@ -257,3 +257,41 @@ class HrLeave(models.Model):
         if self.project_id:
             values['name'] = _("%s : activité", self.employee_id.name)
         return values
+
+    # --- Vocabulaire : menus et actions d'hr_holidays renommés par ce module ---
+    #
+    # Redéfinir en XML le nom d'un menu ou d'une action d'un autre module n'écrit
+    # que la valeur anglaise : la traduction française d'hr_holidays reste en
+    # place et l'emporte ("Mes congés", "Tous les congés" dans les menus et le
+    # fil d'Ariane). On recopie donc, à chaque mise à jour du module, la valeur
+    # définie dans nos XML vers les autres langues installées.
+    #
+    # Seuls les champs traduits d'un bloc sont concernés : les vues et les textes
+    # d'aide sont traduits par fragments, et nos textes n'y ont pas de traduction.
+    _RENAMED_RECORDS = (
+        # views/menu_views.xml
+        'hr_holidays.menu_hr_holidays_my_leaves',
+        'hr_holidays.menu_hr_holidays_dashboard',
+        'hr_holidays.menu_hr_holidays_management',
+        'hr_holidays.menu_hr_holidays_report',
+        'hr_holidays.menu_hr_holidays_configuration',
+        'hr_holidays.hr_leave_menu_my',
+        'hr_holidays.menu_open_department_leave_approve',
+        # views/hr_leave_views.xml
+        'hr_holidays.hr_leave_action_my',
+        'hr_holidays.hr_leave_action_action_approve_department',
+        # views/hr_leave_report_calendar_views.xml
+        'hr_holidays.action_hr_holidays_dashboard',
+    )
+
+    @api.model
+    def _sync_renamed_records_translations(self):
+        langs = [code for code, _name in self.env['res.lang'].get_installed() if code != 'en_US']
+        if not langs:
+            return
+        for xmlid in self._RENAMED_RECORDS:
+            record = self.env.ref(xmlid, raise_if_not_found=False)
+            if not record:
+                continue
+            name = record.with_context(lang='en_US').name
+            record.update_field_translations('name', {lang: name for lang in langs})

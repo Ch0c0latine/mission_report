@@ -302,3 +302,13 @@ class TestHrLeaveMissionReport(TransactionCase):
         self.assertTrue(self.employee.leave_date_to)
         self.assertTrue(self.user.im_status.startswith('leave_'))
         self.assertTrue(self.user.partner_id.im_status.startswith('leave_'))
+
+    def test_renamed_actions_and_menus_in_french(self):
+        # En français, la traduction d'hr_holidays l'emportait sur le nom
+        # redéfini en XML : "Mes congés" restait affiché.
+        self.env['res.lang']._activate_lang('fr_FR')
+        self.env['hr.leave']._sync_renamed_records_translations()
+        action = self.env.ref('hr_holidays.hr_leave_action_my').with_context(lang='fr_FR')
+        self.assertEqual(action.name, 'Mes saisies')
+        menu = self.env.ref('hr_holidays.menu_open_department_leave_approve').with_context(lang='fr_FR')
+        self.assertEqual(menu.name, 'Saisies')
