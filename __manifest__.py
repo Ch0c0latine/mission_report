@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Activité',
-    'version': '19.0.1.1.0',
+    'version': '19.0.1.1.1',
     'summary': 'Activity and mission reports by project based on leaves logic',
     'description': """
         Module mission_report adapting hr_holidays logic for activity and mission reporting by project.

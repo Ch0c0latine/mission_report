@@ -315,3 +315,40 @@ class TestHrLeaveMissionReport(TransactionCase):
         # Titre du filtre du calendrier de saisie : "Type de congés" restait affiché.
         field = self.env['ir.model.fields']._get('hr.leave', 'holiday_status_id').with_context(lang='fr_FR')
         self.assertEqual(field.field_description, 'Type de saisie')
+
+    def test_mission_accepted_message_speaks_of_activite(self):
+        # "Votre Activité planifié le 2026-09-28 08:00:00 a été accepté" :
+        # accord écrit pour un nom de congé, et date brute.
+        # Une saisie par langue, à des dates distinctes : deux saisies qui se
+        # chevauchent sont refusées par hr_holidays.
+        for lang, date_from, date_to in (
+            ('en_US', '2026-09-28', '2026-09-29'),
+            ('fr_FR', '2026-10-05', '2026-10-06'),
+        ):
+            self.env['res.lang']._activate_lang(lang)
+            leave = self.env['hr.leave'].with_context(lang=lang).create({
+                'employee_id': self.employee.id,
+                'project_id': self.project.id,
+                'holiday_status_id': False,
+                'request_date_from': date_from,
+                'request_date_to': date_to,
+            })
+            bodies = leave.message_ids.mapped(lambda message: str(message.body))
+            self.assertTrue(any('a été enregistrée' in body for body in bodies), bodies)
+            self.assertFalse(any('planned on' in body or 'planifié le' in body for body in bodies), bodies)
+
+    def test_leave_accepted_message_keeps_the_native_wording(self):
+        leave_type = self.env['hr.leave.type'].create({
+            'name': 'Congé de test sans validation',
+            'requires_allocation': False,
+            'leave_validation_type': 'no_validation',
+        })
+        leave = self.env['hr.leave'].create({
+            'employee_id': self.employee.id,
+            'project_id': False,
+            'holiday_status_id': leave_type.id,
+            'request_date_from': '2026-09-28',
+            'request_date_to': '2026-09-28',
+        })
+        bodies = leave.message_ids.mapped(lambda message: str(message.body))
+        self.assertFalse(any('a été enregistrée' in body for body in bodies), bodies)
