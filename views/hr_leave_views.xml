@@ -49,8 +49,13 @@
             </xpath>
 
             <!-- Masque le panneau de résumé/statistiques (colonne de droite) : sans intérêt ici,
-                 et élargit la colonne de gauche restante à toute la largeur. -->
-            <xpath expr="//div[hasclass('col_right')]" position="replace"/>
+                 et élargit la colonne de gauche restante à toute la largeur.
+                 On le rend invisible au lieu de le supprimer : hr_leave_view_form_dashboard, une
+                 vue primary dérivée de celle-ci, le supprime elle aussi, et son xpath ne trouvait
+                 plus rien si on l'avait déjà retiré (le chargement du module échouait). -->
+            <xpath expr="//div[hasclass('col_right')]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
             <xpath expr="//div[hasclass('col_left')]" position="attributes">
                 <attribute name="class" remove="col-md-6" separator=" "/>
             </xpath>
