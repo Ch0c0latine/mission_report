@@ -1,0 +1,1368 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* mission_report
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-21 21:17+0000\n"
+"PO-Revision-Date: 2026-09-21 21:17+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/public_holiday_wizard.py:0
+msgid "%(count)s public holiday(s) created for %(year)s."
+msgstr "%(count)s jour(s) férié(s) créé(s) pour %(year)s."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/hr_leave.py:0
+msgid "%(employee)s en activité : %(duration)s"
+msgstr ""
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/hr_leave.py:0
+msgid "%(employee)s n'est assigné(e) à aucune tâche du projet %(project)s."
+msgstr ""
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/hr_leave.py:0
+msgid "%s : activité"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.actions.report,print_report_name:mission_report.action_report_activity_client
+msgid "'%s - client' % object.name"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.actions.report,print_report_name:mission_report.action_report_activity_internal
+msgid "'%s' % object.name"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report_template__absence_first_row
+msgid "0: no time off block (client reports)."
+msgstr "0 : pas de bloc de congés (CRA client)."
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report_template__day_row
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report_template__week_row
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report_template__weekday_row
+msgid "0: none."
+msgstr "0 : aucune."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.activity_report_grid
+msgid "<i>No mission this month.</i>"
+msgstr "<i>Aucune mission ce mois-ci.</i>"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.activity_report_page
+msgid "<span class=\"o_absence\" style=\"background-color: #C6EFCE;\"/>Time off"
+msgstr "<span class=\"o_absence\" style=\"background-color: #C6EFCE;\"/>Congé"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_employee_view_form_inherit_mission_report
+msgid "<span class=\"o_stat_text\">Activités</span>"
+msgstr ""
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.activity_report_page
+msgid ""
+"<span class=\"o_weekend\" style=\"background-color: #D9D9D9;\"/>Weekend\n"
+"                    <span class=\"o_holiday\" style=\"background-color: #FFF2CC;\"/>Public holiday"
+msgstr "<span class=\"o_weekend\" style=\"background-color: #D9D9D9;\"/>Week-end <span class=\"o_holiday\" style=\"background-color: #FFF2CC;\"/>Férié"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.activity_report_page
+msgid "<strong>Client: </strong>"
+msgstr "<strong>Client : </strong>"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.activity_report_page
+msgid "<strong>Employee signature</strong>"
+msgstr "<strong>Signature du collaborateur</strong>"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.activity_report_page
+msgid "<strong>Employee: </strong>"
+msgstr "<strong>Nom et prénom : </strong>"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.activity_report_page
+msgid "<strong>Manager signature</strong>"
+msgstr "<strong>Signature du responsable</strong>"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.activity_report_page
+msgid "<strong>Month: </strong>"
+msgstr "<strong>Mois : </strong>"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.activity_report_page
+msgid "<strong>Status: </strong>"
+msgstr "<strong>Statut : </strong>"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.activity_report_page
+msgid "<strong>Working days: </strong>"
+msgstr "<strong>Jours potentiels : </strong>"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report_template__kind
+msgid "A client report is exported once per client of the month."
+msgstr "Un CRA client est exporté une fois par client du mois."
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report_template_cell__cell
+msgid ""
+"A column letter (“A”): the value of every line of the block. A cell (“B3”): "
+"a header value, written once. For a merged cell, its top-left cell."
+msgstr "Une lettre de colonne (« A ») : la valeur de chaque ligne du bloc. Une cellule (« B3 ») : une valeur d'en-tête, écrite une fois. Pour une cellule fusionnée, sa première cellule en haut à gauche."
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__absence_color
+msgid "Absence Color"
+msgstr "Couleur des congés"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__message_needaction
+msgid "Action Needed"
+msgstr "Nécessite une action"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__active
+msgid "Active"
+msgstr "Actif"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+msgid "Activity"
+msgstr "Activité"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
+msgid "Activity report"
+msgstr "Compte rendu d'activité"
+
+#. module: mission_report
+#: model:ir.actions.report,name:mission_report.action_report_activity_client
+#: model:mission.activity.report.template,name:mission_report.activity_report_template_client
+msgid "Activity report (client)"
+msgstr "Compte rendu d'activité (client)"
+
+#. module: mission_report
+#: model:ir.actions.report,name:mission_report.action_report_activity_internal
+#: model:mission.activity.report.template,name:mission_report.activity_report_template_internal
+msgid "Activity report (internal)"
+msgstr "Compte rendu d'activité (interne)"
+
+#. module: mission_report
+#: model:ir.model,name:mission_report.model_mission_activity_report_template
+msgid "Activity report Excel template"
+msgstr "Modèle Excel de compte rendu d'activité"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_template_view_form
+msgid "Activity report template"
+msgstr "Modèle de compte rendu d'activité"
+
+#. module: mission_report
+#: model:ir.model,name:mission_report.model_mission_activity_report_template_cell
+msgid "Activity report template mapping"
+msgstr "Correspondance de modèle de compte rendu"
+
+#. module: mission_report
+#: model:ir.actions.act_window,name:mission_report.action_mission_activity_report_template
+#: model:ir.ui.menu,name:mission_report.menu_mission_activity_report_template
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_template_view_list
+msgid "Activity report templates"
+msgstr "Modèles de compte rendu"
+
+#. module: mission_report
+#: model:ir.actions.act_window,name:mission_report.action_mission_activity_report_all
+#: model:ir.ui.menu,name:mission_report.menu_mission_activity_report_all
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_list
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_search
+msgid "Activity reports"
+msgstr "Comptes rendus d'activité"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+msgid "Activity reports.zip"
+msgstr "Comptes rendus d'activité.zip"
+
+#. module: mission_report
+#: model:hr.leave.type,name:mission_report.hr_leave_type_activite
+#: model:ir.ui.menu,name:mission_report.menu_mission_report_root
+msgid "Activité"
+msgstr ""
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/hr_leave.py:0
+msgid "Activité créée"
+msgstr ""
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_employee_view_form_inherit_mission_report
+msgid "Activités et congés saisis par l'employé"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_public_holiday_wizard__alsace_moselle
+msgid "Adds Good Friday and St. Stephen's Day (26 December)."
+msgstr "Ajoute le Vendredi saint et la Saint-Étienne (26 décembre)."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/public_holiday_wizard.py:0
+msgid "All Saints' Day"
+msgstr "Toussaint"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__alsace_moselle
+msgid "Alsace-Moselle"
+msgstr "Alsace-Moselle"
+
+#. module: mission_report
+#: model:ir.model.constraint,message:mission_report.constraint_mission_activity_report_employee_month_unique
+msgid "An employee has a single activity report per month."
+msgstr "Un salarié n'a qu'un compte rendu d'activité par mois."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_holidays_cancel_leave_form_inherit_mission_report
+msgid "Annuler la saisie"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report__date_from
+msgid "Any day of the month: the report covers the whole month."
+msgstr "N'importe quel jour du mois : le compte rendu couvre le mois entier."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_template_view_form
+msgid "Archived"
+msgstr "Archivé"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/public_holiday_wizard.py:0
+msgid "Armistice Day"
+msgstr "Armistice 1918"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/public_holiday_wizard.py:0
+msgid "Ascension Day"
+msgstr "Ascension"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/public_holiday_wizard.py:0
+msgid "Assumption Day"
+msgstr "Assomption"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__message_attachment_count
+msgid "Attachment Count"
+msgstr "Nombre de pièces jointes"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_hr_leave__available_project_ids
+msgid "Available Project"
+msgstr "Projets disponibles"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
+msgid "Back to draft"
+msgstr "Remettre en brouillon"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_hr_leave__entry_type
+msgid ""
+"Bascule entre une saisie de Mission (par défaut) et une saisie de Congé."
+msgstr ""
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/public_holiday_wizard.py:0
+msgid "Bastille Day"
+msgstr "Fête nationale"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_template_view_form
+msgid "Blank workbook"
+msgstr "Classeur vierge"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__block
+msgid "Block"
+msgstr "Bloc"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__block__both
+msgid "Both"
+msgstr "Les deux"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/public_holiday_wizard.py:0
+msgid "Christmas Day"
+msgstr "Noël"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_hr_leave__partner_id
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__client
+#: model_terms:ir.ui.view,arch_db:mission_report.activity_report_grid
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_form_inherit_mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_tree_inherit_mission_report
+msgid "Client"
+msgstr "Client"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template__kind__client
+msgid "Client (missions of one client)"
+msgstr "Client (missions d'un seul client)"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_hr_leave__partner_id
+msgid "Client associé à la mission, dérivé du projet."
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__label
+msgid "Client, or time off type"
+msgstr "Client, ou type de congé"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__color_days
+msgid "Colour the days"
+msgstr "Colorer les jours"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_template_view_form
+msgid "Colours"
+msgstr "Couleurs"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report_template__first_day_column
+msgid ""
+"Column of the 1st of the month; the next 30 columns hold the other days."
+msgstr "Colonne du 1er du mois ; les 30 colonnes suivantes portent les autres jours."
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__cell
+msgid "Column or cell"
+msgstr "Colonne ou cellule"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__company_id
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__company_id
+#: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__company_id
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__company
+msgid "Company"
+msgstr "Société"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__hr_leave__entry_type__leave
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_form_inherit_mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_mission_report
+msgid "Congé"
+msgstr ""
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_mission_report
+msgid "Congés uniquement"
+msgstr ""
+
+#. module: mission_report
+#: model_terms:ir.actions.act_window,help:mission_report.action_mission_activity_report_my
+msgid ""
+"Create the report of a month: it gathers your missions and time off day by day.\n"
+"               Submit it for validation once the month is complete."
+msgstr "Créez le compte rendu d'un mois : il reprend vos missions et vos congés jour par jour. Soumettez-le pour validation une fois le mois terminé."
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__create_uid
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_export__create_uid
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__create_uid
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__create_uid
+#: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__create_uid
+msgid "Created by"
+msgstr "Créé par"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__create_date
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_export__create_date
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__create_date
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__create_date
+#: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__create_date
+msgid "Created on"
+msgstr "Créé le"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__date_to
+msgid "Date To"
+msgstr "Date de fin"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+#: model_terms:ir.ui.view,arch_db:mission_report.activity_report_grid
+msgid "Day"
+msgstr "Jour"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__first_day_column
+msgid "Day 1 column"
+msgstr "Colonne du jour 1"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__day_row
+msgid "Day numbers row"
+msgstr "Ligne des numéros de jour"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_hr_employee__activity_date_to
+msgid ""
+"Dernier jour de la saisie de mission en cours. Alimente le badge de "
+"présence, qui annonce une fin de mission et non un retour de congé."
+msgstr ""
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_export_view_form
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_public_holiday_wizard_view_form
+msgid "Discard"
+msgstr "Annuler"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_hr_employee__display_name
+#: model:ir.model.fields,field_description:mission_report.field_hr_employee_public__display_name
+#: model:ir.model.fields,field_description:mission_report.field_hr_leave__display_name
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__display_name
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_export__display_name
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__display_name
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__display_name
+#: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__display_name
+#: model:ir.model.fields,field_description:mission_report.field_res_users__display_name
+msgid "Display Name"
+msgstr "Nom d'affichage"
+
+#. module: mission_report
+#: model_terms:ir.actions.act_window,help:mission_report.action_mission_activity_report_template
+msgid ""
+"Download a template's workbook, lay it out in Excel or LibreOffice, then "
+"upload it back."
+msgstr "Téléchargez le classeur d'un modèle, mettez-le en forme dans Excel ou LibreOffice, puis redéposez-le."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report.py:0
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report__state__draft
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_search
+msgid "Draft"
+msgstr "Brouillon"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/public_holiday_wizard.py:0
+msgid "Easter Monday"
+msgstr "Lundi de Pâques"
+
+#. module: mission_report
+#: model:ir.model,name:mission_report.model_hr_employee
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__employee_id
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__employee
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_search
+msgid "Employee"
+msgstr "Employé"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_mission_report
+msgid "Employé"
+msgstr ""
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_view_search_inherit_mission_report
+msgid "Employés ayant une saisie en cours aujourd'hui"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report_template__sheet_name
+msgid "Empty: the first sheet of the workbook."
+msgstr "Vide : la première feuille du classeur."
+
+#. module: mission_report
+#. odoo-javascript
+#: code:addons/mission_report/static/src/js/presence_status.js:0
+#: code:addons/mission_report/static/src/xml/avatar_card_resource_popover.xml:0
+#: model:ir.model.fields.selection,name:mission_report.selection__hr_employee__hr_icon_display__presence_holiday_activity
+msgid "En mission"
+msgstr ""
+
+#. module: mission_report
+#. odoo-javascript
+#: code:addons/mission_report/static/src/js/presence_status.js:0
+msgid "En mission, jusqu'au %(date)s"
+msgstr ""
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/public_holiday_wizard.py:0
+msgid "Enter a year between 1900 and 2999."
+msgstr "Saisissez une année entre 1900 et 2999."
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__file
+msgid "Excel file"
+msgstr "Fichier Excel"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_export_view_form
+msgid "Export"
+msgstr "Exporter"
+
+#. module: mission_report
+#: model:ir.model,name:mission_report.model_mission_activity_report_export
+msgid "Export activity reports to Excel"
+msgstr "Exporter des comptes rendus d'activité vers Excel"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report.py:0
+#: model:ir.actions.act_window,name:mission_report.action_mission_activity_report_export
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_export_view_form
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
+msgid "Export to Excel"
+msgstr "Exporter vers Excel"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__filename
+msgid "Filename"
+msgstr "Nom du fichier"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report_template__color_days
+msgid "Fills the day columns of weekends, public holidays and time off."
+msgstr "Colore les colonnes des week-ends, des jours fériés et des congés."
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_hr_employee__activity_date_to
+#: model:ir.model.fields,field_description:mission_report.field_hr_employee_public__activity_date_to
+msgid "Fin de la mission en cours"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__mission_first_row
+msgid "First mission row"
+msgstr "Première ligne de mission"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__absence_first_row
+msgid "First time off row"
+msgstr "Première ligne de congé"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__message_follower_ids
+msgid "Followers"
+msgstr "Abonnés"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__message_partner_ids
+msgid "Followers (Partners)"
+msgstr "Abonnés (Partenaires)"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report_template_cell__block
+msgid "For a column: the block(s) of lines it applies to."
+msgstr "Pour une colonne : le ou les blocs de lignes concernés."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_public_holiday_wizard_view_form
+msgid "Generate"
+msgstr "Générer"
+
+#. module: mission_report
+#: model:ir.actions.act_window,name:mission_report.action_mission_public_holiday_wizard
+#: model:ir.model,name:mission_report.model_mission_public_holiday_wizard
+#: model:ir.ui.menu,name:mission_report.menu_mission_public_holiday_wizard
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_public_holiday_wizard_view_form
+msgid "Generate French public holidays"
+msgstr "Générer les jours fériés français"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/public_holiday_wizard.py:0
+msgid "Good Friday"
+msgstr "Vendredi saint"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__has_message
+msgid "Has Message"
+msgstr "A un message"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__kind__header
+msgid "Header"
+msgstr "En-tête"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__holiday_color
+msgid "Holiday Color"
+msgstr "Couleur des jours fériés"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_template_view_form
+msgid "How to adapt this template…"
+msgstr "Comment adapter ce modèle…"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_hr_employee__hr_icon_display
+msgid "Hr Icon Display"
+msgstr "Affichage de l'icône RH"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_hr_employee__id
+#: model:ir.model.fields,field_description:mission_report.field_hr_employee_public__id
+#: model:ir.model.fields,field_description:mission_report.field_hr_leave__id
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__id
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_export__id
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__id
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__id
+#: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__id
+#: model:ir.model.fields,field_description:mission_report.field_res_users__id
+msgid "ID"
+msgstr "ID"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr "Si coché, de nouveaux messages demandent votre attention."
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report__message_has_error
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr "Si coché, certains messages ont une erreur d'envoi."
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template__kind__internal
+msgid "Internal (missions and time off)"
+msgstr "Interne (missions et congés)"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__message_is_follower
+msgid "Is Follower"
+msgstr "Est un abonné"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__kind
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__kind
+msgid "Kind"
+msgstr "Type"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/public_holiday_wizard.py:0
+msgid "Labour Day"
+msgstr "Fête du Travail"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__write_uid
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_export__write_uid
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__write_uid
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__write_uid
+#: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__write_uid
+msgid "Last Updated by"
+msgstr "Dernière mise à jour par"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__write_date
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_export__write_date
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__write_date
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__write_date
+#: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__write_date
+msgid "Last Updated on"
+msgstr "Dernière mise à jour le"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__mission_last_row
+msgid "Last mission row"
+msgstr "Dernière ligne de mission"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__absence_last_row
+msgid "Last time off row"
+msgstr "Dernière ligne de congé"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__total
+msgid "Line total (days)"
+msgstr "Total de la ligne (jours)"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__kind__line
+msgid "Lines"
+msgstr "Lignes"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__cell_ids
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_template_view_form
+msgid "Mappings"
+msgstr "Correspondances"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_inherit_mission_report
+msgid "Mes saisies"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__message_has_error
+msgid "Message Delivery error"
+msgstr "Erreur d'envoi du message"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__message_ids
+msgid "Messages"
+msgstr "Messages"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_hr_leave__project_id
+#: model:ir.model.fields.selection,name:mission_report.selection__hr_leave__entry_type__mission
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__project
+#: model_terms:ir.ui.view,arch_db:mission_report.activity_report_grid
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_form_inherit_mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_tree_inherit_mission_report
+msgid "Mission"
+msgstr "Mission"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__mission_days
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__mission_total
+msgid "Mission days"
+msgstr "Jours de mission"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__block__mission
+msgid "Missions"
+msgstr "Missions"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_mission_report
+msgid "Missions uniquement"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__date_from
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_search
+msgid "Month"
+msgstr "Mois"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__month
+msgid "Month (first day, as a date)"
+msgstr "Mois (premier jour, en date)"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__month_label
+msgid "Month (text)"
+msgstr "Mois (texte)"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_template_view_form
+msgid "Month grid"
+msgstr "Grille du mois"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+#: model:ir.model,name:mission_report.model_mission_activity_report
+#: model_terms:ir.ui.view,arch_db:mission_report.activity_report_page
+msgid "Monthly activity report"
+msgstr "Compte rendu d'activité mensuel"
+
+#. module: mission_report
+#: model:ir.actions.act_window,name:mission_report.action_mission_activity_report_my
+#: model:ir.ui.menu,name:mission_report.menu_mission_activity_report_my
+msgid "My activity reports"
+msgstr "Mes comptes rendus"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_search
+msgid "My reports"
+msgstr "Mes comptes rendus"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__name
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__name
+msgid "Name"
+msgstr "Nom"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_hr_leave__entry_type
+msgid "Nature de la saisie"
+msgstr ""
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/public_holiday_wizard.py:0
+msgid "New Year's Day"
+msgstr "Jour de l'an"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report.py:0
+msgid "New activity report"
+msgstr "Nouveau compte rendu d'activité"
+
+#. module: mission_report
+#: model_terms:ir.actions.act_window,help:mission_report.action_mission_activity_report_template
+msgid "No Excel template."
+msgstr "Aucun modèle Excel."
+
+#. module: mission_report
+#: model_terms:ir.actions.act_window,help:mission_report.action_mission_activity_report_all
+msgid "No activity report to show."
+msgstr "Aucun compte rendu d'activité à afficher."
+
+#. module: mission_report
+#: model_terms:ir.actions.act_window,help:mission_report.action_mission_activity_report_my
+msgid "No activity report yet."
+msgstr "Aucun compte rendu d'activité pour l'instant."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+msgid "No client"
+msgstr "Sans client"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__note
+msgid "Note"
+msgstr "Note"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_template_view_form
+msgid "Notes"
+msgstr "Notes"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__message_needaction_counter
+msgid "Number of Actions"
+msgstr "Nombre d'actions"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__message_has_error_counter
+msgid "Number of errors"
+msgstr "Nombre d'erreurs"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr "Nombre de messages nécessitant une action"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr "Nombre de messages avec une erreur d'envoi"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_public_holiday_wizard_view_form
+msgid ""
+"Odoo recomputes the entries a new public holiday overlaps: their duration\n"
+"                    decreases, and an entry left without any day is refused."
+msgstr "Odoo recalcule les saisies qu'un nouveau jour férié chevauche : leur durée diminue, et une saisie qui n'a plus aucun jour est refusée."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report.py:0
+msgid "Only %s or a manager can submit this report."
+msgstr "Seul(e) %s ou un responsable peut soumettre ce compte rendu."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report.py:0
+msgid "Only a draft report can be submitted."
+msgstr "Seul un compte rendu en brouillon peut être soumis."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report.py:0
+msgid "Only a submitted report can be validated."
+msgstr "Seul un compte rendu soumis peut être validé."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report.py:0
+msgid "Only draft activity reports can be deleted."
+msgstr "Seuls les comptes rendus en brouillon peuvent être supprimés."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_holidays_cancel_leave_form_inherit_mission_report
+msgid "Pourquoi souhaitez-vous annuler cette saisie ?"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__preview_html
+msgid "Preview Html"
+msgstr "Aperçu"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
+msgid "Print"
+msgstr "Imprimer"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
+msgid "Print for the client"
+msgstr "Imprimer pour le client"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_hr_leave__project_id
+msgid "Projet associé à la saisie de rapport de mission."
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_hr_leave__available_project_ids
+msgid "Projets ayant au moins une tâche assignée à l'employé de cette saisie."
+msgstr ""
+
+#. module: mission_report
+#. odoo-javascript
+#: code:addons/mission_report/static/src/js/presence_status.js:0
+msgid "Présent, pas de mission"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model,name:mission_report.model_hr_employee_public
+msgid "Public Employee"
+msgstr "Employé public"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report.py:0
+msgid "Public holiday"
+msgstr "Jour férié"
+
+#. module: mission_report
+#: model:ir.ui.menu,name:mission_report.menu_activity_report_client
+msgid "Rapport client"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.actions.act_window,name:mission_report.action_activity_report_client
+msgid "Rapport client (Missions)"
+msgstr ""
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_mission_report
+msgid "Rapport d'activité"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.ui.menu,name:mission_report.menu_activity_report_internal
+msgid "Rapport interne"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.actions.act_window,name:mission_report.action_activity_report_internal
+msgid "Rapport interne (Congés & Missions)"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__rating_ids
+msgid "Ratings"
+msgstr "Évaluations"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_inherit_mission_report
+msgid "Rechercher une saisie"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report__user_id
+msgid "Related user name for the resource to manage its access."
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_export__report_ids
+msgid "Reports"
+msgstr "Comptes rendus"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report.py:0
+msgid "Reset the report to draft before changing its employee or month."
+msgstr "Remettez le compte rendu en brouillon avant d'en changer le salarié ou le mois."
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr "Erreur d'envoi SMS"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_view_form_inherit_mission_report
+msgid "Saisie"
+msgstr ""
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_calendar_inherit_mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_form_inherit_mission_report
+msgid "Saisie d'activité"
+msgstr ""
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_view_search_inherit_mission_report
+msgid "Saisie en cours aujourd'hui"
+msgstr ""
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_view_inherit_mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_year_view_inherit_mission_report
+msgid "Saisies"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__sequence
+msgid "Sequence"
+msgstr "Séquence"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__sheet_name
+msgid "Sheet"
+msgstr "Feuille"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__snapshot
+msgid "Snapshot"
+msgstr "Chiffres validés"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/public_holiday_wizard.py:0
+msgid "St. Stephen's Day"
+msgstr "Saint-Étienne"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__state
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__status
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_search
+msgid "Status"
+msgstr "Statut"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__submit_date
+msgid "Submission date"
+msgstr "Date de soumission"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
+msgid "Submit"
+msgstr "Soumettre"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report__state__submitted
+msgid "Submitted"
+msgstr "Soumis"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__submitted_by_id
+msgid "Submitted by"
+msgstr "Soumis par"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report.py:0
+msgid "Submitted for validation on %s"
+msgstr "Soumis pour validation le %s"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__submit_date
+msgid "Submitted on"
+msgstr "Soumis le"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_export__template_id
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__template_id
+msgid "Template"
+msgstr "Modèle"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+msgid "Template “%s” has no Excel file."
+msgstr "Le modèle « %s » n'a pas de fichier Excel."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+msgid "The mission rows of template “%s” are inconsistent."
+msgstr "Les lignes de mission du modèle « %s » sont incohérentes."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+msgid "The openpyxl library is missing on the server."
+msgstr "La bibliothèque openpyxl manque sur le serveur."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/public_holiday_wizard.py:0
+msgid "The public holidays of %s were already entered."
+msgstr "Les jours fériés de %s étaient déjà saisis."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
+msgid ""
+"The report goes back to the employee, who can correct and submit it again."
+msgstr "Le compte rendu retourne au salarié, qui peut le corriger et le soumettre à nouveau."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+msgid "The time off rows of template “%s” must come after the mission rows."
+msgstr "Les lignes de congé du modèle « %s » doivent suivre les lignes de mission."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+msgid "These reports hold no mission to export."
+msgstr "Ces comptes rendus ne contiennent aucune mission à exporter."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_template_view_form
+msgid ""
+"This replaces the template's Excel file with a blank workbook laid out after"
+" the settings below."
+msgstr "Le fichier Excel du modèle sera remplacé par un classeur vierge, construit d'après les réglages ci-dessous."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
+msgid ""
+"This report shows the figures it was validated with. Put it back to draft to\n"
+"                        take later changes to the entries into account."
+msgstr "Ce compte rendu affiche les chiffres avec lesquels il a été validé. Remettez-le en brouillon pour tenir compte des modifications ultérieures des saisies."
+
+#. module: mission_report
+#: model:ir.model,name:mission_report.model_hr_leave
+msgid "Time Off"
+msgstr "Congés"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__block__absence
+#: model_terms:ir.ui.view,arch_db:mission_report.activity_report_grid
+msgid "Time off"
+msgstr "Absences"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__absence_days
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__absence_total
+msgid "Time off days"
+msgstr "Jours de congé"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__leave_type
+msgid "Time off type"
+msgstr "Type de congé"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_search
+msgid "To validate"
+msgstr "À valider"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+#: model_terms:ir.ui.view,arch_db:mission_report.activity_report_grid
+msgid "Total"
+msgstr "Total"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_hr_leave__holiday_status_id
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_view_form_inherit_mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_view_search_inherit_mission_report
+msgid "Type de saisie"
+msgstr ""
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/hr_leave.py:0
+msgid ""
+"Une saisie doit posséder soit une Mission soit un Congé, mais pas les deux "
+"ni aucun des deux."
+msgstr ""
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report.py:0
+msgid "Use the Submit, Validate and Reset buttons to change the status."
+msgstr "Utilisez les boutons Soumettre, Valider et Remettre en brouillon pour changer le statut."
+
+#. module: mission_report
+#: model:ir.model,name:mission_report.model_res_users
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__user_id
+msgid "User"
+msgstr "Utilisateur"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
+msgid "Validate"
+msgstr "Valider"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report__state__validated
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_search
+msgid "Validated"
+msgstr "Validé"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__validated_by_id
+msgid "Validated by"
+msgstr "Validé par"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__validate_date
+msgid "Validated on"
+msgstr "Validé le"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report.py:0
+msgid "Validated on %s"
+msgstr "Validé le %s"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__validate_date
+msgid "Validation date"
+msgstr "Date de validation"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__value
+msgid "Value"
+msgstr "Valeur"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/public_holiday_wizard.py:0
+msgid "Victory in Europe Day"
+msgstr "Victoire 1945"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/hr_leave.py:0
+msgid "Votre activité du %(date)s a été enregistrée"
+msgstr ""
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/hr_leave.py:0
+msgid "Votre activité du %(date_from)s au %(date_to)s a été enregistrée"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__website_message_ids
+msgid "Website Messages"
+msgstr "Messages du site web"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report__website_message_ids
+msgid "Website communication history"
+msgstr "Historique des échanges sur le site web"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+#: model_terms:ir.ui.view,arch_db:mission_report.activity_report_grid
+msgid "Week"
+msgstr "Sem."
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__week_row
+msgid "Week numbers row"
+msgstr "Ligne des numéros de semaine"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__weekday_row
+msgid "Weekdays row"
+msgstr "Ligne des jours de la semaine"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__weekend_color
+msgid "Weekend Color"
+msgstr "Couleur des week-ends"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/public_holiday_wizard.py:0
+msgid "Whit Monday"
+msgstr "Lundi de Pentecôte"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__potential_days
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__potential_days
+msgid "Working days"
+msgstr "Jours potentiels"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__year
+msgid "Year"
+msgstr "Année"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report.py:0
+msgid "You are not allowed to reset the report of %s."
+msgstr "Vous ne pouvez pas remettre en brouillon le compte rendu de %s."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report.py:0
+msgid "You are not allowed to validate the report of %s."
+msgstr "Vous ne pouvez pas valider le compte rendu de %s."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_template_view_form
+msgid "e.g. Client report"
+msgstr "ex. CRA client"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+msgid "“%(value)s” cannot go in %(cell)s."
+msgstr "« %(value)s » ne peut pas aller en %(cell)s."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+msgid "“%s”: a column letter (A) or a cell (B3)."
+msgstr "« %s » : une lettre de colonne (A) ou une cellule (B3)."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+msgid "“Day 1 column” takes a column letter, such as D."
+msgstr "« Colonne du jour 1 » attend une lettre de colonne, par exemple D."
+
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report.py:0
+msgid "Activity report created"
+msgstr "Compte rendu d'activité créé"
