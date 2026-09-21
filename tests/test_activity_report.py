@@ -184,3 +184,16 @@ class TestActivityReport(TransactionCase):
             'report_ids': [(6, 0, report.ids)], 'template_id': template.id})
         self.assertEqual(wizard.action_export()['type'], 'ir.actions.act_url')
         self.assertTrue(report.preview_html)
+
+    def test_blank_workbook_in_french_with_print_area(self):
+        import openpyxl
+        self.env['res.lang']._activate_lang('fr_FR')
+        template = self.env.ref('mission_report.activity_report_template_internal')
+        template.with_context(lang='fr_FR').action_generate_file()
+        self.assertTrue(template.file_generated)
+        sheet = openpyxl.load_workbook(io.BytesIO(template._export(self.report))).worksheets[0]
+        self.assertEqual(sheet['A3'].value, 'Employé :')
+        self.assertTrue(sheet.print_area)
+        # A workbook uploaded by the user is not remade by module updates.
+        template.write({'file': template.file})
+        self.assertFalse(template.file_generated)
