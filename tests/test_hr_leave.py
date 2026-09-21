@@ -312,3 +312,6 @@ class TestHrLeaveMissionReport(TransactionCase):
         self.assertEqual(action.name, 'Mes saisies')
         menu = self.env.ref('hr_holidays.menu_open_department_leave_approve').with_context(lang='fr_FR')
         self.assertEqual(menu.name, 'Saisies')
+        # Titre du filtre du calendrier de saisie : "Type de congés" restait affiché.
+        field = self.env['ir.model.fields']._get('hr.leave', 'holiday_status_id').with_context(lang='fr_FR')
+        self.assertEqual(field.field_description, 'Type de saisie')
