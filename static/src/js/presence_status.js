@@ -73,14 +73,22 @@ const activityPatch = () => ({
     },
 });
 
-// Les variantes "pill" redéfinissent la couleur en classes de bouton. Le
-// libellé est aussi redéfini directement sur la variante privée (fiche
-// employé), par hr_holidays et hr_holidays_homeworking : celui hérité de
-// HrPresenceStatus n'y est donc jamais consulté.
+// Les variantes "pill" redéfinissent la couleur en classes de bouton.
 const activityPillPatch = () => ({
     get color() {
         return this.value === ACTIVITY ? "btn-outline-success" : super.color;
     },
+});
+
+// Le libellé, lui, n'est repris que sur la variante privée (fiche employé),
+// où hr_holidays le redéfinit directement : celui hérité de HrPresenceStatus
+// n'y serait jamais consulté. La pastille simple n'en a pas en propre et hérite
+// déjà du nôtre. Le poser aussi sur elle faisait boucler le mécanisme de patch
+// d'Odoo — deux patchs de « label » sur une classe et sa sous-classe, sans
+// libellé propre à l'origine — dès que missionLabel passait la main :
+// « Maximum call stack size exceeded » sur la fiche de tout salarié ni en
+// mission ni présent.
+const activityPrivatePillPatch = () => ({
     get label() {
         return missionLabel(this.value, this.props.record) ?? super.label;
     },
@@ -89,7 +97,7 @@ const activityPillPatch = () => ({
 patch(HrPresenceStatus.prototype, activityPatch());
 patch(HrPresenceStatusPrivate.prototype, activityPatch());
 patch(HrPresenceStatusPill.prototype, activityPillPatch());
-patch(HrPresenceStatusPrivatePill.prototype, activityPillPatch());
+patch(HrPresenceStatusPrivatePill.prototype, activityPrivatePillPatch());
 
 // Sans cette dépendance, le champ n'est pas chargé avec l'enregistrement et le
 // libellé ne peut pas afficher la date.
