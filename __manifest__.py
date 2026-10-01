@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Activité',
-    'version': '19.0.1.2.2',
+    'version': '19.0.1.3.0',
     'summary': 'Activity and mission reports by project based on leaves logic',
     'description': """
         Module mission_report adapting hr_holidays logic for activity and mission reporting by project.
@@ -20,6 +20,8 @@
         # affiche l'avion pour toute valeur contenant "holiday".
         'hr_holidays_homeworking',
         'project',
+        # Les journées validées alimentent les lignes de commande des missions.
+        'sale_project',
     ],
     'data': [
         'security/ir.model.access.csv',
@@ -34,6 +36,7 @@
         'views/activity_report_views.xml',
         'data/activity_report_template_data.xml',
         'data/wording_data.xml',
+        'data/cron_sale_delivered.xml',
     ],
     'assets': {
         'web.assets_backend': [

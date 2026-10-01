@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Filet de sécurité : les journées validées suivent la ligne de commande
+         de leur mission. Elles la suivent déjà à chaque validation. -->
+    <record id="ir_cron_sale_delivered" model="ir.cron">
+        <field name="name">Rapport d'activité : journées livrées des commandes</field>
+        <field name="model_id" ref="model_mission_activity_report"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_sale_sync_delivered()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="active" eval="True"/>
+    </record>
+
+</odoo>
