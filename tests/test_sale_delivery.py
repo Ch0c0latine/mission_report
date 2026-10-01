@@ -85,7 +85,7 @@ class TestSaleDelivery(TransactionCase):
         self.assertEqual(self.line.qty_invoiced, 9.0)
         other = self.env['mission.activity.report'].create({
             'employee_id': self.employee.id, 'date_from': '2031-06-01'})
-        self._entry(self.project_a, '2031-06-02', '2031-06-04')
+        self._entry(self.project_a, '2031-06-03', '2031-06-05')
         self._validate(other)
         self.assertEqual(self.line.qty_delivered, 12.0)
         self.assertEqual(self.line.qty_to_invoice, 3.0)
