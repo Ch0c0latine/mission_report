@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- IGD : réservé aux administrateurs, rien n'est imprimé. -->
+    <record id="mission_activity_report_view_form_igd" model="ir.ui.view">
+        <field name="name">mission.activity.report.form.igd</field>
+        <field name="model">mission.activity.report</field>
+        <field name="inherit_id" ref="mission_activity_report_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_generate_igd" type="object" string="Générer les IGD"
+                        groups="base.group_system"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_mission_report_generate_igd" model="ir.actions.server">
+        <field name="name">Générer les IGD</field>
+        <field name="model_id" ref="model_mission_activity_report"/>
+        <field name="binding_model_id" ref="model_mission_activity_report"/>
+        <field name="binding_view_types">list</field>
+        <field name="group_ids" eval="[(4, ref('base.group_system'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_generate_igd()</field>
+    </record>
+
+    <record id="project_project_view_form_igd" model="ir.ui.view">
+        <field name="name">project.project.form.igd</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='settings']/group" position="inside">
+                <group name="igd" string="IGD" groups="base.group_system">
+                    <field name="igd_currency_id" invisible="1"/>
+                    <field name="igd_monthly_budget"/>
+                    <field name="igd_start" invisible="not igd_monthly_budget"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="res_company_view_form_igd" model="ir.ui.view">
+        <field name="name">res.company.form.igd</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page name="igd" string="IGD" groups="base.group_system">
+                    <group>
+                        <field name="igd_lodging_product_id"/>
+                        <field name="igd_meal_product_id"/>
+                        <field name="igd_real_meal_product_ids" widget="many2many_tags"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

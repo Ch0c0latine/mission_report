@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Activité',
-    'version': '19.0.1.6.0',
+    'version': '19.0.1.7.0',
     'summary': 'Activity and mission reports by project based on leaves logic',
     'description': """
         Module mission_report adapting hr_holidays logic for activity and mission reporting by project.
@@ -42,6 +42,7 @@
         'views/sale_order_views.xml',
         'views/invoice_mission_views.xml',
         'data/mail_template_invoice.xml',
+        'views/igd_views.xml',
     ],
     'assets': {
         'web.assets_backend': [
