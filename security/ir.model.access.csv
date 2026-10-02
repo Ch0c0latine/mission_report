@@ -8,3 +8,4 @@ access_mission_activity_report_template_cell_user,mission.activity.report.templa
 access_mission_activity_report_template_cell_manager,mission.activity.report.template.cell.manager,model_mission_activity_report_template_cell,hr_holidays.group_hr_holidays_manager,1,1,1,1
 access_mission_activity_report_export_user,mission.activity.report.export.user,model_mission_activity_report_export,base.group_user,1,1,1,1
 access_mission_public_holiday_wizard_manager,mission.public.holiday.wizard.manager,model_mission_public_holiday_wizard,hr_holidays.group_hr_holidays_manager,1,1,1,1
+access_mission_igd_wizard,mission.igd.wizard,model_mission_igd_wizard,base.group_user,1,1,1,1
