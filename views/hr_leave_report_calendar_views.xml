@@ -11,8 +11,11 @@
         <field name="model">hr.leave.report.calendar</field>
         <field name="inherit_id" ref="hr_holidays.hr_leave_report_calendar_view"/>
         <field name="arch" type="xml">
+            <!-- Couleur par type de saisie : les missions (type « Activité ») d'une
+                 couleur, chaque type de congé d'une autre ; le nom dit qui. -->
             <xpath expr="//calendar" position="attributes">
                 <attribute name="string">Saisies</attribute>
+                <attribute name="color">holiday_status_id</attribute>
             </xpath>
         </field>
     </record>
@@ -23,8 +26,11 @@
         <field name="model">hr.leave.report.calendar</field>
         <field name="inherit_id" ref="hr_holidays.hr_leave_report_calendar_year_view"/>
         <field name="arch" type="xml">
+            <!-- Couleur par type de saisie : les missions (type « Activité ») d'une
+                 couleur, chaque type de congé d'une autre ; le nom dit qui. -->
             <xpath expr="//calendar" position="attributes">
                 <attribute name="string">Saisies</attribute>
+                <attribute name="color">holiday_status_id</attribute>
             </xpath>
         </field>
     </record>

@@ -40,6 +40,13 @@ class MissionActivityReport(models.Model):
         default=lambda self: fields.Date.today().replace(day=1),
         help="Any day of the month: the report covers the whole month.")
     date_to = fields.Date(compute='_compute_date_to', store=True)
+    # Month and year chosen from lists rather than a day in a calendar.
+    report_month = fields.Selection(
+        selection='_selection_report_month', string="Month of the report",
+        compute='_compute_report_month', inverse='_inverse_report_month')
+    report_year = fields.Integer(
+        string="Year", compute='_compute_report_month', inverse='_inverse_report_month')
+    month_label = fields.Char(string="Month", compute='_compute_report_month')
     state = fields.Selection([
         ('draft', "Draft"),
         ('submitted', "Submitted"),
@@ -62,6 +69,27 @@ class MissionActivityReport(models.Model):
         'UNIQUE(employee_id, date_from)',
         "An employee has a single activity report per month.",
     )
+
+    @api.model
+    def _selection_report_month(self):
+        lang = get_lang(self.env).code
+        return [(str(month), babel_format_date(date(2000, month, 1), 'MMMM', locale=lang).capitalize())
+                for month in range(1, 13)]
+
+    @api.depends('date_from')
+    @api.depends_context('lang')
+    def _compute_report_month(self):
+        lang = get_lang(self.env).code
+        for report in self:
+            day = report.date_from
+            report.report_month = str(day.month) if day else False
+            report.report_year = day.year if day else 0
+            report.month_label = babel_format_date(day, 'MMMM yyyy', locale=lang).capitalize() if day else ''
+
+    def _inverse_report_month(self):
+        for report in self:
+            if report.report_month and report.report_year:
+                report.date_from = date(report.report_year, int(report.report_month), 1)
 
     @api.depends('employee_id', 'date_from')
     def _compute_name(self):

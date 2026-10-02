@@ -23,7 +23,7 @@
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
             <xpath expr="(//field[@name='invoice_date'])[1]" position="after">
-                <field name="mission_month" widget="date" options="{'format': 'MMMM yyyy'}"
+                <field name="mission_month" options="{'min_precision': 'months', 'max_precision': 'years'}"
                        invisible="move_type not in ('out_invoice', 'out_refund')"/>
             </xpath>
         </field>
