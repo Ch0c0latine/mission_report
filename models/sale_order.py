@@ -12,6 +12,17 @@ class SaleOrder(models.Model):
         help="Personnes qui ont des saisies sur les missions (projets) de cette commande.",
     )
 
+    mission_invoice_partner_ids = fields.Many2many(
+        'res.partner', 'sale_order_mission_invoice_partner_rel', 'order_id', 'partner_id',
+        string="Destinataires des factures",
+        help="Contacts à qui envoyer les factures de cette affaire. Vide : le client de la facture.",
+    )
+    mission_expense_template_id = fields.Many2one(
+        'expense.scan.export.template', string="Modèle Excel des frais",
+        help="Tableau des frais refacturés joint au courriel d'envoi des factures "
+             "(par exemple le modèle du client). Vide : pas de tableau Excel.",
+    )
+
     @api.depends('order_line')
     def _compute_mission_employee_names(self):
         Project = self.env['project.project']

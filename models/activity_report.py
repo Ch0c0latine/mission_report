@@ -396,7 +396,11 @@ class MissionActivityReport(models.Model):
         """Clients of the report's missions, in report order (False: no client)."""
         self.ensure_one()
         partner_ids = []
+        # Sent with an invoice, the report only shows the client of that invoice.
+        only = self.env.context.get('mission_report_partner_ids')
         for line in self._get_report_data()['missions']:
+            if only is not None and line['partner_id'] not in only:
+                continue
             if line['partner_id'] not in partner_ids:
                 partner_ids.append(line['partner_id'])
         return partner_ids

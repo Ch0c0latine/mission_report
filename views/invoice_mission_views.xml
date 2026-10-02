@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Affaire : destinataires des factures et modèle Excel des frais. -->
+    <record id="view_order_form_mission_invoicing" model="ir.ui.view">
+        <field name="name">sale.order.form.mission.invoicing</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='other_information']" position="inside">
+                <group name="mission_invoicing" string="Envoi des factures">
+                    <field name="mission_invoice_partner_ids" widget="many2many_tags_email"
+                           context="{'show_email': True}"/>
+                    <field name="mission_expense_template_id" options="{'no_create': True}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Facture : mois concerné. -->
+    <record id="view_move_form_mission_month" model="ir.ui.view">
+        <field name="name">account.move.form.mission.month</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="(//field[@name='invoice_date'])[1]" position="after">
+                <field name="mission_month" widget="date" options="{'format': 'MMMM yyyy'}"
+                       invisible="move_type not in ('out_invoice', 'out_refund')"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

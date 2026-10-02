@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Envoi d'une facture de mission : objet, jours réalisés, pièces jointes
+         (commande, CRA client, tableau des frais refacturés, justificatifs),
+         ajoutées par account.move.send. -->
+    <record id="mail_template_invoice_mission" model="mail.template">
+        <field name="name">Facture de mission</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="subject">Facture {{ object.mission_mail_object() }} - {{ object.mission_month_label() }}</field>
+        <field name="email_from">{{ (object.invoice_user_id.email_formatted or object.company_id.email_formatted or user.email_formatted) }}</field>
+        <field name="partner_to">{{ object.mission_mail_partner_ids() }}</field>
+        <field name="use_default_to" eval="False"/>
+        <field name="lang">{{ object.partner_id.lang }}</field>
+        <field name="report_template_ids" eval="[(4, ref('account.account_invoices'))]"/>
+        <field name="auto_delete" eval="True"/>
+        <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p>Bonjour,</p>
+    <p>
+        Veuillez trouver en attachement la facture <t t-out="object.name or ''"/>
+        de la prestation <t t-out="object.mission_mail_object(short=True)"/>,
+        pour le mois de <t t-out="object.mission_month_label()"/> :
+    </p>
+    <p t-foreach="object.mission_mail_days_text()" t-as="days_line"><t t-out="days_line"/></p>
+    <p>Ainsi que le compte rendu d’activité, le tableau des frais et les justificatifs.</p>
+    <p>Vous en souhaitant bonne réception,</p>
+    <div t-if="not is_html_empty(user.signature)"><t t-out="user.signature"/></div>
+</div>
+        </field>
+    </record>
+</odoo>

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Activité',
-    'version': '19.0.1.4.0',
+    'version': '19.0.1.5.0',
     'summary': 'Activity and mission reports by project based on leaves logic',
     'description': """
         Module mission_report adapting hr_holidays logic for activity and mission reporting by project.
@@ -22,6 +22,8 @@
         'project',
         # Les journées validées alimentent les lignes de commande des missions.
         'sale_project',
+        # Tableau des frais refacturés et justificatifs joints aux factures.
+        'expense_scan',
     ],
     'data': [
         'security/ir.model.access.csv',
@@ -38,6 +40,8 @@
         'data/wording_data.xml',
         'data/cron_sale_delivered.xml',
         'views/sale_order_views.xml',
+        'views/invoice_mission_views.xml',
+        'data/mail_template_invoice.xml',
     ],
     'assets': {
         'web.assets_backend': [
