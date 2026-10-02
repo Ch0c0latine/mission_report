@@ -23,14 +23,10 @@ class SaleOrder(models.Model):
              "(par exemple le modèle du client). Vide : pas de tableau Excel.",
     )
 
-    @api.depends('order_line')
+    @api.depends('order_line', 'mission_project_ids')
     def _compute_mission_employee_names(self):
-        Project = self.env['project.project']
         Leave = self.env['hr.leave']
         for order in self:
-            projects = Project.search([
-                '|', ('sale_order_id', '=', order.id), ('reinvoiced_sale_order_id', '=', order.id),
-            ]) if order.id else Project
-            projects |= order.order_line.project_id
+            projects = order._mission_projects() if order.id else self.env['project.project']
             employees = Leave.search([('project_id', 'in', projects.ids)]).employee_id if projects else False
             order.mission_employee_names = ", ".join(sorted(employees.mapped('name'))) if employees else False

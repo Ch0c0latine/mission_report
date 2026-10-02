@@ -22,7 +22,9 @@ class TestIgd(TestSaleDelivery):
         cls.project_a.igd_monthly_budget = 500.0
 
     def _generated(self):
-        self.report.action_generate_igd()
+        self.env['mission.igd.wizard'].create({
+            'employee_ids': [(6, 0, self.employee.ids)],
+            'report_month': '5', 'report_year': '2031'}).action_generate()
         return self.env['hr.expense'].search([
             ('employee_id', '=', self.employee.id), ('igd_generated', '=', True)], order='date, id')
 

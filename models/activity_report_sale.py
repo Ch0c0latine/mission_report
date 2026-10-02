@@ -50,31 +50,39 @@ class MissionActivityReport(models.Model):
 
     @api.model
     def _sale_lines_of(self, project):
-        """Order lines billed on the days of a mission."""
+        """Lignes de journées de la mission, affaire après affaire (la plus ancienne d'abord)."""
         lines = project.sale_line_id
-        if 'project_id' in self.env['sale.order.line']._fields:
-            lines |= self.env['sale.order.line'].sudo().search([
-                ('project_id', '=', project.id),
-                ('state', '=', 'sale'),
-                ('is_service', '=', True),
-            ]).filtered(lambda line: not line.product_id.can_be_expensed)
-        return lines.filtered(lambda line: line.qty_delivered_method == 'manual' and not line.display_type)
+        Line = self.env['sale.order.line'].sudo()
+        if 'project_id' in Line._fields:
+            lines |= Line.search([('project_id', '=', project.id), ('state', '=', 'sale')])
+        for order in project.sudo().mission_order_ids.filtered(lambda o: o.state == 'sale'):
+            lines |= order.order_line
+        lines = lines.filtered(
+            lambda l: not l.display_type and l.is_service and not l.product_id.can_be_expensed
+            and l.qty_delivered_method == 'manual' and l.state == 'sale')
+        return lines.sorted(lambda l: (l.order_id.date_order or l.create_date, l.order_id.id, l.sequence, l.id))
 
     @api.model
     def _sale_sync_delivered(self, project_ids=None):
         """Set the delivered days of the missions' order lines.
 
-        Without ``project_ids``, every mission with a validated report.
+        Without ``project_ids``, every mission with a validated report. With
+        several lines (several orders of one mission), each takes the days up
+        to its ordered quantity, in order; the last one takes what is left.
         """
         days = self._sale_validated_days()
         ids = set(project_ids) if project_ids is not None else set(days)
         for project in self.env['project.project'].sudo().browse(sorted(ids)).exists():
-            total = days.get(project.id, 0.0)
-            for line in self._sale_lines_of(project):
-                if float_compare(line.qty_delivered, total, precision_digits=2):
+            remaining = days.get(project.id, 0.0)
+            lines = self._sale_lines_of(project)
+            for index, line in enumerate(lines):
+                last = index == len(lines) - 1
+                share = remaining if last else min(remaining, line.product_uom_qty)
+                remaining -= share
+                if float_compare(line.qty_delivered, share, precision_digits=2):
                     try:
                         with self.env.cr.savepoint():
-                            line.write({'qty_delivered': total})
+                            line.write({'qty_delivered': share})
                     except Exception:  # noqa: BLE001 - never block a validation
                         _logger.warning("Could not set the delivered days of %s", line.display_name,
                                         exc_info=True)

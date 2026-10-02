@@ -12,6 +12,10 @@
                            context="{'show_email': True}"/>
                     <field name="mission_expense_template_id" options="{'no_create': True}"/>
                 </group>
+                <group name="mission_links" string="Missions">
+                    <field name="mission_project_ids" widget="many2many_tags"
+                           options="{'no_create': True}"/>
+                </group>
             </xpath>
         </field>
     </record>

@@ -44,8 +44,9 @@ class MissionActivityReport(models.Model):
     report_month = fields.Selection(
         selection='_selection_report_month', string="Month of the report",
         compute='_compute_report_month', inverse='_inverse_report_month')
-    report_year = fields.Integer(
-        string="Year", compute='_compute_report_month', inverse='_inverse_report_month')
+    report_year = fields.Selection(
+        selection='_selection_report_year', string="Year",
+        compute='_compute_report_month', inverse='_inverse_report_month')
     month_label = fields.Char(string="Month", compute='_compute_report_month')
     state = fields.Selection([
         ('draft', "Draft"),
@@ -76,6 +77,10 @@ class MissionActivityReport(models.Model):
         return [(str(month), babel_format_date(date(2000, month, 1), 'MMMM', locale=lang).capitalize())
                 for month in range(1, 13)]
 
+    @api.model
+    def _selection_report_year(self):
+        return [(str(year), str(year)) for year in range(2024, 2041)]
+
     @api.depends('date_from')
     @api.depends_context('lang')
     def _compute_report_month(self):
@@ -83,13 +88,13 @@ class MissionActivityReport(models.Model):
         for report in self:
             day = report.date_from
             report.report_month = str(day.month) if day else False
-            report.report_year = day.year if day else 0
+            report.report_year = str(day.year) if day else False
             report.month_label = babel_format_date(day, 'MMMM yyyy', locale=lang).capitalize() if day else ''
 
     def _inverse_report_month(self):
         for report in self:
             if report.report_month and report.report_year:
-                report.date_from = date(report.report_year, int(report.report_month), 1)
+                report.date_from = date(int(report.report_year), int(report.report_month), 1)
 
     @api.depends('employee_id', 'date_from')
     def _compute_name(self):

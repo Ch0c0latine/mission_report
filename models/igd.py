@@ -63,16 +63,59 @@ class HrExpense(models.Model):
     igd_generated = fields.Boolean(readonly=True, copy=False, groups=IGD_GROUP)
 
 
-class MissionActivityReport(models.Model):
-    _inherit = 'mission.activity.report'
+class ProductProduct(models.Model):
+    _inherit = 'product.product'
 
-    def action_generate_igd(self):
-        """Crée les IGD du mois de chaque rapport, mission par mission."""
-        if not self.env.user.has_group(IGD_GROUP):
-            raise UserError(_("Réservé aux administrateurs."))
+    igd_category = fields.Boolean(
+        string="Catégorie IGD", compute='_compute_igd_category', search='_search_igd_category')
+
+    @api.model
+    def _igd_product_ids(self):
+        companies = self.env['res.company'].sudo().search([])
+        return (companies.igd_lodging_product_id | companies.igd_meal_product_id).ids
+
+    def _compute_igd_category(self):
+        ids = set(self._igd_product_ids())
+        for product in self:
+            product.igd_category = product.id in ids
+
+    @api.model
+    def _search_igd_category(self, operator, value):
+        positive = (operator == '=') == bool(value)
+        return [('id', 'in' if positive else 'not in', self._igd_product_ids())]
+
+
+class MissionIgdWizard(models.TransientModel):
+    _name = 'mission.igd.wizard'
+    _description = "Génération des IGD du mois"
+
+    employee_ids = fields.Many2many(
+        'hr.employee', string="Salariés",
+        default=lambda self: self.env.user.employee_id,
+        help="Un salarié génère les siennes ; un responsable des dépenses peut choisir son équipe.")
+    report_month = fields.Selection(
+        selection=lambda self: self.env['mission.activity.report']._selection_report_month(),
+        string="Mois", required=True, default=lambda self: str(date.today().month))
+    report_year = fields.Selection(
+        selection=lambda self: self.env['mission.activity.report']._selection_report_year(),
+        string="Année", required=True, default=lambda self: str(date.today().year))
+
+    def action_generate(self):
+        """Crée les IGD du mois choisi pour les salariés choisis."""
+        self.ensure_one()
+        user = self.env.user
+        manager = user.has_group('hr_expense.group_hr_expense_team_approver')
+        employees = self.employee_ids or user.employee_id
+        for employee in employees:
+            if employee.user_id != user and not manager:
+                raise UserError(_("Vous ne pouvez générer que vos propres IGD."))
+        day = date(int(self.report_year), int(self.report_month), 1)
+        Report = self.env['mission.activity.report'].sudo()
         created = self.env['hr.expense']
-        for report in self:
-            created |= report.sudo()._igd_generate()
+        for employee in employees:
+            report = Report.search([('employee_id', '=', employee.id), ('date_from', '=', day)], limit=1) \
+                or Report.create({'employee_id': employee.id, 'date_from': day})
+            created |= report._igd_generate()
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'hr.expense',
@@ -80,7 +123,12 @@ class MissionActivityReport(models.Model):
             'view_mode': 'list,form',
             'views': [(False, 'list'), (False, 'form')],
             'domain': [('id', 'in', created.ids)],
+            'target': 'current',
         }
+
+
+class MissionActivityReport(models.Model):
+    _inherit = 'mission.activity.report'
 
     def _igd_products(self):
         company = self.employee_id.company_id or self.env.company

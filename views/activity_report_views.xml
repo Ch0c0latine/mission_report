@@ -53,8 +53,7 @@
                             <label for="report_month" string="Month"/>
                             <div class="o_row">
                                 <field name="report_month" readonly="state != 'draft'" required="1"/>
-                                <field name="report_year" readonly="state != 'draft'" required="1"
-                                       options="{'format': false}" class="oe_inline"/>
+                                <field name="report_year" readonly="state != 'draft'" required="1"/>
                             </div>
                             <field name="company_id" groups="base.group_multi_company"/>
                         </group>
