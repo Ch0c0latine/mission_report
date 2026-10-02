@@ -8,7 +8,7 @@ A report sent back to draft takes its days back.
 """
 import logging
 
-from odoo import api, models
+from odoo import api, fields, models
 from odoo.tools import float_compare
 
 _logger = logging.getLogger(__name__)
@@ -39,46 +39,53 @@ class MissionActivityReport(models.Model):
 
     @api.model
     def _sale_validated_days(self):
-        """{project id: days} over all the validated reports."""
-        days = {}
+        """{project id: [(date, days)]} over all the validated reports."""
+        result = {}
         for report in self.sudo().search([('state', '=', 'validated')]):
-            for line in (report.snapshot or {}).get('missions', []):
+            data = report.snapshot or {}
+            days = data.get('days', [])
+            for line in data.get('missions', []):
                 project_id = line.get('project_id')
-                if project_id:
-                    days[project_id] = days.get(project_id, 0.0) + (line.get('total') or 0.0)
-        return days
+                if not project_id:
+                    continue
+                for day, value in zip(days, line.get('values', [])):
+                    if value:
+                        result.setdefault(project_id, []).append((fields.Date.to_date(day['date']), value))
+        return result
 
     @api.model
     def _sale_lines_of(self, project):
-        """Lignes de journées de la mission, affaire après affaire (la plus ancienne d'abord)."""
+        """Lignes de journées de la mission, toutes affaires confondues."""
         lines = project.sale_line_id
         Line = self.env['sale.order.line'].sudo()
         if 'project_id' in Line._fields:
-            lines |= Line.search([('project_id', '=', project.id), ('state', '=', 'sale')])
-        for order in project.sudo().mission_order_ids.filtered(lambda o: o.state == 'sale'):
+            lines |= Line.search([('project_id', '=', project.id)])
+        orders = project.sudo().mission_order_ids | self.env['sale.order'].sudo().search(
+            [('project_id', '=', project.id)])
+        for order in orders:
             lines |= order.order_line
-        lines = lines.filtered(
+        return lines.filtered(
             lambda l: not l.display_type and l.is_service and not l.product_id.can_be_expensed
             and l.qty_delivered_method == 'manual' and l.state == 'sale')
-        return lines.sorted(lambda l: (l.order_id.date_order or l.create_date, l.order_id.id, l.sequence, l.id))
 
     @api.model
     def _sale_sync_delivered(self, project_ids=None):
         """Set the delivered days of the missions' order lines.
 
-        Without ``project_ids``, every mission with a validated report. With
-        several lines (several orders of one mission), each takes the days up
-        to its ordered quantity, in order; the last one takes what is left.
+        Without ``project_ids``, every mission with a validated report. A day
+        goes to the order of the mission whose period contains it; every day
+        line of an order takes that order's total.
         """
         days = self._sale_validated_days()
         ids = set(project_ids) if project_ids is not None else set(days)
         for project in self.env['project.project'].sudo().browse(sorted(ids)).exists():
-            remaining = days.get(project.id, 0.0)
-            lines = self._sale_lines_of(project)
-            for index, line in enumerate(lines):
-                last = index == len(lines) - 1
-                share = remaining if last else min(remaining, line.product_uom_qty)
-                remaining -= share
+            totals = {}
+            for day, value in days.get(project.id, []):
+                order = project._mission_order_on(day)
+                if order:
+                    totals[order.id] = totals.get(order.id, 0.0) + value
+            for line in self._sale_lines_of(project):
+                share = totals.get(line.order_id.id, 0.0)
                 if float_compare(line.qty_delivered, share, precision_digits=2):
                     try:
                         with self.env.cr.savepoint():

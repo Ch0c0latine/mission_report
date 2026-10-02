@@ -28,5 +28,9 @@ class SaleOrder(models.Model):
         Leave = self.env['hr.leave']
         for order in self:
             projects = order._mission_projects() if order.id else self.env['project.project']
-            employees = Leave.search([('project_id', 'in', projects.ids)]).employee_id if projects else False
-            order.mission_employee_names = ", ".join(sorted(employees.mapped('name'))) if employees else False
+            names = set()
+            if projects:
+                names |= set(Leave.search([('project_id', 'in', projects.ids)]).employee_id.mapped('name'))
+                names |= set(projects.task_ids.user_ids.mapped('name'))
+                names |= set(projects.user_id.mapped('name'))
+            order.mission_employee_names = ", ".join(sorted(names)) if names else False

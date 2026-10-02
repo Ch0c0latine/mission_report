@@ -33,7 +33,7 @@
     </record>
 
     <menuitem id="menu_mission_igd" name="Générer les IGD"
-              parent="hr_expense.menu_hr_expense_root"
+              parent="hr_expense.menu_hr_expense_my_expenses"
               action="action_mission_igd_wizard" sequence="12"/>
 
     <!-- Filtre IGD dans les dépenses. -->
@@ -81,6 +81,7 @@
                     <group>
                         <field name="igd_lodging_product_id"/>
                         <field name="igd_meal_product_id"/>
+                        <field name="igd_expat_product_id"/>
                         <field name="igd_real_meal_product_ids" widget="many2many_tags"/>
                     </group>
                 </page>

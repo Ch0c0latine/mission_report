@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from datetime import date
 
+from odoo.exceptions import UserError
+
 from .test_sale_delivery import TestSaleDelivery
 
 
@@ -51,6 +53,19 @@ class TestIgd(TestSaleDelivery):
         self.assertEqual(len(first), len(again))
         self.assertFalse(first.exists() & again - again)
 
-    def test_missions_without_budget_get_nothing(self):
+    def test_missions_without_budget_get_nothing_and_say_so(self):
         self.project_a.igd_monthly_budget = 0.0
-        self.assertFalse(self._generated())
+        with self.assertRaises(UserError):
+            self._generated()
+
+    def test_a_month_without_presence_says_why(self):
+        wizard = self.env['mission.igd.wizard'].create({
+            'employee_ids': [(6, 0, self.employee.ids)], 'report_month': '8', 'report_year': '2031'})
+        with self.assertRaises(UserError) as caught:
+            wizard.action_generate()
+        self.assertIn("aucune journée de présence", str(caught.exception))
+
+    def test_the_expat_category_counts_as_igd(self):
+        expat = self.env['product.product'].create({'name': 'Forfait expat test', 'can_be_expensed': True})
+        self.company.igd_expat_product_id = expat
+        self.assertIn(expat.id, self.env['product.product']._igd_product_ids())

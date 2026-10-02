@@ -32,6 +32,11 @@ class ResCompany(models.Model):
     igd_meal_product_id = fields.Many2one(
         'product.product', string="Catégorie IGD repas", groups=IGD_GROUP,
         domain="[('can_be_expensed', '=', True)]")
+    igd_expat_product_id = fields.Many2one(
+        'product.product', string="Catégorie forfait expatriation", groups=IGD_GROUP,
+        domain="[('can_be_expensed', '=', True)]",
+        help="Indemnités de long déplacement à l'étranger (forfait expatriation). Comptée "
+             "parmi les IGD pour le filtre des dépenses.")
     igd_real_meal_product_ids = fields.Many2many(
         'product.product', 'res_company_igd_real_meal_rel', 'company_id', 'product_id',
         string="Catégories de repas au réel", groups=IGD_GROUP,
@@ -72,7 +77,8 @@ class ProductProduct(models.Model):
     @api.model
     def _igd_product_ids(self):
         companies = self.env['res.company'].sudo().search([])
-        return (companies.igd_lodging_product_id | companies.igd_meal_product_id).ids
+        return (companies.igd_lodging_product_id | companies.igd_meal_product_id
+                | companies.igd_expat_product_id).ids
 
     def _compute_igd_category(self):
         ids = set(self._igd_product_ids())
@@ -112,10 +118,16 @@ class MissionIgdWizard(models.TransientModel):
         day = date(int(self.report_year), int(self.report_month), 1)
         Report = self.env['mission.activity.report'].sudo()
         created = self.env['hr.expense']
+        reasons = []
         for employee in employees:
             report = Report.search([('employee_id', '=', employee.id), ('date_from', '=', day)], limit=1) \
                 or Report.create({'employee_id': employee.id, 'date_from': day})
-            created |= report._igd_generate()
+            notes = []
+            created |= report._igd_generate(notes)
+            reasons.extend("%s : %s" % (employee.name, note) for note in notes)
+        if not created:
+            raise UserError(_("Aucune IGD générée.\n%s", "\n".join(reasons) or _(
+                "Aucune mission n'a d'IGD moyens prévus par mois.")))
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'hr.expense',
@@ -158,8 +170,10 @@ class MissionActivityReport(models.Model):
             ('date_from', '>=', start), ('date_from', '<=', self.date_from)])
         return len([r for r in reports if r._igd_presence_days(r._get_report_data(), project)])
 
-    def _igd_generate(self):
+    def _igd_generate(self, notes=None):
+        """Crée les IGD du mois ; ``notes`` reçoit les raisons de ce qui n'est pas créé."""
         self.ensure_one()
+        notes = [] if notes is None else notes
         company, lodging, meal = self._igd_products()
         data = self._get_report_data()
         Expense = self.env['hr.expense']
@@ -170,6 +184,7 @@ class MissionActivityReport(models.Model):
                 continue
             days = self._igd_presence_days(data, project)
             if not days:
+                notes.append(_("aucune journée de présence sur « %s » ce mois-ci", project.name))
                 continue  # mois complet d'absence : pas d'IGD
             igd_products = (lodging | meal).ids
             base = [('employee_id', '=', self.employee_id.id), ('project_id', '=', project.id),
@@ -182,6 +197,8 @@ class MissionActivityReport(models.Model):
             month = Expense.search(base + [('date', '>=', self.date_from), ('date', '<=', self.date_to)])
             target = project.igd_monthly_budget * self._igd_months_with_presence(project) - before
             left = target - sum(month.mapped('total_amount'))
+            if float_compare(left, 0.0, precision_digits=2) <= 0:
+                notes.append(_("le montant prévu pour « %s » est déjà atteint", project.name))
             taken = {(e.product_id.id, e.date) for e in month}
             real_meals = set(Expense.search([
                 ('employee_id', '=', self.employee_id.id),
