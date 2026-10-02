@@ -179,6 +179,8 @@ class MissionActivityReport(models.Model):
         Expense = self.env['hr.expense']
         created = Expense
         project_ids = {line.get('project_id') for line in data.get('missions', []) if line.get('project_id')}
+        if not project_ids:
+            notes.append(_("aucune journée de mission saisie ce mois-ci"))
         for project in self.env['project.project'].browse(sorted(project_ids)):
             if not project.igd_monthly_budget:
                 continue

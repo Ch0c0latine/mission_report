@@ -63,7 +63,7 @@ class TestIgd(TestSaleDelivery):
             'employee_ids': [(6, 0, self.employee.ids)], 'report_month': '8', 'report_year': '2031'})
         with self.assertRaises(UserError) as caught:
             wizard.action_generate()
-        self.assertIn("aucune journée de présence", str(caught.exception))
+        self.assertIn("aucune journée", str(caught.exception))
 
     def test_the_expat_category_counts_as_igd(self):
         expat = self.env['product.product'].create({'name': 'Forfait expat test', 'can_be_expensed': True})

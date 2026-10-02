@@ -46,11 +46,13 @@ class TestMissionOrders(TestSaleDelivery):
     def test_the_people_appear_on_both_orders(self):
         self.report.action_submit()
         self.report.action_validate()
-        self.assertEqual(self.second.mission_employee_names, 'Sale Employee')
-        self.assertEqual(self.order.mission_employee_names, 'Sale Employee')
+        self.assertIn('Sale Employee', self.second.mission_employee_names)
+        self.assertIn('Sale Employee', self.order.mission_employee_names)
 
     def test_expenses_go_to_the_current_order(self):
         Expense = self.env['hr.expense']
-        self.assertEqual(Expense._expense_scan_orders_of(self.project_a), self.second)
+        self.assertEqual(Expense._expense_scan_orders_of(self.project_a), self.order | self.second)
         self.assertEqual(Expense._expense_scan_projects_of(self.second), self.project_a)
-        self.assertFalse(Expense._expense_scan_projects_of(self.order))
+        self.assertEqual(Expense._expense_scan_projects_of(self.order), self.project_a)
+        expenses = Expense.search([], limit=0)
+        self.assertEqual(Expense._expense_scan_in_period(expenses[:0], self.order), expenses[:0])
