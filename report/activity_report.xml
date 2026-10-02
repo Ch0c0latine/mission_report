@@ -31,7 +31,7 @@
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">mission_report.report_activity_client</field>
         <field name="report_file">mission_report.report_activity_client</field>
-        <field name="print_report_name">'%s - client' % object.name</field>
+        <field name="print_report_name">'CRA_%s_%s' % (object.employee_id.name, object.date_from.strftime('%m-%Y'))</field>
         <field name="paperformat_id" ref="paperformat_activity_report"/>
         <field name="binding_model_id" ref="model_mission_activity_report"/>
         <field name="binding_type">report</field>

@@ -5,4 +5,5 @@ from . import res_users
 from . import public_holiday_wizard
 from . import activity_report
 from . import activity_report_sale
+from . import sale_order
 from . import activity_report_template
