@@ -70,6 +70,10 @@ class ProjectProject(models.Model):
 class HrExpense(models.Model):
     _inherit = 'hr.expense'
 
+    # La mission de la dépense. Odoo ne la déclare pas ; expense_scan déclare le même champ
+    # (libellé, aide, suppression) : sans attribut ici, sa définition reste la sienne quand il
+    # est installé, et la colonne survit à la désinstallation de l'un ou de l'autre.
+    project_id = fields.Many2one('project.project')
     igd_generated = fields.Boolean(readonly=True, copy=False, groups=IGD_GROUP)
 
 

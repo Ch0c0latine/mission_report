@@ -944,6 +944,11 @@ msgid "Export client PDF"
 msgstr "Exporter pdf client"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_hr_expense__project_id
+msgid "Project"
+msgstr "Projet"
+
+#. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_hr_leave__project_id
 msgid "Projet associé à la saisie de rapport de mission."
 msgstr ""

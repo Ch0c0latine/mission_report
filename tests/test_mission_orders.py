@@ -61,7 +61,8 @@ class TestMissionOrders(TestSaleDelivery):
 
     def test_expenses_go_to_the_current_order(self):
         Expense = self.env['hr.expense']
-        if not hasattr(Expense, '_expense_scan_in_period'):
+        # Les points d'accroche sont déclarés ici : leur présence ne dit pas si expense_scan est là.
+        if 'expense_scan_invoice_id' not in Expense._fields:
             self.skipTest("expense_scan is not installed")
         self.assertEqual(Expense._expense_scan_orders_of(self.project_a), self.order | self.second)
         self.assertEqual(Expense._expense_scan_projects_of(self.second), self.project_a)

@@ -52,8 +52,9 @@
         <field name="model">hr.expense</field>
         <field name="inherit_id" ref="hr_expense.hr_expense_view_search"/>
         <field name="arch" type="xml">
-            <!-- Leur propre groupe : « IGD » se combine avec « À refacturer », il ne s'y ajoute pas. -->
-            <xpath expr="//filter[@name='invoiced']" position="after">
+            <!-- Leur propre groupe : « IGD » se combine avec les autres filtres, il ne s'y ajoute pas.
+                 Ancré sur un filtre d'Odoo (hr_expense), présent que expense_scan soit installé ou non. -->
+            <xpath expr="//filter[@name='to_pay']" position="after">
                 <separator/>
                 <filter string="IGD" name="igd" domain="[('product_id.igd_category', '=', True)]"/>
                 <filter string="Sans IGD" name="no_igd" domain="[('product_id.igd_category', '=', False)]"/>
