@@ -50,14 +50,13 @@ class TestVolet(TestSaleDelivery):
         self.assertEqual(new.project_id, self.project_a)
         self.assertEqual(str(new.mission_date_start), '2031-05-01')
         self.assertEqual(str(new.mission_date_end), '2031-05-31')
-        self.assertEqual(new._volet_day_lines().product_uom_qty, 19.0)
+        line = new._volet_day_lines()
+        self.assertEqual(line.product_uom_qty, 19.0)
+        self.assertEqual((str(line.mission_period_start), str(line.mission_period_end)), ('2031-05-01', '2031-05-31'))
         self.assertEqual(self.order.mission_date_end, date(2031, 4, 30), "read from the first volet title")
-        self.assertIn("Volet 2", new.note)
-        self.assertNotIn("Volet&nbsp;1", new.note)
-        self.assertIn("du 01/05/2031 au 31/05/2031: 19 jours ouvrés", new.note)
-        self.assertIn("mai 2031\t: 19 jours travaillés soit \t9 500 EUR", new.note)
-        self.assertNotIn("janvier 2031", new.note)
-        self.assertIn("Conditions", new.note)
+        self.assertEqual(new.mission_volet_number, 2)
+        # No "Principe de facturation" in this note: it is not split, but copied as it is.
+        self.assertEqual(new.note, self.order.note)
         self.assertEqual(new.state, 'draft')
 
     def test_the_new_volet_starts_without_expenses(self):

@@ -7,3 +7,4 @@ from . import test_igd
 from . import test_mission_orders
 from . import test_volet
 from . import test_revue_corrections
+from . import test_volets_mensuels

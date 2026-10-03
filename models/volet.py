@@ -2,10 +2,12 @@
 """Nouveau volet : l'affaire suivante d'une mission, sur de nouvelles dates.
 
 Un volet est une affaire de la mission qui prend la suite des précédentes. Le
-bouton « Nouveau volet » copie l'affaire (client, projet, conditions, lignes) et
-en refait les dates, le titre du volet et le prévisionnel mensuel de la note :
-jours ouvrés des intervenants sur la période, jours fériés et congés déjà posés
-déduits, multipliés par le tarif journalier.
+bouton « Nouveau volet » copie l'affaire (client, projet, conditions, lignes)
+sur les nouvelles dates : la ligne de journées devient une ligne par mois du
+volet, au tarif de l'affaire d'origine, pour les jours ouvrés des intervenants
+(jours fériés et congés déjà posés déduits). La description de la prestation et
+la phrase sur les frais sont reprises de l'affaire d'origine, la note ne garde
+que les conditions ; le devis imprime le titre du volet et le détail par mois.
 """
 import re
 from collections import defaultdict
@@ -14,20 +16,22 @@ from datetime import datetime, time, timedelta
 import pytz
 from babel.dates import format_date as babel_format_date
 from dateutil.relativedelta import relativedelta
-from markupsafe import Markup
+from lxml import etree, html as lxml_html
+from markupsafe import Markup, escape
 
-from odoo import _, api, fields, models
-from odoo.exceptions import UserError
+from odoo import Command, _, api, fields, models
+from odoo.exceptions import UserError, ValidationError
+from odoo.tools import is_html_empty
 from odoo.tools.intervals import Intervals
 from odoo.tools.misc import format_amount
 
-from .mission_orders import _SPACE, VOLET_HEADING
+from .activity_report import INTERNAL, INTERNAL_KEY
+from .mission_orders import VOLET_HEADING, VOLET_PLAN_PERIOD
+from .public_holiday_wizard import mission_timezone
 
-# Bloc du prévisionnel : « Ce volet concerne … » et les lignes de mois qui suivent.
-VOLET_PLAN = re.compile(
-    r'<div>Ce volet concerne la période du[^<]*</div>'
-    r'(?:<div>[^<]*\d{4}\s*:\s*[\d.,]+ jours? travaillés?[^<]*</div>)*')
-DAILY_RATE = re.compile(r'(montant journalier de' + _SPACE + r')[\d\s\xa0.,]+?(\s*EUR HT/jour)')
+# Ligne de mois du prévisionnel d'une ancienne note : « octobre 2026 : 22 jours travaillés soit … ».
+PLAN_MONTH = re.compile(r'^[^\W\d_]+ \d{4} ?: ?[\d.,]+ ?jours?\b', re.IGNORECASE)
+NOTE_BLOCKS = {'p', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'table', 'blockquote', 'pre'}
 
 
 def work_days_by_month(env, employees, start, end):
@@ -42,7 +46,7 @@ def work_days_by_month(env, employees, start, end):
         calendar = employee.resource_calendar_id or employee.company_id.resource_calendar_id
         if not calendar:
             continue
-        tz = pytz.timezone(employee.tz or calendar.tz or 'UTC')
+        tz = mission_timezone(employee.company_id, employee)
         start_dt = tz.localize(datetime.combine(start, time.min))
         end_dt = tz.localize(datetime.combine(end, time.max))
         resource = employee.resource_id
@@ -77,17 +81,102 @@ def number(value):
     return f"{value:,.2f}".replace(",", " ").replace(".", ",").rstrip("0")
 
 
-def days_text(value):
-    return "%s %s" % (number(value), "jour travaillé" if value <= 1 else "jours travaillés")
+def _text(value):
+    return " ".join((value or "").replace("\xa0", " ").split())
+
+
+def _note_blocks(note):
+    """[(html, texte)] des paragraphes de premier niveau d'une note."""
+    try:
+        parts = lxml_html.fragments_fromstring(note)
+    except (etree.ParserError, ValueError):
+        return []
+    # Une note entièrement prise dans un seul bloc : ses paragraphes sont à l'intérieur.
+    while len(parts) == 1 and not isinstance(parts[0], str) and parts[0].tag == 'div' \
+            and any(child.tag in NOTE_BLOCKS for child in parts[0]):
+        wrapper = parts[0]
+        parts = ([wrapper.text] if wrapper.text else []) + list(wrapper)
+    blocks = []
+    for part in parts:
+        if isinstance(part, str):
+            if part.strip():
+                blocks.append((str(escape(part)), _text(part)))
+            continue
+        if not isinstance(part.tag, str):  # commentaire
+            continue
+        tail, part.tail = part.tail, None
+        blocks.append((etree.tostring(part, encoding='unicode', method='html'), _text(part.text_content())))
+        if tail and tail.strip():
+            blocks.append((str(escape(tail)), _text(tail)))
+    return blocks
+
+
+def split_volet_note(note):
+    """(description, frais, conditions) d'une note à l'ancienne, None si elle ne se découpe pas.
+
+    Description : les paragraphes entre le titre du volet et « Les prestations
+    seront réalisées » ; frais : le paragraphe des frais qui suit, avant
+    « Principe de facturation » ; conditions : de « Principe de facturation » à
+    la fin. Le paragraphe du tarif et le prévisionnel mensuel sont laissés : le
+    devis les imprime d'après les lignes. Tout autre texte fait échouer le
+    découpage, plutôt que de le perdre.
+    """
+    if is_html_empty(note):
+        return None
+    blocks = _note_blocks(note)
+    texts = [text for _html, text in blocks]
+    first = 0
+    title = next((i for i, text in enumerate(texts) if VOLET_HEADING.search(text)), None)
+    if title is not None:
+        if any(texts[:title]):
+            return None
+        first = title + 1
+    rate = next((i for i in range(first, len(texts)) if texts[i].startswith("Les prestations seront réalisées")),
+                None)
+    if rate is None:
+        return None
+    terms = next((i for i in range(rate + 1, len(texts)) if texts[i].startswith("Principe de facturation")), None)
+    if terms is None:
+        return None
+    description = [i for i in range(first, rate) if texts[i]]
+    if not description:
+        return None
+    expenses = []
+    for i in range(rate + 1, terms):
+        if not texts[i] or VOLET_PLAN_PERIOD.search(texts[i]) or PLAN_MONTH.match(texts[i]):
+            continue
+        if 'frais' not in texts[i].lower():
+            return None
+        expenses.append(blocks[i][0])
+    return (
+        "".join(html for html, _plain in blocks[description[0]:description[-1] + 1]),
+        "".join(expenses),
+        "".join(html for html, _plain in blocks[terms:]),
+    )
 
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
+    mission_volet_number = fields.Integer(
+        string="Volet", copy=False,
+        help="Numéro du volet de la mission, imprimé sur le devis avec la période de l'affaire.")
+    mission_description = fields.Html(
+        string="Description de la prestation",
+        help="Imprimée sur le devis sous l'objet de la proposition. Reprise par « Nouveau volet ».")
+    mission_expenses_text = fields.Html(
+        string="Frais",
+        help="La phrase sur les frais, imprimée sur le devis après le prix et le volume prévisionnel. "
+             "Reprise par « Nouveau volet ».")
+
     def _volet_day_lines(self):
         """Lignes de journées de l'affaire (ni frais, ni notes)."""
-        return self.order_line.filtered(
-            lambda l: not l.display_type and l.is_service and not l.product_id.can_be_expensed)
+        return self.order_line.filtered('mission_day_line')
+
+    def _volet_legacy(self):
+        """Affaire d'avant les champs de prestation : tout est dans la note."""
+        self.ensure_one()
+        return is_html_empty(self.mission_description) and is_html_empty(self.mission_expenses_text)
 
     def _volet_workers(self):
         """Les intervenants de la mission : ceux qui ont des saisies, sinon ceux d'une tâche."""
@@ -112,6 +201,76 @@ class SaleOrder(models.Model):
         }
 
 
+class SaleOrderLine(models.Model):
+    _inherit = 'sale.order.line'
+
+    mission_day_line = fields.Boolean(
+        string="Ligne de journées", compute='_compute_mission_day_line',
+        help="Prestation comptée en journées : ni frais refacturés, ni section ou note. Les journées "
+             "validées des comptes rendus en font la quantité livrée.")
+    mission_period_start = fields.Date(
+        string="Début de période",
+        help="Ligne d'un mois du volet : les journées validées de cette période vont sur elle.")
+    mission_period_end = fields.Date(string="Fin de période")
+
+    @api.depends('display_type', 'is_service', 'product_id.can_be_expensed')
+    def _compute_mission_day_line(self):
+        for line in self:
+            line.mission_day_line = not line.display_type and line.is_service \
+                and not line.product_id.can_be_expensed
+
+    @api.constrains('mission_period_start', 'mission_period_end')
+    def _check_mission_period(self):
+        for line in self:
+            if line.mission_period_start and line.mission_period_end \
+                    and line.mission_period_end < line.mission_period_start:
+                raise ValidationError(_("La fin de période de la ligne « %s » précède son début.", line.name))
+
+    def mission_period_label(self):
+        """« 01/10/2026 – 31/10/2026 », vide sans période."""
+        self.ensure_one()
+        if not (self.mission_period_start and self.mission_period_end):
+            return ""
+        return "%s – %s" % (self.mission_period_start.strftime('%d/%m/%Y'),
+                            self.mission_period_end.strftime('%d/%m/%Y'))
+
+    def mission_quantity_label(self):
+        """« 22 jours » pour des lignes de journées (leur total), sinon la quantité et son unité."""
+        quantity = sum(self.mapped('product_uom_qty'))
+        if self and all(self.mapped('mission_day_line')):
+            return "%s %s" % (number(quantity), "jour" if quantity < 2 else "jours")
+        return ("%s %s" % (number(quantity), self[:1].product_uom_id.name or "")).strip()
+
+    def _mission_lines_on(self, day):
+        """Les lignes qui prennent ce jour : celles dont la période le contient, sinon les plus proches.
+
+        Sans période sur aucune ligne : toutes.
+        """
+        dated = self.filtered(lambda l: l.mission_period_start and l.mission_period_end)
+        if not dated:
+            return self
+
+        def distance(line):
+            if day < line.mission_period_start:
+                return (line.mission_period_start - day).days
+            return max((day - line.mission_period_end).days, 0)
+
+        nearest = min(distance(line) for line in dated)
+        return dated.filtered(lambda l: distance(l) == nearest)
+
+    def _mission_prorata(self, total):
+        """[(ligne, part)] : ``total`` réparti au prorata des quantités commandées, le reste sur la dernière."""
+        lines = self.sorted(lambda l: (l.sequence, l.id))
+        quantity = sum(lines.mapped('product_uom_qty'))
+        shares, given = [], 0.0
+        for line in lines[:-1]:
+            share = round(total * (line.product_uom_qty / quantity if quantity else 1.0 / len(lines)), 2)
+            shares.append((line, share))
+            given += share
+        shares.append((lines[-1], round(total - given, 2)))
+        return shares
+
+
 class MissionVoletWizard(models.TransientModel):
     _name = 'mission.volet.wizard'
     # hr.mixin : voir mission.igd.wizard.
@@ -131,6 +290,7 @@ class MissionVoletWizard(models.TransientModel):
     days = fields.Float(string="Jours ouvrés", compute='_compute_plan')
     plan = fields.Html(string="Prévisionnel", compute='_compute_plan', sanitize=False)
     warning = fields.Char(compute='_compute_plan')
+    note_warning = fields.Char(compute='_compute_note_warning')
 
     # -- valeurs par défaut ------------------------------------------------
 
@@ -174,6 +334,17 @@ class MissionVoletWizard(models.TransientModel):
             period = order._mission_note_period() if order else None
             wizard.needs_source_dates = bool(order) and not period and not (
                 order.mission_date_start and order.mission_date_end)
+
+    @api.depends('order_id')
+    def _compute_note_warning(self):
+        for wizard in self:
+            order = wizard.order_id
+            wizard.note_warning = bool(order) and order._volet_legacy() and not is_html_empty(order.note) \
+                and not split_volet_note(order.note) and _(
+                    "La note de l'affaire d'origine n'a pas pu être découpée : elle sera recopiée telle "
+                    "quelle (titre et prévisionnel de l'ancien volet compris), et la description de la "
+                    "prestation et les frais resteront vides. Reprenez-les dans l'onglet Prestation du "
+                    "nouveau volet.") or False
 
     # -- prévisionnel --------------------------------------------------------
 
@@ -236,33 +407,62 @@ class MissionVoletWizard(models.TransientModel):
 
     # -- création ------------------------------------------------------------
 
-    def _volet_note(self, order, count):
-        """La note de l'affaire d'origine, avec le titre et le prévisionnel du nouveau volet."""
-        months = self._months()
-        total = sum(days for _month, days in months)
-        rate = self._rate()
-        start, end = (d.strftime('%d/%m/%Y') for d in (self.date_start, self.date_end))
-        heading = "Volet %s&nbsp;:&nbsp;période du %s au %s" % (count, start, end)
-        plan = "<div>Ce volet concerne la période du %s au %s: %s soit un prévisionnel de:</div>" % (
-            start, end, ("%s jours ouvrés" % number(total)) if total > 1 else "%s jour ouvré" % number(total))
-        for month, days in months:
-            plan += "<div>%s\t: %s soit \t%s EUR</div>" % (
-                babel_format_date(month, 'LLLL yyyy', locale='fr_FR'), days_text(days), number(days * rate))
-        note = order.note or ''
-        if VOLET_HEADING.search(note):
-            note = VOLET_HEADING.sub(heading, note, count=1)
-        else:
-            note = "<h5>%s</h5>" % heading + note
-        if VOLET_PLAN.search(note):
-            note = VOLET_PLAN.sub(lambda _m: plan, note, count=1)
-        else:
-            closing = note.find('</h5>')
-            at = closing + len('</h5>') if closing >= 0 else 0
-            note = note[:at] + plan + note[at:]
-        if rate:
-            note = DAILY_RATE.sub(lambda m: "%s%s%s" % (m.group(1), number(rate).replace(" ", ""), m.group(2)),
-                                  note, count=1)
-        return note
+    def _volet_number(self):
+        """Le plus grand numéro de volet de la mission, plus un.
+
+        Numéros des affaires et titres de leur note, affaires annulées et
+        affaires rattachées par leurs seules lignes comprises ; au moins le
+        nombre d'affaires.
+        """
+        project = self.order_id.project_id.sudo()
+        orders = self.env['sale.order'].sudo().search([('project_id', '=', project.id)]) \
+            | project._mission_all_orders() | self.order_id.sudo()
+        numbers = [o.mission_volet_number for o in orders if o.mission_volet_number]
+        numbers += [int(found.group(1)) for found in (VOLET_HEADING.search(o.note or '') for o in orders) if found]
+        return max(numbers + [len(orders)]) + 1
+
+    def _volet_lines(self):
+        """Les lignes du nouveau volet : celles de l'affaire d'origine, la ligne de journées en une par mois.
+
+        Chaque mois prend ses jours ouvrés (répartis au prorata des quantités
+        s'il y a plusieurs prestations), au prix de l'affaire d'origine ; les
+        frais repartent de zéro.
+        """
+        order = self.order_id
+        months = [(month, days) for month, days in self._months() if days]
+        lines = order._get_copiable_order_lines().sorted(lambda l: (l.sequence, l.id))
+        groups = defaultdict(lambda: self.env['sale.order.line'])
+        for line in lines.filtered('mission_day_line'):
+            groups[(line.product_id, line.price_unit)] |= line
+        total = sum(line.product_uom_qty for group in groups.values() for line in group)
+        commands, done = [], set()
+        for line in lines:
+            if not line.mission_day_line:
+                vals = line.copy_data({'sequence': len(commands) + 1})[0]
+                if not line.display_type and line.product_id.can_be_expensed:
+                    vals['product_uom_qty'] = 0.0
+                commands.append(Command.create(vals))
+                continue
+            key = (line.product_id, line.price_unit)
+            if key in done:
+                continue
+            done.add(key)
+            group = groups[key]
+            share = sum(group.mapped('product_uom_qty')) / total if total else 1.0 / len(groups)
+            name = line.product_id.with_context(lang=order.partner_id.lang).display_name
+            for month, days in months:
+                first = max(month, self.date_start)
+                last = min(month + relativedelta(months=1, days=-1), self.date_end)
+                period = "%s – %s" % (first.strftime('%d/%m/%Y'), last.strftime('%d/%m/%Y'))
+                commands.append(Command.create(line.copy_data({
+                    'sequence': len(commands) + 1,
+                    'name': "%s\n%s" % (name, period),
+                    'product_uom_qty': round(days * share, 2),
+                    'price_unit': line.price_unit,
+                    'mission_period_start': first,
+                    'mission_period_end': last,
+                })[0]))
+        return commands
 
     def action_create(self):
         self.ensure_one()
@@ -279,27 +479,25 @@ class MissionVoletWizard(models.TransientModel):
         if self.needs_source_dates:
             if not (self.source_date_start and self.source_date_end):
                 raise UserError(_("Renseignez les dates de l'affaire d'origine."))
-            order.with_context(mission_no_check=True).write({
+            order.with_context(**{INTERNAL_KEY: INTERNAL}).write({
                 'mission_date_start': self.source_date_start, 'mission_date_end': self.source_date_end})
-        # Le numéro suit le plus grand déjà écrit dans un titre, affaires annulées comprises.
-        orders = self.env['sale.order'].sudo().search([('project_id', '=', order.project_id.id)])
-        numbers = [int(found.group(1)) for found in (VOLET_HEADING.search(o.note or '') for o in orders) if found]
-        count = max(numbers + [len(orders)]) + 1
+        description, expenses, note = order.mission_description, order.mission_expenses_text, order.note
+        if order._volet_legacy():
+            # Affaire à l'ancienne : description, frais et conditions sont tirés de sa note.
+            parts = split_volet_note(order.note)
+            if parts:
+                description, expenses, note = parts
         new = order.copy({
             'project_id': order.project_id.id,
             'mission_date_start': self.date_start,
             'mission_date_end': self.date_end,
-            'note': self._volet_note(order, count),
+            'mission_volet_number': self._volet_number(),
+            'mission_description': description,
+            'mission_expenses_text': expenses,
+            'note': note,
             'date_order': fields.Datetime.now(),
+            'order_line': self._volet_lines(),
         })
-        day_lines = order._volet_day_lines()
-        old_total = sum(day_lines.mapped('product_uom_qty'))
-        for line in new._volet_day_lines():
-            old = day_lines.filtered(lambda l: l.name == line.name and l.product_id == line.product_id)[:1]
-            share = (old.product_uom_qty / old_total) if old_total and old else 1.0 / len(day_lines)
-            line.product_uom_qty = round(self.days * share, 2)
-        for line in new.order_line.filtered(lambda l: not l.display_type and l.product_id.can_be_expensed):
-            line.product_uom_qty = 0.0
         new.message_post(body=_("Volet créé à partir de %s.", order.name))
         return {
             'type': 'ir.actions.act_window', 'res_model': 'sale.order', 'res_id': new.id,

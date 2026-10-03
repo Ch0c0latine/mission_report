@@ -51,7 +51,11 @@ class ProjectProject(models.Model):
             o.mission_date_start or (o.date_order.date() if o.date_order else date.min), o.id))
 
     def _mission_order_on(self, day):
-        """L'affaire de la mission à cette date (confirmée), sinon la plus proche."""
+        """L'affaire confirmée de la mission à cette date.
+
+        Hors de toute période : l'affaire antérieure la plus proche (un jour
+        entre deux affaires va sur la précédente), la première avant elles.
+        """
         self.ensure_one()
         orders = self._mission_all_orders().filtered(lambda o: o.state == 'sale')
         if not orders:
@@ -61,10 +65,11 @@ class ProjectProject(models.Model):
         for order in orders:
             if order._mission_covers(day):
                 return order
-        dated = orders.filtered('mission_date_start')
-        if dated and day < min(dated.mapped('mission_date_start')):
-            return dated.sorted('mission_date_start')[0]
-        return orders[-1]
+        dated = orders.filtered('mission_date_start').sorted(lambda o: (o.mission_date_start, o.id))
+        if not dated:
+            return orders[-1]
+        before = dated.filtered(lambda o: o.mission_date_start <= day)
+        return before[-1] if before else dated[0]
 
     def _mission_current_order(self):
         """L'affaire en cours : celle d'aujourd'hui."""

@@ -7,6 +7,7 @@ typed by hand: the next invoice takes the days delivered since the last one.
 A report sent back to draft takes its days back.
 """
 import logging
+from collections import defaultdict
 
 from odoo import api, fields, models
 from odoo.tools import float_compare
@@ -55,7 +56,11 @@ class MissionActivityReport(models.Model):
 
     @api.model
     def _sale_lines_of(self, project):
-        """Lignes de journées de la mission, toutes affaires confondues."""
+        """Lignes de journées de la mission, toutes affaires confondues.
+
+        Seulement celles sans projet ou de ce projet : une commande peut porter
+        plusieurs missions.
+        """
         lines = project.sale_line_id
         Line = self.env['sale.order.line'].sudo()
         if 'project_id' in Line._fields:
@@ -63,27 +68,37 @@ class MissionActivityReport(models.Model):
         for order in project.sudo()._mission_all_orders():
             lines |= order.order_line
         return lines.filtered(
-            lambda l: not l.display_type and l.is_service and not l.product_id.can_be_expensed
-            and l.qty_delivered_method == 'manual' and l.state == 'sale')
+            lambda l: l.mission_day_line and l.qty_delivered_method == 'manual' and l.state == 'sale'
+            and (not l.project_id or l.project_id == project))
 
     @api.model
-    def _sale_sync_delivered(self, project_ids=None):
+    def _sale_sync_delivered(self, project_ids=None, days=None):
         """Set the delivered days of the missions' order lines.
 
         Without ``project_ids``, every mission with a validated report. A day
-        goes to the order of the mission whose period contains it; every day
-        line of an order takes that order's total.
+        goes to the order of the mission whose period contains it, then to the
+        day line of that order whose period (one month of the volet) contains
+        it, or the nearest one. An order without periods on its lines shares
+        the days between its day lines in proportion to their ordered quantity.
         """
-        days = self._sale_validated_days()
+        if days is None:
+            days = self._sale_validated_days()
         ids = set(project_ids) if project_ids is not None else set(days)
         for project in self.env['project.project'].sudo().browse(sorted(ids)).exists():
-            totals = {}
+            lines = self._sale_lines_of(project)
+            # Jours par groupe de lignes qui se les partagent.
+            totals = defaultdict(float)
             for day, value in days.get(project.id, []):
                 order = project._mission_order_on(day)
-                if order:
-                    totals[order.id] = totals.get(order.id, 0.0) + value
-            for line in self._sale_lines_of(project):
-                share = totals.get(line.order_id.id, 0.0)
+                order_lines = lines.filtered(lambda l: l.order_id == order)
+                if order_lines:
+                    totals[order_lines._mission_lines_on(day)] += value
+            delivered = defaultdict(float)
+            for group, total in totals.items():
+                for line, share in group._mission_prorata(total):
+                    delivered[line] += share
+            for line in lines:
+                share = delivered[line]
                 if float_compare(line.qty_delivered, share, precision_digits=2):
                     try:
                         with self.env.cr.savepoint():
@@ -96,3 +111,19 @@ class MissionActivityReport(models.Model):
     def _cron_sale_sync_delivered(self):
         """Safety net: every mission with a validated report."""
         self._sale_sync_delivered()
+
+
+class SaleOrder(models.Model):
+    _inherit = 'sale.order'
+
+    def action_confirm(self):
+        result = super().action_confirm()
+        # Les journées déjà validées de la période passent sur l'affaire confirmée.
+        projects = self.sudo()._mission_projects()
+        if projects:
+            Report = self.env['mission.activity.report'].sudo()
+            days = Report._sale_validated_days()
+            project_ids = set(projects.ids) & set(days)
+            if project_ids:
+                Report._sale_sync_delivered(project_ids, days)
+        return result

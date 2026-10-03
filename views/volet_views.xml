@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Affaire : « Nouveau volet » crée l'affaire suivante de la mission. -->
+    <!-- Affaire : « Nouveau volet » crée l'affaire suivante de la mission ; la page
+         Prestation porte les textes du devis, les lignes leur période. -->
     <record id="view_order_form_mission_volet" model="ir.ui.view">
         <field name="name">sale.order.form.mission.volet</field>
         <field name="model">sale.order</field>
@@ -10,6 +11,25 @@
                 <button name="action_mission_new_volet" type="object" string="Nouveau volet"
                         invisible="not project_id or state == 'cancel'"
                         groups="sales_team.group_sale_salesman"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/list/field[@name='name']" position="after">
+                <field name="mission_period_start" optional="hide"/>
+                <field name="mission_period_end" optional="hide"/>
+            </xpath>
+            <xpath expr="//page[@name='order_lines']" position="after">
+                <page string="Prestation" name="mission_prestation">
+                    <group>
+                        <group>
+                            <field name="mission_volet_number" invisible="not mission_volet_number and not project_id"/>
+                        </group>
+                    </group>
+                    <separator string="Description de la prestation"/>
+                    <field name="mission_description" nolabel="1"
+                           placeholder="Objet, lieu et déroulement de la prestation, imprimés sur le devis sous le titre du volet."/>
+                    <separator string="Frais"/>
+                    <field name="mission_expenses_text" nolabel="1"
+                           placeholder="Les frais de déplacement seront facturés au réel sur présentation des justificatifs."/>
+                </page>
             </xpath>
         </field>
     </record>
@@ -40,6 +60,9 @@
                 </group>
                 <div class="alert alert-warning" role="alert" invisible="not warning">
                     <field name="warning"/>
+                </div>
+                <div class="alert alert-warning" role="alert" invisible="not note_warning">
+                    <field name="note_warning"/>
                 </div>
                 <field name="plan" nolabel="1" readonly="1"/>
                 <footer>

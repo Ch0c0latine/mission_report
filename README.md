@@ -25,10 +25,13 @@ days and re-invoiced expenses go to the order whose period holds their date.
 **New volet** (button on the order) copies the order, with the same customer,
 project and conditions, on new dates. The working days of the people on the
 mission (their work schedule, public holidays and the time off already booked
-deducted) give the quantity of the day lines, and the title and the monthly
-forecast of the note are rewritten. The public holidays of the years concerned
-must be entered first (Activité > Configuration > Generate French public
-holidays).
+deducted) give one day line per month of the volet, at the price of the
+original order, each with its period: validated days go to the line of their
+month. The description of the service and the sentence on expenses are fields
+of the order (Prestation tab), copied to the new volet, the note keeps only the
+terms; the quote prints the volet title and the monthly detail from them. The
+public holidays of the years concerned must be entered first (Activité >
+Configuration > Generate French public holidays).
 
 ## IGD
 

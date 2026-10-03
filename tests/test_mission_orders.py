@@ -77,4 +77,4 @@ class TestMissionOrders(TestSaleDelivery):
         wizard = self.env['mission.volet.wizard'].with_context(default_order_id=self.second.id).create({})
         wizard.write({'date_start': '2032-01-01', 'date_end': '2032-01-31'})
         new = self.env['sale.order'].browse(wizard.action_create()['res_id'])
-        self.assertIn("Volet 5", new.note)
+        self.assertEqual(new.mission_volet_number, 5)
