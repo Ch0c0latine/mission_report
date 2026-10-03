@@ -164,6 +164,29 @@ class TestVoletsMensuels(TestSaleDelivery):
         with self.assertRaises(UserError):
             self.order.action_mission_fill_from_note()
 
+    def test_split_keeps_the_text_that_shares_a_block_with_the_plan(self):
+        note = ("<h5>Volet 3 : période du 01/10/2031 au 30/11/2031</h5><p>Description.</p>"
+                "<div>Les prestations seront réalisées en régie à 500EUR HT/jour travaillé.</div>"
+                "<div>Ce volet concerne la période du 01/10/2031 au 30/11/2031: 44 jours ouvrés "
+                "soit un prévisionnel de:</div>"
+                "<div>octobre 2031 : 22 jours travaillés soit 11 000 €<br>"
+                "novembre 2031 : 22 jours travaillés soit 11 000 €<br>"
+                "Les frais seront facturés au réel sur présentation des</div>"
+                "<div>justificatifs de frais.</div><div>La facturation se fait au temps passé.</div>")
+        description, expenses, terms = split_volet_note(note)
+        self.assertEqual(description, "<p>Description.</p>")
+        self.assertIn("Les frais seront facturés au réel sur présentation des", expenses)
+        self.assertIn("justificatifs de frais.", expenses)
+        self.assertNotIn("octobre 2031", expenses)
+        self.assertTrue(terms.startswith("<div>La facturation se fait"))
+
+    def test_an_old_order_takes_the_dates_of_its_note(self):
+        self.order.write({'note': LEGACY_NOTE})
+        self.assertFalse(self.order.mission_date_start)
+        self.order.action_mission_fill_from_note()
+        self.assertEqual(str(self.order.mission_date_start), '2031-01-01')
+        self.assertEqual(str(self.order.mission_date_end), '2031-04-30')
+
     def test_a_legacy_note_that_cannot_be_split_is_copied(self):
         note = LEGACY_NOTE.replace("Principe de facturation", "Facturation")
         self.order.write({'project_id': self.project_a.id, 'note': note})

@@ -33,6 +33,12 @@ from .public_holiday_wizard import mission_timezone
 PLAN_MONTH = re.compile(r'^[^\W\d_]+ \d{4} ?: ?[\d.,]+ ?jours?\b', re.IGNORECASE)
 # Fin de l'introduction du prévisionnel, passée à la ligne : « de: ».
 PLAN_TAIL = re.compile(r'^de ?:?$', re.IGNORECASE)
+# Le paragraphe du tarif, l'introduction et les lignes de mois du prévisionnel, quand ils sont dans le
+# même bloc que la suite : on les retire du texte et on garde le reste.
+PLAN_RATE_SENTENCE = re.compile(r'^Les prestations seront réalisées[^.]*\. ?')
+PLAN_INTRO = re.compile(r'^Ce volet concerne la période du [^:]*:[^:]*?prévisionnel de ?:? ?', re.IGNORECASE)
+PLAN_LINES = re.compile(r'^(?:[^\W\d_]+ \d{4} ?: ?[\d.,]+ ?jours? travaillés? soit ?[\d .,]+ ?(?:EUR|€) ?)+',
+                        re.IGNORECASE)
 NOTE_BLOCKS = {'p', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'table', 'blockquote', 'pre'}
 
 
@@ -113,15 +119,23 @@ def _note_blocks(note):
     return blocks
 
 
+def _plan_remainder(text):
+    """Ce qui reste d'un bloc du prévisionnel une fois l'introduction et les lignes de mois retirées."""
+    text = PLAN_RATE_SENTENCE.sub('', text)
+    text = PLAN_INTRO.sub('', text)
+    text = PLAN_LINES.sub('', text)
+    return text.strip()
+
+
 def split_volet_note(note):
     """(description, frais, conditions) d'une note à l'ancienne, None si elle ne se découpe pas.
 
     Description : les paragraphes avant « Les prestations seront réalisées »,
     sauf le titre du volet ; frais : ce qui suit, avant « Principe de
-    facturation », sauf le prévisionnel mensuel ; conditions : de « Principe de
-    facturation » à la fin. Le paragraphe du tarif et le prévisionnel sont
-    laissés : le devis les imprime d'après les lignes. Aucun autre texte n'est
-    perdu : il va dans la description ou les frais.
+    facturation » (à défaut « La facturation se fait »), sauf le prévisionnel
+    mensuel ; conditions : de là à la fin. Le paragraphe du tarif et le
+    prévisionnel sont laissés : le devis les imprime d'après les lignes. Aucun
+    autre texte n'est perdu : il va dans la description ou les frais.
     """
     if is_html_empty(note):
         return None
@@ -130,17 +144,30 @@ def split_volet_note(note):
     rate = next((i for i, text in enumerate(texts) if text.startswith("Les prestations seront réalisées")), None)
     if rate is None:
         return None
-    terms = next((i for i in range(rate + 1, len(texts)) if texts[i].startswith("Principe de facturation")), None)
+    terms = None
+    for marker in ("Principe de facturation", "La facturation se fait"):
+        terms = next((i for i in range(rate + 1, len(texts)) if texts[i].startswith(marker)), None)
+        if terms is not None:
+            break
     if terms is None:
         return None
     description = [i for i in range(rate) if texts[i] and not VOLET_HEADING.search(texts[i])]
     if not description:
         return None
-    expenses = [i for i in range(rate + 1, terms) if texts[i] and not (
-        VOLET_PLAN_PERIOD.search(texts[i]) or PLAN_MONTH.match(texts[i]) or PLAN_TAIL.match(texts[i]))]
+    expenses = []
+    for i in [rate] + list(range(rate + 1, terms)):
+        text = texts[i]
+        if not text:
+            continue
+        if i == rate or VOLET_PLAN_PERIOD.search(text) or PLAN_MONTH.match(text):
+            rest = _plan_remainder(text)
+            if rest:
+                expenses.append("<div>%s</div>" % escape(rest))
+        elif not PLAN_TAIL.match(text):
+            expenses.append(blocks[i][0])
     return (
         "".join(blocks[i][0] for i in description),
-        "".join(blocks[i][0] for i in expenses),
+        "".join(expenses),
         "".join(html for html, _plain in blocks[terms:]),
     )
 
@@ -183,7 +210,11 @@ class SaleOrder(models.Model):
             heading = VOLET_HEADING.search(order.note or '')
             if heading and not order.mission_volet_number:
                 vals['mission_volet_number'] = int(heading.group(1))
-            order.write(vals)
+            # Les dates du titre ou du prévisionnel, quand l'affaire n'en a pas.
+            period = order._mission_note_period()
+            if period and not (order.mission_date_start or order.mission_date_end):
+                vals.update(mission_date_start=period[0], mission_date_end=period[1])
+            order.with_context(**{INTERNAL_KEY: INTERNAL}).write(vals)
             done |= order
         if not done:
             raise UserError(_(
