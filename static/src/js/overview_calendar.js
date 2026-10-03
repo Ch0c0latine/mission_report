@@ -11,7 +11,7 @@
  * Les écrans viennent d'hr_holidays (calendrier de l'onglet « Vue d'ensemble »,
  * js_class time_off_report_calendar) : on les complète par patch.
  */
-import { onWillUnmount } from "@odoo/owl";
+import { onMounted, onWillUnmount } from "@odoo/owl";
 import { browser } from "@web/core/browser/browser";
 import { serializeDate } from "@web/core/l10n/dates";
 import { patch } from "@web/core/utils/patch";
@@ -91,6 +91,7 @@ patch(TimeOffCalendarYearRenderer.prototype, {
         super.setup();
         this.hoverTimer = null;
         this.leaveTimer = null;
+        onMounted(() => this.rootRef.el.addEventListener("click", (ev) => this.onYearClick(ev)));
         onWillUnmount(() => {
             browser.clearTimeout(this.hoverTimer);
             browser.clearTimeout(this.leaveTimer);
@@ -181,19 +182,19 @@ patch(TimeOffCalendarYearRenderer.prototype, {
         this.keepPopoverWhileHovered();
     },
 
-    /** Le titre d'un mois mène à la vue mensuelle de ce mois. */
-    viewDidMount({ el }) {
-        super.viewDidMount(...arguments);
-        const title = el.closest(".fc")?.querySelector(".fc-toolbar-title");
-        const first = el.querySelector(".fc-daygrid-day[data-date]:not(.fc-day-other)");
-        if (!title || !first) {
+    /**
+     * Le titre d'un mois mène à la vue mensuelle de ce mois. FullCalendar refait
+     * son en-tête à chaque rendu : le clic est capté sur l'ensemble de la vue.
+     */
+    onYearClick(ev) {
+        const title = ev.target.closest(".fc-toolbar-title");
+        const first = title
+            ?.closest(".fc-month-container")
+            ?.querySelector(".fc-daygrid-day[data-date]:not(.fc-day-other)");
+        if (!first) {
             return;
         }
-        title.classList.add("o_mission_month_title");
-        title.title = "Vue mensuelle";
-        title.addEventListener("click", () => {
-            this.closeDayPopovers();
-            this.props.model.load({ date: luxon.DateTime.fromISO(first.dataset.date), scale: "month" });
-        });
+        this.closeDayPopovers();
+        this.props.model.load({ date: luxon.DateTime.fromISO(first.dataset.date), scale: "month" });
     },
 });

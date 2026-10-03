@@ -128,6 +128,7 @@ class MissionVoletWizard(models.TransientModel):
     source_date_end = fields.Date(string="Fin de l'affaire d'origine")
     days = fields.Float(string="Jours ouvrés", compute='_compute_plan')
     plan = fields.Html(string="Prévisionnel", compute='_compute_plan', sanitize=False)
+    warning = fields.Char(compute='_compute_plan')
 
     # -- valeurs par défaut ------------------------------------------------
 
@@ -192,12 +193,31 @@ class MissionVoletWizard(models.TransientModel):
         by_month = work_days_by_month(self.env, self.employee_ids, self.date_start, self.date_end)
         return [(fields.Date.to_date("%d-%02d-01" % key), value) for key, value in sorted(by_month.items())]
 
+    def _holidays_warning(self):
+        """Une année sans aucun jour férié saisi : ils compteraient comme des jours travaillés."""
+        self.ensure_one()
+        if not self.date_start or not self.date_end or self.date_end < self.date_start:
+            return False
+        Leaves = self.env['resource.calendar.leaves'].sudo()
+        missing = [
+            str(year) for year in range(self.date_start.year, self.date_end.year + 1)
+            if not Leaves.search_count([
+                ('resource_id', '=', False), ('holiday_id', '=', False),
+                ('date_from', '>=', '%s-01-01 00:00:00' % year),
+                ('date_from', '<=', '%s-12-31 23:59:59' % year)])]
+        if not missing:
+            return False
+        return _("Aucun jour férié n'est saisi pour %s : ils compteraient comme des jours travaillés. "
+                 "Générez-les d'abord (Activité › Configuration › Générer les jours fériés français).",
+                 ", ".join(missing))
+
     @api.depends('employee_ids', 'date_start', 'date_end', 'order_id')
     def _compute_plan(self):
         for wizard in self:
             months = wizard._months()
             total = sum(days for _month, days in months)
             wizard.days = total
+            wizard.warning = wizard._holidays_warning()
             rate = wizard.order_id and wizard._rate()
             currency = wizard.order_id.currency_id
             rows = Markup().join(

@@ -34,6 +34,9 @@
                                required="needs_source_dates"/>
                     </group>
                 </group>
+                <div class="alert alert-warning" role="alert" invisible="not warning">
+                    <field name="warning"/>
+                </div>
                 <field name="plan" nolabel="1" readonly="1"/>
                 <footer>
                     <button name="action_create" type="object" string="Créer le volet" class="btn-primary"/>

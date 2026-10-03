@@ -10,7 +10,7 @@
 }
 
 // Vue annuelle : le titre d'un mois mène à la vue mensuelle.
-.o_mission_month_title {
+.o_calendar_widget .fc-dayGridYear-view .fc-toolbar-title {
     cursor: pointer;
 
     &:hover {
