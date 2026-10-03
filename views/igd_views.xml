@@ -59,14 +59,6 @@
         </field>
     </record>
 
-    <!-- Vue d'ensemble : le calendrier mensuel passe avant l'annuel. -->
-    <record id="hr_holidays.hr_leave_report_calendar_view" model="ir.ui.view">
-        <field name="priority">10</field>
-    </record>
-    <record id="hr_holidays.hr_leave_report_calendar_year_view" model="ir.ui.view">
-        <field name="priority">20</field>
-    </record>
-
     <record id="project_project_view_form_igd" model="ir.ui.view">
         <field name="name">project.project.form.igd</field>
         <field name="model">project.project</field>

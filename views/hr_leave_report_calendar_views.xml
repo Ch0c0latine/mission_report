@@ -5,6 +5,15 @@
          une vue SQL construite au-dessus : les renommages faits sur hr.leave ne
          l'atteignent pas, et tout son vocabulaire était resté celui des congés. -->
 
+    <!-- La vue d'ensemble s'ouvre sur l'année ; le mois est un clic plus loin. Chacun
+         retrouve ensuite l'échelle qu'il a choisie en dernier. -->
+    <record id="hr_holidays.hr_leave_report_calendar_year_view" model="ir.ui.view">
+        <field name="priority">10</field>
+    </record>
+    <record id="hr_holidays.hr_leave_report_calendar_view" model="ir.ui.view">
+        <field name="priority">20</field>
+    </record>
+
     <!-- Calendrier mensuel -->
     <record id="hr_leave_report_calendar_view_inherit_mission_report" model="ir.ui.view">
         <field name="name">hr.leave.report.calendar.view.inherit.mission.report</field>
