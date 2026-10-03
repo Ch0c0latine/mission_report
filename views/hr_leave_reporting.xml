@@ -32,11 +32,11 @@
         <field name="context">{'search_default_groupby_employee': 1, 'search_default_groupby_holiday_status': 1}</field>
     </record>
 
-    <!-- À côté des comptes rendus, dans Management. -->
+    <!-- À la suite des comptes rendus de l'équipe. -->
     <menuitem id="menu_activity_report_internal"
               name="Rapport d'activité globale"
-              parent="hr_holidays.menu_hr_holidays_management"
+              parent="hr_holidays.menu_hr_holidays_my_leaves"
               action="action_activity_report_internal"
               groups="hr_holidays.group_hr_holidays_user"
-              sequence="4"/>
+              sequence="12"/>
 </odoo>

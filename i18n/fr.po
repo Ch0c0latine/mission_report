@@ -192,7 +192,6 @@ msgstr "Modèles de compte rendu"
 
 #. module: mission_report
 #: model:ir.actions.act_window,name:mission_report.action_mission_activity_report_all
-#: model:ir.ui.menu,name:mission_report.menu_mission_activity_report_all
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_list
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_search
 msgid "Activity reports"
@@ -807,6 +806,11 @@ msgstr "Grille du mois"
 #: model_terms:ir.ui.view,arch_db:mission_report.activity_report_page
 msgid "Monthly activity report"
 msgstr "Compte rendu d'activité mensuel"
+
+#. module: mission_report
+#: model:ir.ui.menu,name:mission_report.menu_mission_activity_report_all
+msgid "Team activity reports"
+msgstr "Comptes rendus de l'équipe"
 
 #. module: mission_report
 #: model:ir.actions.act_window,name:mission_report.action_mission_activity_report_my

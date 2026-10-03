@@ -138,8 +138,13 @@ class TestVoletsMensuels(TestSaleDelivery):
         wrapped = ("<div><p>Description.</p><p>Les prestations seront réalisées en régie.</p>"
                    "<p>Principe de facturation</p></div>")
         self.assertEqual(split_volet_note(wrapped), ("<p>Description.</p>", "", "<p>Principe de facturation</p>"))
-        # Unknown text between the rate and the terms, no terms, nothing before the rate: not split.
-        self.assertIsNone(split_volet_note(LEGACY_NOTE.replace("<p><br></p>", "<p>Autre chose.</p>")))
+        # Other text between the rate and the terms goes with the expenses, text before the title with
+        # the description: nothing is lost.
+        other = split_volet_note(LEGACY_NOTE.replace("<p><br></p>", "<p>Autre chose.</p>"))
+        self.assertIn("Autre chose.", other[1])
+        intro = split_volet_note("<p>Introduction.</p>" + LEGACY_NOTE)
+        self.assertTrue(intro[0].startswith("<p>Introduction.</p><p>La présente offre"))
+        # No terms, nothing before the rate: not split.
         self.assertIsNone(split_volet_note(LEGACY_NOTE.replace("Principe de facturation", "Facturation")))
         self.assertIsNone(split_volet_note("<p>Les prestations seront réalisées.</p><p>Principe de facturation</p>"))
         self.assertIsNone(split_volet_note(False))

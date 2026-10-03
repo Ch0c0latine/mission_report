@@ -276,11 +276,11 @@
               action="action_mission_activity_report_my"
               sequence="5"/>
     <menuitem id="menu_mission_activity_report_all"
-              name="Activity reports"
-              parent="hr_holidays.menu_hr_holidays_management"
+              name="Team activity reports"
+              parent="hr_holidays.menu_hr_holidays_my_leaves"
               action="action_mission_activity_report_all"
               groups="hr_holidays.group_hr_holidays_user"
-              sequence="3"/>
+              sequence="11"/>
     <menuitem id="menu_mission_activity_report_template"
               name="Activity report templates"
               parent="hr_holidays.menu_hr_holidays_configuration"

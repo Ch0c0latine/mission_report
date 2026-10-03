@@ -31,6 +31,8 @@ from .public_holiday_wizard import mission_timezone
 
 # Ligne de mois du prévisionnel d'une ancienne note : « octobre 2026 : 22 jours travaillés soit … ».
 PLAN_MONTH = re.compile(r'^[^\W\d_]+ \d{4} ?: ?[\d.,]+ ?jours?\b', re.IGNORECASE)
+# Fin de l'introduction du prévisionnel, passée à la ligne : « de: ».
+PLAN_TAIL = re.compile(r'^de ?:?$', re.IGNORECASE)
 NOTE_BLOCKS = {'p', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'table', 'blockquote', 'pre'}
 
 
@@ -114,43 +116,31 @@ def _note_blocks(note):
 def split_volet_note(note):
     """(description, frais, conditions) d'une note à l'ancienne, None si elle ne se découpe pas.
 
-    Description : les paragraphes entre le titre du volet et « Les prestations
-    seront réalisées » ; frais : le paragraphe des frais qui suit, avant
-    « Principe de facturation » ; conditions : de « Principe de facturation » à
-    la fin. Le paragraphe du tarif et le prévisionnel mensuel sont laissés : le
-    devis les imprime d'après les lignes. Tout autre texte fait échouer le
-    découpage, plutôt que de le perdre.
+    Description : les paragraphes avant « Les prestations seront réalisées »,
+    sauf le titre du volet ; frais : ce qui suit, avant « Principe de
+    facturation », sauf le prévisionnel mensuel ; conditions : de « Principe de
+    facturation » à la fin. Le paragraphe du tarif et le prévisionnel sont
+    laissés : le devis les imprime d'après les lignes. Aucun autre texte n'est
+    perdu : il va dans la description ou les frais.
     """
     if is_html_empty(note):
         return None
     blocks = _note_blocks(note)
     texts = [text for _html, text in blocks]
-    first = 0
-    title = next((i for i, text in enumerate(texts) if VOLET_HEADING.search(text)), None)
-    if title is not None:
-        if any(texts[:title]):
-            return None
-        first = title + 1
-    rate = next((i for i in range(first, len(texts)) if texts[i].startswith("Les prestations seront réalisées")),
-                None)
+    rate = next((i for i, text in enumerate(texts) if text.startswith("Les prestations seront réalisées")), None)
     if rate is None:
         return None
     terms = next((i for i in range(rate + 1, len(texts)) if texts[i].startswith("Principe de facturation")), None)
     if terms is None:
         return None
-    description = [i for i in range(first, rate) if texts[i]]
+    description = [i for i in range(rate) if texts[i] and not VOLET_HEADING.search(texts[i])]
     if not description:
         return None
-    expenses = []
-    for i in range(rate + 1, terms):
-        if not texts[i] or VOLET_PLAN_PERIOD.search(texts[i]) or PLAN_MONTH.match(texts[i]):
-            continue
-        if 'frais' not in texts[i].lower():
-            return None
-        expenses.append(blocks[i][0])
+    expenses = [i for i in range(rate + 1, terms) if texts[i] and not (
+        VOLET_PLAN_PERIOD.search(texts[i]) or PLAN_MONTH.match(texts[i]) or PLAN_TAIL.match(texts[i]))]
     return (
-        "".join(html for html, _plain in blocks[description[0]:description[-1] + 1]),
-        "".join(expenses),
+        "".join(blocks[i][0] for i in description),
+        "".join(blocks[i][0] for i in expenses),
         "".join(html for html, _plain in blocks[terms:]),
     )
 
