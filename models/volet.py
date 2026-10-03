@@ -114,6 +114,8 @@ class SaleOrder(models.Model):
 
 class MissionVoletWizard(models.TransientModel):
     _name = 'mission.volet.wizard'
+    # hr.mixin : voir mission.igd.wizard.
+    _inherit = ['hr.mixin']
     _description = "Nouveau volet d'une affaire"
 
     order_id = fields.Many2one('sale.order', string="Affaire d'origine", required=True, readonly=True)
@@ -279,7 +281,10 @@ class MissionVoletWizard(models.TransientModel):
                 raise UserError(_("Renseignez les dates de l'affaire d'origine."))
             order.with_context(mission_no_check=True).write({
                 'mission_date_start': self.source_date_start, 'mission_date_end': self.source_date_end})
-        count = len(order.project_id.sudo()._mission_all_orders()) + 1
+        # Le numéro suit le plus grand déjà écrit dans un titre, affaires annulées comprises.
+        orders = self.env['sale.order'].sudo().search([('project_id', '=', order.project_id.id)])
+        numbers = [int(found.group(1)) for found in (VOLET_HEADING.search(o.note or '') for o in orders) if found]
+        count = max(numbers + [len(orders)]) + 1
         new = order.copy({
             'project_id': order.project_id.id,
             'mission_date_start': self.date_start,

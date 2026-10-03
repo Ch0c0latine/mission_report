@@ -74,17 +74,19 @@ patch(TimeOffReportCalendarController.prototype, {
 
 patch(TimeOffCalendarModel.prototype, {
     /**
-     * Un lien peut demander une échelle (contexte mission_scale) : appliquée à
-     * l'ouverture seulement, et sans remplacer l'échelle mémorisée.
+     * Un lien peut demander une échelle (contexte mission_scale) : elle vaut pour cette
+     * ouverture. Le modèle mémorise l'échelle de chaque navigation ; une fois imposée,
+     * il l'écrit sous une autre clé, pour ne pas remplacer celle de la personne.
      */
+    get storageKey() {
+        return this._missionScaleApplied ? `${super.storageKey}-mission` : super.storageKey;
+    },
+
     async load(params = {}) {
         const scale = params.context && params.context.mission_scale;
         if (scale && !this._missionScaleApplied) {
             this._missionScaleApplied = true;
-            const remembered = this.getLocalStorageScale();
-            await super.load({ ...params, scale });
-            browser.localStorage.setItem(this.storageKey, remembered);
-            return;
+            return super.load({ ...params, scale });
         }
         return super.load(params);
     },

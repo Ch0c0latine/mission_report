@@ -17,6 +17,7 @@ mensuel (part du mois, rattrapage, reste) n'est donné qu'à eux.
 """
 from datetime import date
 
+from dateutil.relativedelta import relativedelta
 from markupsafe import Markup, escape
 
 from odoo import _, api, fields, models
@@ -106,6 +107,8 @@ class ProductProduct(models.Model):
 
 class MissionIgdWizard(models.TransientModel):
     _name = 'mission.igd.wizard'
+    # hr.mixin : sans lui, un salarié sans droit RH ne peut pas poser un many2many vers hr.employee.
+    _inherit = ['hr.mixin']
     _description = "Génération des IGD du mois"
 
     state = fields.Selection([('choose', "Choix"), ('done', "Résultat")], default='choose')
@@ -241,12 +244,27 @@ class MissionActivityReport(models.Model):
         return sorted(set(days))
 
     def _igd_months_with_presence(self, project):
-        """Mois de présence sur la mission jusqu'à celui du rapport, rattrapage compris."""
-        start = project.igd_start.replace(day=1) if project.igd_start else date(1900, 1, 1)
-        reports = self.search([
-            ('employee_id', '=', self.employee_id.id),
-            ('date_from', '>=', start), ('date_from', '<=', self.date_from)])
-        return len([r for r in reports if r._igd_presence_days(r._get_report_data(), project)])
+        """Mois de présence sur la mission jusqu'à celui du rapport, rattrapage compris.
+
+        Un mois sans rapport enregistré compte aussi : son rapport est calculé
+        à la volée, sans être créé.
+        """
+        first = self.env['hr.leave'].sudo().search([
+            ('employee_id', '=', self.employee_id.id), ('project_id', '=', project.id),
+            ('state', '=', 'validate')], order='request_date_from', limit=1).request_date_from
+        if not first:
+            return 0
+        month = max(project.igd_start.replace(day=1) if project.igd_start else date(1900, 1, 1),
+                    first.replace(day=1))
+        last = self.date_from.replace(day=1)
+        count = 0
+        while month <= last:
+            report = self.search([('employee_id', '=', self.employee_id.id), ('date_from', '=', month)], limit=1) \
+                or self.new({'employee_id': self.employee_id.id, 'date_from': month})
+            if report._igd_presence_days(report._get_report_data(), project):
+                count += 1
+            month += relativedelta(months=1)
+        return count
 
     def _igd_generate(self, notes=None, summary=None):
         """Crée les IGD du mois.

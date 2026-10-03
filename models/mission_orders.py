@@ -81,6 +81,13 @@ class SaleOrder(models.Model):
         string="Fin de l'affaire",
         help="Facultatif tant que la mission n'a qu'une affaire. Dernier jour couvert par l'affaire.")
 
+    @api.constrains('mission_date_start', 'mission_date_end')
+    def _check_mission_dates(self):
+        for order in self:
+            if order.mission_date_start and order.mission_date_end \
+                    and order.mission_date_end < order.mission_date_start:
+                raise ValidationError(_("La fin de l'affaire %s précède son début.", order.name))
+
     def _mission_covers(self, day):
         self.ensure_one()
         return (not self.mission_date_start or self.mission_date_start <= day) and \
@@ -127,7 +134,7 @@ class SaleOrder(models.Model):
                 vals['mission_date_start'] = period[0]
             if not order.mission_date_end:
                 vals['mission_date_end'] = period[1]
-            order.with_context(mission_no_check=True).write(vals)
+            order.sudo().with_context(mission_no_check=True).write(vals)
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -151,7 +158,7 @@ class SaleOrder(models.Model):
             others = project._mission_all_orders().filtered(lambda o: o != order)
             if not others:
                 continue
-            group = order | others
+            group = (order | others).sudo()
             group._mission_fill_dates_from_note()
             missing = group.filtered(lambda o: not o.mission_date_start or not o.mission_date_end)
             if missing:
