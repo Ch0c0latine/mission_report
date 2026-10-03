@@ -22,16 +22,20 @@
                 <field name="order_id" invisible="1"/>
                 <field name="needs_source_dates" invisible="1"/>
                 <group>
-                    <group>
-                        <field name="date_start"/>
-                        <field name="date_end"/>
-                    </group>
-                    <group>
+                    <group string="Nouveau volet">
+                        <field name="date_start" string="Début"/>
+                        <field name="date_end" string="Fin"/>
                         <field name="employee_ids" widget="many2many_tags" options="{'no_create': True}"/>
-                        <field name="source_date_start" invisible="not needs_source_dates"
-                               required="needs_source_dates"/>
-                        <field name="source_date_end" invisible="not needs_source_dates"
-                               required="needs_source_dates"/>
+                    </group>
+                    <group string="Affaire d'origine">
+                        <field name="source_date_start" string="Début" readonly="1" force_save="1"/>
+                        <field name="source_date_end" string="Fin" readonly="1" force_save="1"/>
+                        <div class="text-muted" colspan="2" invisible="not needs_source_dates">
+                            Dates absentes de l'affaire : celles-ci y seront enregistrées.
+                        </div>
+                        <div class="text-muted" colspan="2" invisible="needs_source_dates">
+                            À modifier, si besoin, dans l'affaire elle-même.
+                        </div>
                     </group>
                 </group>
                 <div class="alert alert-warning" role="alert" invisible="not warning">

@@ -6,7 +6,7 @@
         <xpath expr="//button[hasclass('o_calendar_button_today')]" position="after">
             <button t-if="model.meta.scale === 'month' and model.meta.scales.includes('year')"
                     class="btn btn-secondary o_mission_year_button d-print-none order-2 order-lg-0"
-                    title="Vue annuelle" t-on-click.stop="() => this.setScale('year')">Année</button>
+                    t-on-click.stop="() => this.setScale('year')">Vue annuelle</button>
         </xpath>
     </t>
 </templates>
