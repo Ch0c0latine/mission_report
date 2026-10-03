@@ -66,3 +66,15 @@ class TestMissionOrders(TestSaleDelivery):
         self.assertEqual(Expense._expense_scan_projects_of(self.order), self.project_a)
         expenses = Expense.search([], limit=0)
         self.assertEqual(Expense._expense_scan_in_period(expenses[:0], self.order), expenses[:0])
+
+    def test_the_end_cannot_precede_the_start(self):
+        with self.assertRaises(ValidationError):
+            self.second.write({'mission_date_start': '2031-12-31', 'mission_date_end': '2031-12-01'})
+
+    def test_the_volet_number_follows_the_titles(self):
+        self.order.note = "<h5>Volet&nbsp;1&nbsp;:&nbsp;période du 01/01/2031 au 12/05/2031</h5>"
+        self.second.note = "<h5>Volet&nbsp;4&nbsp;:&nbsp;période du 13/05/2031 au 31/12/2031</h5>"
+        wizard = self.env['mission.volet.wizard'].with_context(default_order_id=self.second.id).create({})
+        wizard.write({'date_start': '2032-01-01', 'date_end': '2032-01-31'})
+        new = self.env['sale.order'].browse(wizard.action_create()['res_id'])
+        self.assertIn("Volet 5", new.note)
