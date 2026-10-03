@@ -178,6 +178,29 @@ class SaleOrder(models.Model):
         self.ensure_one()
         return is_html_empty(self.mission_description) and is_html_empty(self.mission_expenses_text)
 
+    def action_mission_fill_from_note(self):
+        """Reprend d'une note à l'ancienne la description, la phrase sur les frais, le numéro du volet
+        et les conditions, pour que le devis s'imprime avec les champs de prestation."""
+        done = self.browse()
+        for order in self:
+            if not order._volet_legacy():
+                continue
+            parts = split_volet_note(order.note)
+            if not parts:
+                continue
+            description, expenses, terms = parts
+            vals = {'mission_description': description, 'mission_expenses_text': expenses, 'note': terms}
+            heading = VOLET_HEADING.search(order.note or '')
+            if heading and not order.mission_volet_number:
+                vals['mission_volet_number'] = int(heading.group(1))
+            order.write(vals)
+            done |= order
+        if not done:
+            raise UserError(_(
+                "La note n'a pas pu être découpée (ou la prestation est déjà renseignée) : "
+                "reprenez la description et les frais à la main."))
+        return True
+
     def _volet_workers(self):
         """Les intervenants de la mission : ceux qui ont des saisies, sinon ceux d'une tâche."""
         self.ensure_one()

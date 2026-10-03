@@ -18,6 +18,9 @@
             </xpath>
             <xpath expr="//page[@name='order_lines']" position="after">
                 <page string="Prestation" name="mission_prestation">
+                    <button name="action_mission_fill_from_note" type="object" class="btn-secondary"
+                            string="Reprendre depuis la note"
+                            invisible="mission_description or mission_expenses_text or not note"/>
                     <group>
                         <group>
                             <field name="mission_volet_number" invisible="not mission_volet_number and not project_id"/>

@@ -2,6 +2,7 @@
 from datetime import date
 
 from odoo import Command
+from odoo.exceptions import UserError
 
 from ..models.volet import split_volet_note
 from .test_sale_delivery import TestSaleDelivery
@@ -142,6 +143,21 @@ class TestVoletsMensuels(TestSaleDelivery):
         self.assertIsNone(split_volet_note(LEGACY_NOTE.replace("Principe de facturation", "Facturation")))
         self.assertIsNone(split_volet_note("<p>Les prestations seront réalisées.</p><p>Principe de facturation</p>"))
         self.assertIsNone(split_volet_note(False))
+
+    def test_an_old_order_takes_its_service_fields_from_its_note(self):
+        self.order.write({'project_id': self.project_a.id, 'note': LEGACY_NOTE})
+        self.order.action_mission_fill_from_note()
+        self.assertEqual(self.order.mission_volet_number, 1)
+        self.assertIn("activités de contrôle", self.order.mission_description)
+        self.assertIn("frais de déplacement", self.order.mission_expenses_text)
+        self.assertTrue(self.order.note.startswith("<h5>Principe de facturation</h5>"))
+        # Already filled: nothing more to take, and a note that cannot be split is refused.
+        with self.assertRaises(UserError):
+            self.order.action_mission_fill_from_note()
+        self.order.write({'mission_description': False, 'mission_expenses_text': False,
+                          'note': "<p>Rien à découper.</p>"})
+        with self.assertRaises(UserError):
+            self.order.action_mission_fill_from_note()
 
     def test_a_legacy_note_that_cannot_be_split_is_copied(self):
         note = LEGACY_NOTE.replace("Principe de facturation", "Facturation")
