@@ -270,6 +270,10 @@ class MissionVoletWizard(models.TransientModel):
         if not self.employee_ids:
             raise UserError(_(
                 "Choisissez au moins un intervenant : ses jours ouvrés donnent le prévisionnel du volet."))
+        if not self.days:
+            raise UserError(_(
+                "Aucun jour ouvré sur cette période pour les intervenants choisis : vérifiez les dates "
+                "et leur calendrier de travail."))
         if self.needs_source_dates:
             if not (self.source_date_start and self.source_date_end):
                 raise UserError(_("Renseignez les dates de l'affaire d'origine."))
