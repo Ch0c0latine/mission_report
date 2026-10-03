@@ -60,9 +60,7 @@ class MissionActivityReport(models.Model):
         Line = self.env['sale.order.line'].sudo()
         if 'project_id' in Line._fields:
             lines |= Line.search([('project_id', '=', project.id)])
-        orders = project.sudo().mission_order_ids | self.env['sale.order'].sudo().search(
-            [('project_id', '=', project.id)])
-        for order in orders:
+        for order in project.sudo()._mission_all_orders():
             lines |= order.order_line
         return lines.filtered(
             lambda l: not l.display_type and l.is_service and not l.product_id.can_be_expensed

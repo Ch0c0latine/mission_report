@@ -8,3 +8,12 @@
         }
     }
 }
+
+// Vue annuelle : le titre d'un mois mène à la vue mensuelle.
+.o_mission_month_title {
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}

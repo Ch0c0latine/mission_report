@@ -1,40 +1,50 @@
 # -*- coding: utf-8 -*-
 """Plusieurs affaires pour une même mission, chacune sur sa période.
 
-Une affaire qui prolonge une mission (nouvelle commande, même projet) se lie à
-la mission par le champ « Missions associées » de la commande. Chaque affaire
-peut porter des dates de début et de fin (facultatives). Une mission liée à
-plusieurs affaires exige des périodes renseignées qui ne se chevauchent pas :
+Une mission (projet) n'a qu'un seul projet par affaire, mais peut avoir
+plusieurs affaires qui se succèdent (les « volets »). Chaque affaire porte des
+dates de début et de fin (facultatives tant qu'elle est seule). Une mission qui
+a plusieurs affaires exige des périodes renseignées qui ne se chevauchent pas :
 
 * les journées validées et les frais refacturés vont sur l'affaire dont la
   période contient leur date (avant la première, sur la première ; après la
   dernière, sur la dernière) ;
 * les intervenants de la mission apparaissent sur chaque affaire.
+
+Les dates se lisent aussi dans le titre du volet de la note de l'affaire
+(« Volet 2 : période du 01/10/2026 au 31/03/2027 ») quand elles ne sont pas
+renseignées.
 """
-from datetime import date
+import re
+from datetime import date, datetime
 
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
+
+_SPACE = r'(?:&nbsp;|\s|\xa0)*'
+# « Volet 2 : période du 01/10/2026 au 31/03/2027 », avec ou sans espaces insécables.
+VOLET_HEADING = re.compile(
+    r'Volet' + _SPACE + r'(\d+)' + _SPACE + r':' + _SPACE + r'période du' + _SPACE
+    + r'(\d\d/\d\d/\d{4})' + _SPACE + r'au' + _SPACE + r'(\d\d/\d\d/\d{4})')
+# « Ce volet concerne la période du 01/07/2026 au 30/09/2026 : … » quand il n'y a pas de titre.
+VOLET_PLAN_PERIOD = re.compile(
+    r'Ce volet concerne la période du' + _SPACE + r'(\d\d/\d\d/\d{4})' + _SPACE + r'au' + _SPACE
+    + r'(\d\d/\d\d/\d{4})')
 
 
 class ProjectProject(models.Model):
     _inherit = 'project.project'
 
-    mission_order_ids = fields.Many2many(
-        'sale.order', 'sale_order_mission_project_rel', 'project_id', 'order_id',
-        string="Affaires associées",
-        help="Affaires liées à cette mission en plus de celle du projet.")
-
     def _mission_all_orders(self):
         """Toutes les affaires de la mission, de la plus ancienne à la plus récente."""
         self.ensure_one()
         project = self.sudo()
-        orders = project.mission_order_ids
+        orders = self.env['sale.order'].sudo().search([('project_id', '=', project.id)])
         for name in ('sale_order_id', 'reinvoiced_sale_order_id'):
             if name in project._fields and project[name]:
                 orders |= project[name]
         orders |= self.env['sale.order.line'].sudo().search([('project_id', '=', project.id)]).order_id
-        orders |= self.env['sale.order'].sudo().search([('project_id', '=', project.id)])
+        orders = orders.filtered(lambda o: o.state != 'cancel')
         return orders.sorted(lambda o: (
             o.mission_date_start or (o.date_order.date() if o.date_order else date.min), o.id))
 
@@ -63,18 +73,13 @@ class ProjectProject(models.Model):
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
-    mission_project_ids = fields.Many2many(
-        'project.project', 'sale_order_mission_project_rel', 'order_id', 'project_id',
-        string="Missions associées",
-        help="Missions (projets) que cette affaire prolonge ou couvre, en plus de celles "
-             "de ses lignes. Une mission peut avoir plusieurs affaires, chacune sur sa période.")
     mission_date_start = fields.Date(
         string="Début de l'affaire",
-        help="Facultatif. Premier jour couvert par l'affaire : les journées et les frais de la "
-             "mission à partir de cette date vont sur elle.")
+        help="Facultatif tant que la mission n'a qu'une affaire. Premier jour couvert par "
+             "l'affaire : les journées et les frais de la mission à partir de cette date vont sur elle.")
     mission_date_end = fields.Date(
         string="Fin de l'affaire",
-        help="Facultatif. Dernier jour couvert par l'affaire.")
+        help="Facultatif tant que la mission n'a qu'une affaire. Dernier jour couvert par l'affaire.")
 
     def _mission_covers(self, day):
         self.ensure_one()
@@ -82,62 +87,85 @@ class SaleOrder(models.Model):
             (not self.mission_date_end or day <= self.mission_date_end)
 
     def _mission_projects(self):
-        """Toutes les missions liées à ces affaires."""
+        """La mission de ces affaires : le projet de l'affaire et ceux de ses lignes."""
         Project = self.env['project.project'].sudo()
-        projects = self.mission_project_ids.sudo() | self.order_line.project_id.sudo()
-        if 'project_id' in self._fields:
-            projects |= self.sudo().project_id
+        projects = self.sudo().project_id | self.order_line.project_id.sudo()
         names = [n for n in ('sale_order_id', 'reinvoiced_sale_order_id') if n in Project._fields]
         if names and self.ids:
             projects |= Project.search(['|'] * (len(names) - 1) + [(n, 'in', self.ids) for n in names])
         return projects
 
     # ------------------------------------------------------------------
-    # Lien avec le « Projet » de l'onglet Autres informations
+    # Périodes
     # ------------------------------------------------------------------
+
+    def _mission_note_period(self):
+        """(début, fin) lus dans le titre du volet de la note, sinon None."""
+        self.ensure_one()
+        note = self.note or ''
+        found = VOLET_HEADING.search(note)
+        groups = (2, 3)
+        if not found:
+            found, groups = VOLET_PLAN_PERIOD.search(note), (1, 2)
+        if not found:
+            return None
+        try:
+            return tuple(datetime.strptime(found.group(i), '%d/%m/%Y').date() for i in groups)
+        except ValueError:
+            return None
+
+    def _mission_fill_dates_from_note(self):
+        """Renseigne les dates vides d'après le titre du volet de la note."""
+        for order in self:
+            if order.mission_date_start and order.mission_date_end:
+                continue
+            period = order._mission_note_period()
+            if not period:
+                continue
+            vals = {}
+            if not order.mission_date_start:
+                vals['mission_date_start'] = period[0]
+            if not order.mission_date_end:
+                vals['mission_date_end'] = period[1]
+            order.with_context(mission_no_check=True).write(vals)
 
     @api.model_create_multi
     def create(self, vals_list):
         orders = super().create(vals_list)
-        orders._mission_link_project()
+        orders._mission_check_periods()
         return orders
 
     def write(self, vals):
         result = super().write(vals)
-        if 'project_id' in vals or 'mission_project_ids' in vals or 'mission_date_start' in vals \
-                or 'mission_date_end' in vals:
-            self._mission_link_project()
+        if not self.env.context.get('mission_no_check') and (
+                'project_id' in vals or 'mission_date_start' in vals or 'mission_date_end' in vals):
+            self._mission_check_periods()
         return result
 
-    def _mission_link_project(self):
-        """Le projet de l'affaire est une de ses missions ; les périodes ne se chevauchent pas."""
-        for order in self:
-            if 'project_id' in order._fields and order.project_id \
-                    and order.project_id not in order.mission_project_ids:
-                order.mission_project_ids = [(4, order.project_id.id)]
-        self._mission_check_periods()
-
     def _mission_check_periods(self):
+        """Une mission à plusieurs affaires : périodes renseignées, sans chevauchement."""
         for order in self:
-            for project in order.mission_project_ids.sudo():
-                others = project._mission_all_orders().filtered(lambda o: o != order)
-                if not others:
-                    continue
-                group = order | others
-                missing = group.filtered(lambda o: not o.mission_date_start or not o.mission_date_end)
-                if missing:
+            project = order.project_id.sudo()
+            if not project:
+                continue
+            others = project._mission_all_orders().filtered(lambda o: o != order)
+            if not others:
+                continue
+            group = order | others
+            group._mission_fill_dates_from_note()
+            missing = group.filtered(lambda o: not o.mission_date_start or not o.mission_date_end)
+            if missing:
+                raise ValidationError(_(
+                    "La mission « %(project)s » a plusieurs affaires. Renseignez les dates de "
+                    "début et de fin de chacune (%(names)s).",
+                    project=project.display_name, names=", ".join(missing.mapped('name'))))
+            ordered = group.sorted('mission_date_start')
+            for left, right in zip(ordered, ordered[1:]):
+                if left.mission_date_end >= right.mission_date_start:
                     raise ValidationError(_(
-                        "La mission « %(project)s » est déjà liée à l'affaire %(other)s. Renseignez "
-                        "les dates de début et de fin de chacune de ses affaires (%(names)s).",
-                        project=project.display_name, other=others[0].name,
-                        names=", ".join(missing.mapped('name'))))
-                ordered = group.sorted('mission_date_start')
-                for left, right in zip(ordered, ordered[1:]):
-                    if left.mission_date_end >= right.mission_date_start:
-                        raise ValidationError(_(
-                            "Les périodes des affaires %(left)s et %(right)s de la mission « %(project)s » "
-                            "se chevauchent.", left=left.name, right=right.name,
-                            project=project.display_name))
+                        "Les périodes des affaires %(left)s et %(right)s de la mission « %(project)s » "
+                        "se chevauchent.", left=left.name, right=right.name,
+                        project=project.display_name))
 
 
 class HrExpense(models.Model):

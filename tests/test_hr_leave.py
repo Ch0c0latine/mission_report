@@ -352,3 +352,24 @@ class TestHrLeaveMissionReport(TransactionCase):
         })
         bodies = leave.message_ids.mapped(lambda message: str(message.body))
         self.assertFalse(any('a été enregistrée' in body for body in bodies), bodies)
+
+    def test_employee_change_picks_the_first_mission_of_the_period(self):
+        ended = self.env['project.project'].create({
+            'name': 'A Ended Project', 'partner_id': self.partner.id, 'date': '2020-01-31'})
+        self.env['project.task'].create({
+            'name': 'Old task', 'project_id': ended.id, 'user_ids': [(6, 0, [self.user.id])]})
+        leave = self.env['hr.leave'].new({
+            'employee_id': self.employee.id, 'request_date_from': '2026-09-28',
+            'request_date_to': '2026-09-28'})
+        leave._onchange_employee_id_mission()
+        self.assertEqual(leave.project_id._origin, self.project, "the ended mission is not offered")
+
+    def test_employee_change_keeps_a_mission_of_the_employee(self):
+        other = self.env['project.project'].create({'name': 'Another mission', 'partner_id': self.partner.id})
+        self.env['project.task'].create({
+            'name': 'Task 2', 'project_id': other.id, 'user_ids': [(6, 0, [self.user.id])]})
+        leave = self.env['hr.leave'].new({
+            'employee_id': self.employee.id, 'project_id': other.id,
+            'request_date_from': '2026-09-28', 'request_date_to': '2026-09-28'})
+        leave._onchange_employee_id_mission()
+        self.assertEqual(leave.project_id._origin, other)

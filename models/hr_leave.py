@@ -58,6 +58,40 @@ class HrLeave(models.Model):
             else:
                 record.available_project_ids = self.env['project.project']
 
+    @api.model
+    def _mission_projects_for_period(self, employee, date_from, date_to):
+        """Missions de l'employé (une tâche lui est assignée) actives sur la période.
+
+        Une mission est écartée quand ses dates, ou celles de toutes ses affaires
+        datées, ne touchent pas la période. Dans l'ordre de la liste des missions.
+        """
+        user = employee.user_id
+        if not user:
+            return self.env['project.project']
+        projects = self.env['project.task'].search([('user_ids', 'in', user.id)]).project_id
+        date_from = date_from or fields.Date.context_today(self)
+        date_to = date_to or date_from
+
+        def active(project):
+            if (project.date_start and project.date_start > date_to) or                     (project.date and project.date < date_from):
+                return False
+            dated = project.sudo()._mission_all_orders().filtered(
+                lambda o: o.mission_date_start and o.mission_date_end)
+            return not dated or any(
+                o.mission_date_start <= date_to and o.mission_date_end >= date_from for o in dated)
+
+        return projects.filtered(active)
+
+    @api.onchange('employee_id')
+    def _onchange_employee_id_mission(self):
+        """Une autre personne : sa première mission de la période, si la mission choisie n'est pas la sienne."""
+        if self.entry_type == 'leave' or not self.employee_id:
+            return
+        projects = self._mission_projects_for_period(
+            self.employee_id, self.request_date_from, self.request_date_to)
+        if self.project_id not in projects:
+            self.project_id = projects[:1]
+
     @api.depends('project_id', 'holiday_status_id')
     def _compute_entry_type(self):
         for record in self:
@@ -82,6 +116,10 @@ class HrLeave(models.Model):
         res = super().default_get(fields_list)
         if 'holiday_status_id' in res:
             res['holiday_status_id'] = False
+        if 'project_id' in fields_list and not res.get('project_id')                 and not self.env.context.get('default_holiday_status_id'):
+            employee = self.env['hr.employee'].browse(res.get('employee_id'))                 or self.env.user.employee_id
+            res['project_id'] = self._mission_projects_for_period(
+                employee, res.get('request_date_from'), res.get('request_date_to'))[:1].id or False
         return res
 
     @api.model

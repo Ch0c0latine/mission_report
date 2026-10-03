@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Affaire : « Nouveau volet » crée l'affaire suivante de la mission. -->
+    <record id="view_order_form_mission_volet" model="ir.ui.view">
+        <field name="name">sale.order.form.mission.volet</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_cancel']" position="after">
+                <button name="action_mission_new_volet" type="object" string="Nouveau volet"
+                        invisible="not project_id or state == 'cancel'"
+                        groups="sales_team.group_sale_salesman"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="mission_volet_wizard_view_form" model="ir.ui.view">
+        <field name="name">mission.volet.wizard.form</field>
+        <field name="model">mission.volet.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Nouveau volet">
+                <field name="order_id" invisible="1"/>
+                <field name="needs_source_dates" invisible="1"/>
+                <group>
+                    <group>
+                        <field name="date_start"/>
+                        <field name="date_end"/>
+                    </group>
+                    <group>
+                        <field name="employee_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                        <field name="source_date_start" invisible="not needs_source_dates"
+                               required="needs_source_dates"/>
+                        <field name="source_date_end" invisible="not needs_source_dates"
+                               required="needs_source_dates"/>
+                    </group>
+                </group>
+                <field name="plan" nolabel="1" readonly="1"/>
+                <footer>
+                    <button name="action_create" type="object" string="Créer le volet" class="btn-primary"/>
+                    <button string="Annuler" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

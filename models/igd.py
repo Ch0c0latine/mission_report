@@ -12,13 +12,18 @@ rapport d'activité d'un salarié, les IGD du mois sont créées en notes de fra
 
 Les montants sont ceux des catégories IGD (barème Urssaf, révisé chaque année
 sur la catégorie). Le montant prévu ne figure que sur la fiche de la mission,
-visible des seuls administrateurs ; il n'est imprimé nulle part.
+visible des seuls administrateurs ; il n'est imprimé nulle part, et le détail
+mensuel (part du mois, rattrapage, reste) n'est donné qu'à eux.
 """
 from datetime import date
 
+from markupsafe import Markup, escape
+
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
-from odoo.tools import float_compare
+from odoo.tools import float_compare, float_is_zero, float_round
+from odoo.tools.misc import format_amount
+from odoo.tools.safe_eval import safe_eval
 
 IGD_GROUP = 'base.group_system'
 
@@ -87,14 +92,23 @@ class ProductProduct(models.Model):
 
     @api.model
     def _search_igd_category(self, operator, value):
-        positive = (operator == '=') == bool(value)
-        return [('id', 'in' if positive else 'not in', self._igd_product_ids())]
+        """Booléen cherché par '=', '!=', 'in' ou 'not in' : Odoo 19 réécrit « = True » en 'in'."""
+        if operator not in ('=', '!=', 'in', 'not in'):
+            raise NotImplementedError(operator)
+        values = {bool(v) for v in (value if isinstance(value, (list, tuple, set)) else [value])}
+        wanted = values if operator in ('=', 'in') else {True, False} - values
+        if wanted == {True, False}:
+            return [(1, '=', 1)]
+        if not wanted:
+            return [(0, '=', 1)]
+        return [('id', 'in' if True in wanted else 'not in', self._igd_product_ids())]
 
 
 class MissionIgdWizard(models.TransientModel):
     _name = 'mission.igd.wizard'
     _description = "Génération des IGD du mois"
 
+    state = fields.Selection([('choose', "Choix"), ('done', "Résultat")], default='choose')
     employee_ids = fields.Many2many(
         'hr.employee', string="Salariés",
         default=lambda self: self.env.user.employee_id,
@@ -105,9 +119,14 @@ class MissionIgdWizard(models.TransientModel):
     report_year = fields.Selection(
         selection=lambda self: self.env['mission.activity.report']._selection_report_year(),
         string="Année", required=True, default=lambda self: str(date.today().year))
+    result = fields.Html(readonly=True, sanitize=False)
+    created_expense_ids = fields.Many2many(
+        'hr.expense', 'mission_igd_wizard_expense_rel', 'wizard_id', 'expense_id')
+    missing_employee_ids = fields.Many2many(
+        'hr.employee', 'mission_igd_wizard_missing_rel', 'wizard_id', 'employee_id')
 
     def action_generate(self):
-        """Crée les IGD du mois choisi pour les salariés choisis."""
+        """Crée les IGD du mois choisi pour les salariés choisis et en rend compte."""
         self.ensure_one()
         user = self.env.user
         manager = user.has_group('hr_expense.group_hr_expense_team_approver')
@@ -118,25 +137,84 @@ class MissionIgdWizard(models.TransientModel):
         day = date(int(self.report_year), int(self.report_month), 1)
         Report = self.env['mission.activity.report'].sudo()
         created = self.env['hr.expense']
-        reasons = []
+        missing = self.env['hr.employee']
+        lines = []
         for employee in employees:
             report = Report.search([('employee_id', '=', employee.id), ('date_from', '=', day)], limit=1) \
                 or Report.create({'employee_id': employee.id, 'date_from': day})
-            notes = []
-            created |= report._igd_generate(notes)
-            reasons.extend("%s : %s" % (employee.name, note) for note in notes)
-        if not created:
-            raise UserError(_("Aucune IGD générée.\n%s", "\n".join(reasons) or _(
-                "Aucune mission n'a d'IGD moyens prévus par mois.")))
+            notes, summary = [], []
+            created |= report._igd_generate(notes, summary)
+            lines.extend(self._summary_line(employee, item) for item in summary)
+            for kind, text in notes:
+                lines.append(Markup("<b>%s</b> : %s") % (employee.name, text))
+                if kind == 'entries':
+                    missing |= employee
+        if not lines:
+            lines.append(escape(_("Aucune mission n'a d'IGD moyens prévus par mois.")))
+        title = _("IGD créées") if created else _("Aucune IGD générée")
+        body = Markup("<h4>%s</h4>%s") % (title, Markup().join(Markup("<p>%s</p>") % line for line in lines))
+        if missing:
+            body += Markup("<p>%s</p>") % _(
+                "Saisissez des journées travaillées sur une mission pour laquelle les IGD sont prévues.")
+        self.write({
+            'state': 'done', 'result': body,
+            'created_expense_ids': [(6, 0, created.ids)],
+            'missing_employee_ids': [(6, 0, missing.ids)],
+        })
+        return {
+            'type': 'ir.actions.act_window', 'res_model': self._name, 'res_id': self.id,
+            'view_mode': 'form', 'views': [(False, 'form')], 'target': 'new',
+            'name': _("Générer les IGD"),
+        }
+
+    def _summary_line(self, employee, item):
+        """Ce qui est créé pour un salarié sur une mission ; le détail du montant prévu
+        n'est donné qu'aux administrateurs."""
+        money = lambda amount: format_amount(self.env, amount, item['currency'])  # noqa: E731
+        text = _("%(employee)s, %(project)s : %(lodging)s IGD logement et %(meals)s IGD repas "
+                 "créés pour un total de %(total)s d'IGD dans le mois",
+                 employee=employee.name, project=item['project'].name, lodging=item['lodging'],
+                 meals=item['meals'], total=money(item['total']))
+        if not self.env.user.has_group(IGD_GROUP):
+            return escape(text + ".")
+        text += _(" : %s pour ce mois.", money(item['month']))
+        if not float_is_zero(item['catchup'], precision_digits=2):
+            text += " " + _("Rattrapage de %s des mois précédents.", money(item['catchup']))
+        if not float_is_zero(item['left'], precision_digits=2):
+            text += " " + _("Reste %s d'IGD à répartir sur les saisies suivantes.", money(item['left']))
+        return escape(text)
+
+    def action_open_expenses(self):
+        self.ensure_one()
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'hr.expense',
             'name': _("IGD créées"),
             'view_mode': 'list,form',
             'views': [(False, 'list'), (False, 'form')],
-            'domain': [('id', 'in', created.ids)],
+            'domain': [('id', 'in', self.created_expense_ids.ids)],
             'target': 'current',
         }
+
+    def action_open_entries(self):
+        """La saisie des temps du salarié, en vue mensuelle sur le mois visé."""
+        self.ensure_one()
+        employee = self.missing_employee_ids[:1] or self.employee_ids[:1] or self.env.user.employee_id
+        day = date(int(self.report_year), int(self.report_month), 1)
+        Actions = self.env['ir.actions.actions']
+        own = employee.user_id == self.env.user
+        action = Actions._for_xml_id('hr_holidays.hr_leave_action_new_request' if own
+                                     else 'hr_holidays.hr_leave_action_action_approve_department')
+        context = safe_eval(action.get('context') or '{}', {'uid': self.env.uid})
+        for name in ('search_default_year', 'search_default_current_year'):
+            context.pop(name, None)
+        context.update({'initial_date': "%s 00:00:00" % day, 'mission_scale': 'month'})
+        if not own:
+            context['search_default_employee_id'] = employee.id
+            views = action.get('views') or []
+            action['views'] = [v for v in views if v[1] == 'calendar'] + [v for v in views if v[1] != 'calendar']
+        action['context'] = context
+        return action
 
 
 class MissionActivityReport(models.Model):
@@ -170,23 +248,29 @@ class MissionActivityReport(models.Model):
             ('date_from', '>=', start), ('date_from', '<=', self.date_from)])
         return len([r for r in reports if r._igd_presence_days(r._get_report_data(), project)])
 
-    def _igd_generate(self, notes=None):
-        """Crée les IGD du mois ; ``notes`` reçoit les raisons de ce qui n'est pas créé."""
+    def _igd_generate(self, notes=None, summary=None):
+        """Crée les IGD du mois.
+
+        ``notes`` reçoit les raisons de ce qui n'est pas créé, sous la forme
+        (nature, texte) ; la nature « entries » signale des journées à saisir.
+        ``summary`` reçoit, par mission, ce qui a été créé et la répartition du montant.
+        """
         self.ensure_one()
         notes = [] if notes is None else notes
+        summary = [] if summary is None else summary
         company, lodging, meal = self._igd_products()
         data = self._get_report_data()
         Expense = self.env['hr.expense']
         created = Expense
         project_ids = {line.get('project_id') for line in data.get('missions', []) if line.get('project_id')}
         if not project_ids:
-            notes.append(_("aucune journée de mission saisie ce mois-ci"))
+            notes.append(('entries', _("aucune journée de mission saisie ce mois-ci.")))
         for project in self.env['project.project'].browse(sorted(project_ids)):
             if not project.igd_monthly_budget:
                 continue
             days = self._igd_presence_days(data, project)
             if not days:
-                notes.append(_("aucune journée de présence sur « %s » ce mois-ci", project.name))
+                notes.append(('entries', _("aucune journée de présence sur « %s » ce mois-ci.", project.name)))
                 continue  # mois complet d'absence : pas d'IGD
             igd_products = (lodging | meal).ids
             base = [('employee_id', '=', self.employee_id.id), ('project_id', '=', project.id),
@@ -197,10 +281,11 @@ class MissionActivityReport(models.Model):
             since = [('date', '>=', project.igd_start.replace(day=1))] if project.igd_start else []
             before = sum(Expense.search(base + since + [('date', '<', self.date_from)]).mapped('total_amount'))
             month = Expense.search(base + [('date', '>=', self.date_from), ('date', '<=', self.date_to)])
-            target = project.igd_monthly_budget * self._igd_months_with_presence(project) - before
+            months = self._igd_months_with_presence(project)
+            target = project.igd_monthly_budget * months - before
             left = target - sum(month.mapped('total_amount'))
             if float_compare(left, 0.0, precision_digits=2) <= 0:
-                notes.append(_("le montant prévu pour « %s » est déjà atteint", project.name))
+                notes.append(('info', _("le montant prévu pour « %s » est déjà atteint.", project.name)))
             taken = {(e.product_id.id, e.date) for e in month}
             real_meals = set(Expense.search([
                 ('employee_id', '=', self.employee_id.id),
@@ -208,6 +293,7 @@ class MissionActivityReport(models.Model):
                 ('date', '>=', self.date_from), ('date', '<=', self.date_to),
                 ('state', '!=', 'refused')]).mapped('date')) if company.igd_real_meal_product_ids else set()
 
+            made = Expense
             for product, allowed in ((lodging, lambda d: True), (meal, lambda d: d not in real_meals)):
                 if not product:
                     continue
@@ -230,7 +316,25 @@ class MissionActivityReport(models.Model):
                         'company_id': (self.employee_id.company_id or company).id,
                         'igd_generated': True,
                     })
-                    created |= expense
+                    made |= expense
                     taken.add((product.id, day))
                     left -= expense.total_amount
+            created |= made
+            if made:
+                total = sum(made.mapped('total_amount'))
+                month_total = total + sum(month.mapped('total_amount'))
+                budget = project.igd_monthly_budget
+                # Rattrapage : ce qui dépasse le mois, dans la limite de ce qui manquait avant lui.
+                gap = max(budget * (months - 1) - before, 0.0)
+                catchup = min(max(month_total - budget, 0.0), gap)
+                summary.append({
+                    'project': project,
+                    'currency': project.igd_currency_id,
+                    'lodging': len(made.filtered(lambda e: e.product_id == lodging)),
+                    'meals': len(made.filtered(lambda e: e.product_id == meal)),
+                    'total': total,
+                    'month': month_total - catchup,
+                    'catchup': catchup,
+                    'left': max(float_round(left, precision_digits=2), 0.0),
+                })
         return created

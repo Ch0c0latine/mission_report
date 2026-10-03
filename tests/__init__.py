@@ -5,3 +5,4 @@ from . import test_sale_delivery
 from . import test_invoice_mission
 from . import test_igd
 from . import test_mission_orders
+from . import test_volet

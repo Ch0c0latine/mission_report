@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from datetime import date
 
-from odoo.exceptions import UserError
-
 from .test_sale_delivery import TestSaleDelivery
 
 
@@ -53,19 +51,51 @@ class TestIgd(TestSaleDelivery):
         self.assertEqual(len(first), len(again))
         self.assertFalse(first.exists() & again - again)
 
+
     def test_missions_without_budget_get_nothing_and_say_so(self):
         self.project_a.igd_monthly_budget = 0.0
-        with self.assertRaises(UserError):
-            self._generated()
+        wizard = self.env['mission.igd.wizard'].create({
+            'employee_ids': [(6, 0, self.employee.ids)], 'report_month': '5', 'report_year': '2031'})
+        wizard.action_generate()
+        self.assertEqual(wizard.state, 'done')
+        self.assertFalse(wizard.created_expense_ids)
+        self.assertTrue(wizard.result)
 
-    def test_a_month_without_presence_says_why(self):
+    def test_a_month_without_presence_says_why_and_links_to_the_entries(self):
         wizard = self.env['mission.igd.wizard'].create({
             'employee_ids': [(6, 0, self.employee.ids)], 'report_month': '8', 'report_year': '2031'})
-        with self.assertRaises(UserError) as caught:
-            wizard.action_generate()
-        self.assertIn("aucune journée", str(caught.exception))
+        wizard.action_generate()
+        self.assertEqual(wizard.state, 'done')
+        self.assertIn("aucune journée", wizard.result)
+        self.assertEqual(wizard.missing_employee_ids, self.employee)
+        action = wizard.action_open_entries()
+        self.assertEqual(action['context']['mission_scale'], 'month')
+        self.assertEqual(action['context']['initial_date'], '2031-08-01 00:00:00')
+
+    def test_the_wizard_reports_what_was_created(self):
+        wizard = self.env['mission.igd.wizard'].create({
+            'employee_ids': [(6, 0, self.employee.ids)], 'report_month': '5', 'report_year': '2031'})
+        wizard.action_generate()
+        self.assertEqual(len(wizard.created_expense_ids), 11)
+        self.assertIn("9 IGD logement et 2 IGD repas", wizard.result)
+        self.assertIn("pour ce mois", wizard.result)
+        self.assertEqual(wizard.action_open_expenses()['domain'], [('id', 'in', wizard.created_expense_ids.ids)])
 
     def test_the_expat_category_counts_as_igd(self):
         expat = self.env['product.product'].create({'name': 'Forfait expat test', 'can_be_expensed': True})
         self.company.igd_expat_product_id = expat
         self.assertIn(expat.id, self.env['product.product']._igd_product_ids())
+
+    def test_the_igd_filter_keeps_only_igd(self):
+        Expense = self.env['hr.expense']
+        igd = Expense.create({'name': 'IGD', 'employee_id': self.employee.id, 'product_id': self.lodging.id,
+                              'date': date(2031, 5, 5), 'total_amount_currency': 48.3})
+        other = Expense.create({'name': 'Repas', 'employee_id': self.employee.id, 'product_id': self.real_meal.id,
+                                'date': date(2031, 5, 5), 'total_amount_currency': 20.0})
+        both = igd | other
+        for domain in ([('product_id.igd_category', '=', True)], [('product_id.igd_category', 'in', [True])],
+                       [('product_id.igd_category', '!=', False)]):
+            self.assertEqual(Expense.search(domain + [('id', 'in', both.ids)]), igd, domain)
+        for domain in ([('product_id.igd_category', '=', False)], [('product_id.igd_category', 'not in', [True])],
+                       [('product_id.igd_category', '!=', True)]):
+            self.assertEqual(Expense.search(domain + [('id', 'in', both.ids)]), other, domain)

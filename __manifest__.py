@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Activité',
-    'version': '19.0.1.9.0',
+    'version': '19.0.2.0.0',
     'summary': 'Activity and mission reports by project based on leaves logic',
     'description': """
         Module mission_report adapting hr_holidays logic for activity and mission reporting by project.
@@ -43,12 +43,15 @@
         'views/invoice_mission_views.xml',
         'data/mail_template_invoice.xml',
         'views/igd_views.xml',
+        'views/volet_views.xml',
     ],
     'assets': {
         'web.assets_backend': [
             'mission_report/static/src/scss/mission_report.scss',
             'mission_report/static/src/js/translation_overrides.js',
             'mission_report/static/src/js/presence_status.js',
+            'mission_report/static/src/js/overview_calendar.js',
+            'mission_report/static/src/xml/calendar_year_button.xml',
             'mission_report/static/src/xml/avatar_card_resource_popover.xml',
         ],
     },

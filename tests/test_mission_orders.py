@@ -19,7 +19,14 @@ class TestMissionOrders(TestSaleDelivery):
         })
         cls.second.action_confirm()
         cls.second.write({'mission_date_start': '2031-05-13', 'mission_date_end': '2031-12-31',
-                          'mission_project_ids': [(4, cls.project_a.id)]})
+                          'project_id': cls.project_a.id})
+
+    def _third(self, **vals):
+        return self.env['sale.order'].create({
+            'partner_id': self.client_a.id,
+            'order_line': [Command.create({'product_id': self.service.id, 'product_uom_qty': 1.0})],
+            **vals,
+        })
 
     def test_days_go_to_the_order_of_their_period(self):
         # 5-16 May 2031, 8 May off: 5, 6, 7, 9 and 12 May on the first order, 13-16 on the second.
@@ -29,15 +36,18 @@ class TestMissionOrders(TestSaleDelivery):
         self.assertEqual(self.second.order_line.qty_delivered, 4.0)
 
     def test_periods_are_required_and_must_not_overlap(self):
-        third = self.env['sale.order'].create({
-            'partner_id': self.client_a.id,
-            'order_line': [Command.create({'product_id': self.service.id, 'product_uom_qty': 1.0})],
-        })
+        third = self._third()
         with self.assertRaises(ValidationError):
-            third.mission_project_ids = self.project_a  # no dates
+            third.project_id = self.project_a  # no dates
         with self.assertRaises(ValidationError):
             third.write({'mission_date_start': '2031-06-01', 'mission_date_end': '2031-06-30',
-                         'mission_project_ids': [(4, self.project_a.id)]})
+                         'project_id': self.project_a.id})
+
+    def test_dates_are_read_from_the_volet_title(self):
+        third = self._third(note="<h5>Volet&nbsp;3&nbsp;:&nbsp;période du 01/01/2032 au&nbsp;30/06/2032</h5>")
+        third.project_id = self.project_a
+        self.assertEqual(str(third.mission_date_start), '2032-01-01')
+        self.assertEqual(str(third.mission_date_end), '2032-06-30')
 
     def test_the_task_assignees_are_interveners(self):
         names = self.second.mission_employee_names

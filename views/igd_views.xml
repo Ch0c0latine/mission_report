@@ -8,7 +8,10 @@
         <field name="model">mission.igd.wizard</field>
         <field name="arch" type="xml">
             <form string="Générer les IGD">
-                <group>
+                <field name="state" invisible="1"/>
+                <field name="created_expense_ids" invisible="1"/>
+                <field name="missing_employee_ids" invisible="1"/>
+                <group invisible="state != 'choose'">
                     <field name="employee_ids" widget="many2many_tags"
                            groups="hr_expense.group_hr_expense_team_approver"/>
                     <label for="report_month" string="Mois"/>
@@ -17,9 +20,16 @@
                         <field name="report_year"/>
                     </div>
                 </group>
+                <field name="result" nolabel="1" invisible="state != 'done'"/>
                 <footer>
-                    <button name="action_generate" type="object" string="Générer" class="btn-primary"/>
-                    <button string="Annuler" special="cancel"/>
+                    <button name="action_generate" type="object" string="Générer" class="btn-primary"
+                            invisible="state != 'choose'"/>
+                    <button name="action_open_expenses" type="object" string="Voir les IGD créées"
+                            class="btn-primary" invisible="state != 'done' or not created_expense_ids"/>
+                    <button name="action_open_entries" type="object" string="Ouvrir la saisie des temps"
+                            class="btn-primary" invisible="state != 'done' or not missing_employee_ids"/>
+                    <button string="Annuler" special="cancel" invisible="state != 'choose'"/>
+                    <button string="Fermer" special="cancel" invisible="state != 'done'"/>
                 </footer>
             </form>
         </field>
@@ -44,6 +54,7 @@
         <field name="arch" type="xml">
             <xpath expr="//filter[@name='invoiced']" position="after">
                 <filter string="IGD" name="igd" domain="[('product_id.igd_category', '=', True)]"/>
+                <filter string="Sans IGD" name="no_igd" domain="[('product_id.igd_category', '=', False)]"/>
             </xpath>
         </field>
     </record>

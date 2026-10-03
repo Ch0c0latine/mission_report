@@ -22,6 +22,7 @@
             <!-- Mission (+ Client dérivé), visible seulement en mode Mission. Limitée aux projets
                  ayant au moins une tâche assignée à l'employé de la saisie. -->
             <xpath expr="//field[@name='holiday_status_id']" position="before">
+                <field name="employee_id" position="move"/>
                 <field name="available_project_ids" invisible="1"/>
                 <field name="project_id" string="Mission" invisible="entry_type != 'mission'"
                        domain="[('id', 'in', available_project_ids)]"/>
@@ -34,12 +35,9 @@
                 <attribute name="invisible">entry_type != 'leave'</attribute>
             </xpath>
 
-            <!-- Employé : rendu visible et repositionné après Congé -->
+            <!-- Employé : rendu visible, juste sous la bascule Mission / Congé -->
             <xpath expr="//field[@name='employee_id']" position="attributes">
                 <attribute name="invisible">0</attribute>
-            </xpath>
-            <xpath expr="//field[@name='holiday_status_id']" position="after">
-                <field name="employee_id" position="move"/>
             </xpath>
 
             <!-- Masque l'en-tête (statut d'approbation, Valider/Refuser) : hors sujet pour ce formulaire

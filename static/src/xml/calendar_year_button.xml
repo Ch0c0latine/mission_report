@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!-- Vue mensuelle : retour à la vue annuelle en un clic. -->
+    <t t-name="mission_report.CalendarController" t-inherit="hr_holidays.CalendarController"
+       t-inherit-mode="extension">
+        <xpath expr="//button[hasclass('o_calendar_button_today')]" position="after">
+            <button t-if="model.meta.scale === 'month' and model.meta.scales.includes('year')"
+                    class="btn btn-secondary o_mission_year_button d-print-none order-2 order-lg-0"
+                    title="Vue annuelle" t-on-click.stop="() => this.setScale('year')">Année</button>
+        </xpath>
+    </t>
+</templates>

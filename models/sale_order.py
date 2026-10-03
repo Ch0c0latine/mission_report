@@ -23,7 +23,7 @@ class SaleOrder(models.Model):
              "(par exemple le modèle du client). Vide : pas de tableau Excel.",
     )
 
-    @api.depends('order_line', 'mission_project_ids')
+    @api.depends('order_line', 'project_id')
     def _compute_mission_employee_names(self):
         Leave = self.env['hr.leave']
         for order in self:
