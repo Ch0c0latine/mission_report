@@ -182,6 +182,8 @@ class MissionIgdWizard(models.TransientModel):
         text += _(" : %s pour ce mois.", money(item['month']))
         if not float_is_zero(item['catchup'], precision_digits=2):
             text += " " + _("Rattrapage de %s des mois précédents.", money(item['catchup']))
+        if not float_is_zero(item['surplus'], precision_digits=2):
+            text += " " + _("Excédent de %s des mois précédents déduit.", money(item['surplus']))
         if not float_is_zero(item['left'], precision_digits=2):
             text += " " + _("Reste %s d'IGD à répartir sur les saisies suivantes.", money(item['left']))
         return escape(text)
@@ -347,6 +349,8 @@ class MissionActivityReport(models.Model):
                 # Rattrapage : ce qui dépasse le mois, dans la limite de ce qui manquait avant lui.
                 gap = max(budget * (months - 1) - before, 0.0)
                 catchup = min(max(month_total - budget, 0.0), gap)
+                # Excédent : ce qui a été versé en trop avant ce mois, retranché de celui-ci.
+                surplus = max(before - budget * (months - 1), 0.0)
                 summary.append({
                     'project': project,
                     'currency': project.igd_currency_id,
@@ -355,6 +359,7 @@ class MissionActivityReport(models.Model):
                     'total': total,
                     'month': month_total - catchup,
                     'catchup': catchup,
+                    'surplus': surplus,
                     'left': max(float_round(left, precision_digits=2), 0.0),
                 })
         return created

@@ -114,3 +114,15 @@ class TestIgd(TestSaleDelivery):
             'date': date(2031, 4, 7), 'project_id': self.project_a.id})
         meals = self._generated().filtered(lambda e: e.product_id == self.meal)
         self.assertEqual(len(meals), 9, "two months due: meals on every day of presence")
+
+    def test_a_surplus_of_the_previous_months_is_deducted_and_said(self):
+        # April got more than the monthly amount: May gets less, and the summary says why.
+        self._entry(self.project_a, '2031-04-07', '2031-04-11')
+        self.env['hr.expense'].create({
+            'name': 'IGD', 'employee_id': self.employee.id, 'product_id': self.lodging.id,
+            'date': date(2031, 4, 7), 'quantity': 13, 'project_id': self.project_a.id})
+        wizard = self.env['mission.igd.wizard'].create({
+            'employee_ids': [(6, 0, self.employee.ids)], 'report_month': '5', 'report_year': '2031'})
+        wizard.action_generate()
+        self.assertLess(sum(wizard.created_expense_ids.mapped('total_amount')), 500.0)
+        self.assertIn("Excédent de", wizard.result)
