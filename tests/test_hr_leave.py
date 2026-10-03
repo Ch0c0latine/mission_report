@@ -373,3 +373,15 @@ class TestHrLeaveMissionReport(TransactionCase):
             'request_date_from': '2026-09-28', 'request_date_to': '2026-09-28'})
         leave._onchange_employee_id_mission()
         self.assertEqual(leave.project_id._origin, other)
+
+    def test_leave_created_by_code_gets_no_default_mission(self):
+        # The user of the session has a mission: a leave made by code (group leave, import)
+        # must not receive it as a default.
+        leave = self.env['hr.leave'].with_user(self.user).create({
+            'employee_id': self.employee.id,
+            'holiday_status_id': self.leave_type.id,
+            'request_date_from': '2026-11-09',
+            'request_date_to': '2026-11-09',
+        })
+        self.assertFalse(leave.project_id)
+        self.assertEqual(leave.holiday_status_id, self.leave_type)

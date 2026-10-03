@@ -167,6 +167,9 @@ class HrLeave(models.Model):
         for vals in vals_list:
             if vals.get('project_id') and not vals.get('holiday_status_id'):
                 vals['holiday_status_id'] = activity_type.id
+            elif 'project_id' not in vals and vals.get('holiday_status_id') and                     not self._is_activity_leave_type(self.env['hr.leave.type'].browse(vals['holiday_status_id'])):
+                # Un congé créé par code (congé groupé, import) : pas de mission par défaut.
+                vals['project_id'] = False
         return super().create(vals_list)
 
     def write(self, vals):

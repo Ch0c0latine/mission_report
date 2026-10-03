@@ -14,6 +14,7 @@
 import { onMounted, onWillUnmount } from "@odoo/owl";
 import { browser } from "@web/core/browser/browser";
 import { serializeDate } from "@web/core/l10n/dates";
+import { user } from "@web/core/user";
 import { patch } from "@web/core/utils/patch";
 
 import { TimeOffReportCalendarController } from "@hr_holidays/views/calendar/calendar_controller";
@@ -26,10 +27,13 @@ const HOVER_DELAY = 120;
 const LEAVE_DELAY = 300;
 
 patch(TimeOffReportCalendarController.prototype, {
-    /** Clic sur une saisie : sa fiche. */
+    /** Clic sur une saisie : sa fiche (les employés ne lisent que les leurs : ils gardent la bulle). */
     async editRecord(record) {
         if (!record.id) {
             return;
+        }
+        if (!(await user.hasGroup("hr_holidays.group_hr_holidays_user"))) {
+            return super.editRecord(...arguments);
         }
         await this.action.doAction(APPROVAL_ACTION, {
             props: { resId: record.id },
