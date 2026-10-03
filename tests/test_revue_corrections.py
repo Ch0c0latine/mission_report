@@ -230,13 +230,15 @@ class TestRevueCorrections(TransactionCase):
             'client': '=HYPERLINK("http://example.com","x")',
             'project': '@SUM(1+1)',
         }
+        # Un salarié a son propre utilisateur : le lien utilisateur-salarié est unique.
+        user = new_test_user(self.env, 'revue_formula_mission_report', groups='base.group_user')
         employee = self.env['hr.employee'].create({
-            'name': names['employee'], 'company_id': self.company.id, 'user_id': self.user.id,
+            'name': names['employee'], 'company_id': self.company.id, 'user_id': user.id,
             'leave_manager_id': self.manager.id})
         client = self.env['res.partner'].create({'name': names['client']})
         project = self.env['project.project'].create({'name': names['project'], 'partner_id': client.id})
         self.env['project.task'].create({
-            'name': 'Task', 'project_id': project.id, 'user_ids': [Command.set(self.user.ids)]})
+            'name': 'Task', 'project_id': project.id, 'user_ids': [Command.set(user.ids)]})
         self.env['hr.leave'].create({
             'employee_id': employee.id, 'project_id': project.id,
             'request_date_from': '2031-10-06', 'request_date_to': '2031-10-07'})
