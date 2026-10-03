@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 T.T.C. SAS
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0). -->
 <odoo>
     <!-- Type de congé interne servant de marqueur pour les saisies de Mission.
          noupdate="1" : recréé automatiquement s'il a été supprimé, mais jamais

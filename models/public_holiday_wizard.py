@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# Copyright 2026 T.T.C. SAS
+# License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 """Generate the French public holidays of a year.
 
 Odoo stores public holidays as resource.calendar.leaves without a resource,

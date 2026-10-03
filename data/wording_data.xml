@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 T.T.C. SAS
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0). -->
 <odoo>
     <!-- Chargé en dernier, après les menus et actions renommés : voir
          hr.leave._sync_renamed_records_translations. Rejoué à chaque mise à

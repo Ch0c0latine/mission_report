@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 T.T.C. SAS
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0). -->
 <odoo>
     <!-- Vue de recherche dédiée aux rapports, autonome (ne dépend pas des xmlids internes de hr_holidays) -->
     <record id="hr_leave_view_search_mission_report" model="ir.ui.view">

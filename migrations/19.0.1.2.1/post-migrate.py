@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# Copyright 2026 T.T.C. SAS
+# License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 """Refait le classeur vierge des modèles de compte rendu livrés.
 
 La 19.0.1.2.0 ne distinguait pas un classeur fabriqué par le module d'un

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# Copyright 2026 T.T.C. SAS
+# License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 """Plusieurs affaires pour une même mission, chacune sur sa période.
 
 Une mission (projet) n'a qu'un seul projet par affaire, mais peut avoir

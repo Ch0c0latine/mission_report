@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# Copyright 2026 T.T.C. SAS
+# License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 """Facturation au jour ou à l'heure : les affaires existantes restent au jour.
 
 Les colonnes de l'unité sont créées ici, remplies « au jour », avant que la mise à jour

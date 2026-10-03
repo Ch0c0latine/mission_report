@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 T.T.C. SAS
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0). -->
 <odoo>
     <!-- IGD : réservé aux administrateurs, rien n'est imprimé. -->
     <!-- Dépenses > Générer les IGD : chaque salarié pour le mois en cours, un

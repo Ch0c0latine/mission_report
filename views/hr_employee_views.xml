@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 T.T.C. SAS
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0). -->
 <odoo>
     <!-- Bouton "Congé" en haut de la fiche employé : il ouvre le calendrier des
          saisies de l'employé, missions comprises. Le compteur de jours affiché

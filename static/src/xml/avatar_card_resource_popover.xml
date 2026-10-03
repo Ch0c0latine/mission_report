@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2026 T.T.C. SAS
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0). -->
 <templates xml:space="preserve">
     <!-- Carte ouverte en cliquant sur l'avatar d'un employé (fiches, projets).
          hr et hr_holidays n'y prévoient une icône que pour leurs propres valeurs

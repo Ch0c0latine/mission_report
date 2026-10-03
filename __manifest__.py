@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# Copyright 2026 T.T.C. SAS
+# License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 {
     'name': 'Activité',
     'version': '19.0.2.3.0',
@@ -7,8 +9,8 @@
         Module mission_report adapting hr_holidays logic for activity and mission reporting by project.
     """,
     'category': 'Human Resources',
-    'author': 'Custom',
-    'website': '',
+    'author': 'T.T.C. SAS',
+    'website': 'https://github.com/Ch0c0latine/mission_report',
     'license': 'LGPL-3',
     'depends': [
         'base',

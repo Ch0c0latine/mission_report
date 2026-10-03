@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 T.T.C. SAS
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0). -->
 <odoo>
     <!-- Affaire : destinataires des factures et modèle Excel des frais. -->
     <record id="view_order_form_mission_invoicing" model="ir.ui.view">

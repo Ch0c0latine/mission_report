@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# Copyright 2026 T.T.C. SAS
+# License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 """Renomme les enregistrements déjà créés sous l'ancien vocabulaire.
 
 Les noms de l'événement Calendrier et de l'absence du calendrier de ressources

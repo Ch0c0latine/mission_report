@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 T.T.C. SAS
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0). -->
 <odoo>
     <!-- Ventes : les personnes en mission sur chaque affaire, pour s'y repérer. -->
     <record id="sale_order_tree_mission_employees" model="ir.ui.view">

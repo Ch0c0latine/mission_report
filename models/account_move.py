@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# Copyright 2026 T.T.C. SAS
+# License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 """Factures des missions : mois concerné, courriel d'envoi et pièces jointes.
 
 Le mois concerné se déduit des dates de la facture (une facture du début du

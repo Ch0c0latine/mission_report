@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# Copyright 2026 T.T.C. SAS
+# License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 """Le bouton « Générer les IGD » quitte les rapports d'activité (il est dans les Dépenses).
 
 Sa vue d'extension, encore en base, serait validée contre le modèle qui n'a

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# Copyright 2026 T.T.C. SAS
+# License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 """Validated activity reports feed the sales order lines of their missions.
 
 The days of a validated monthly report, per mission, are added up and set as

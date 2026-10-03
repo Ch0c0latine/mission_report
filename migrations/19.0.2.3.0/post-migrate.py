@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# Copyright 2026 T.T.C. SAS
+# License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 """Le type « Activité » passe en heures.
 
 Un type en heures permet, sur une mission facturée à l'heure, la demi-journée et les

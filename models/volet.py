@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# Copyright 2026 T.T.C. SAS
+# License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 """Nouveau volet : l'affaire suivante d'une mission, sur de nouvelles dates.
 
 Un volet est une affaire de la mission qui prend la suite des précédentes. Le

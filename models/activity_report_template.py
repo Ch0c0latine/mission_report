@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# Copyright 2026 T.T.C. SAS
+# License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 """Excel templates for activity reports.
 
 A template is a workbook plus a list of mappings, as in expense_scan: a cell
