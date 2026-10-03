@@ -42,6 +42,7 @@
             <xpath expr="//calendar" position="attributes">
                 <attribute name="string">Saisies</attribute>
                 <attribute name="color">holiday_status_id</attribute>
+                <attribute name="create">1</attribute>
             </xpath>
         </field>
     </record>
