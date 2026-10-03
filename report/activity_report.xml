@@ -42,7 +42,9 @@
          lines: 'all' (missions and time off) or 'missions'.
          preview: rendered in the form, where the html field shows it in an
          iframe without Odoo's styles: the font must then be set here. In the
-         PDF, the grid keeps the company's report font. -->
+         PDF, the grid keeps the company's report font.
+         Missions à l'heure : une colonne Unité, et des totaux en jours et en
+         heures sur deux lignes, jamais additionnés. -->
     <template id="activity_report_grid">
         <style>
             .o_activity_preview { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, "Noto Sans", Arial, sans-serif; color: #212529; }
@@ -60,23 +62,28 @@
         </style>
         <t t-set="show_absences" t-value="lines == 'all'"/>
         <t t-set="days" t-value="data['days']"/>
+        <t t-set="has_hours" t-value="data.get('has_hours')"/>
+        <t t-set="units" t-value="data['unit_labels']"/>
+        <t t-set="label_span" t-value="4 if has_hours else 3"/>
+        <t t-set="show_day_total" t-value="not has_hours or any(line['unit'] == 'day' for line in data['missions']) or (show_absences and data['absences'])"/>
         <!-- Fixed layout: every day column gets the same width, whatever its
              content ("10", "D", "1"...). -->
-        <t t-set="day_width" t-value="str(round(64.0 / len(days), 3))"/>
+        <t t-set="day_width" t-value="str(round((59.0 if has_hours else 64.0) / len(days), 3))"/>
         <div t-att-class="'o_activity_preview' if preview else None">
         <table class="o_activity_grid">
             <colgroup>
                 <col style="width: 17%;"/>
                 <col style="width: 15%;"/>
+                <col t-if="has_hours" style="width: 5%;"/>
                 <col style="width: 4%;"/>
                 <col t-foreach="days" t-as="day" t-attf-style="width: {{day_width}}%;"/>
             </colgroup>
             <tr>
-                <td colspan="3" class="o_label" style="border: none; text-align: right;">Week</td>
+                <td t-att-colspan="label_span" class="o_label" style="border: none; text-align: right;">Week</td>
                 <td t-foreach="data['weeks']" t-as="week" t-att-colspan="week['span']" style="text-align: left;" t-out="week['week']"/>
             </tr>
             <tr>
-                <td colspan="3" style="border: none; text-align: right;">Day</td>
+                <td t-att-colspan="label_span" style="border: none; text-align: right;">Day</td>
                 <th t-foreach="days" t-as="day"
                     t-attf-class="#{'o_weekend' if day['weekend'] else ('o_holiday' if day['holiday'] else ('o_absence' if day['absence'] and show_absences else ''))}"
                     t-att-title="day['holiday'] or None" t-out="day['day']"/>
@@ -84,6 +91,7 @@
             <tr>
                 <th>Client</th>
                 <th>Mission</th>
+                <th t-if="has_hours">Unité</th>
                 <th>Total</th>
                 <th t-foreach="days" t-as="day"
                     t-attf-class="#{'o_weekend' if day['weekend'] else ('o_holiday' if day['holiday'] else ('o_absence' if day['absence'] and show_absences else ''))}"
@@ -92,35 +100,46 @@
             <tr t-foreach="data['missions']" t-as="line">
                 <td class="o_label" t-out="line['partner']"/>
                 <td class="o_label" t-out="line['project']"/>
+                <td t-if="has_hours" t-out="units[line['unit']]"/>
                 <td t-out="format_days(line['total'])"/>
                 <td t-foreach="days" t-as="day"
                     t-attf-class="#{'o_weekend' if day['weekend'] else ('o_holiday' if day['holiday'] else ('o_absence' if day['absence'] and show_absences else ''))}"
                     t-out="format_days(line['values'][day_index])"/>
             </tr>
             <tr t-if="not data['missions']">
-                <td colspan="3" class="o_label"><i>No mission this month.</i></td>
+                <td t-att-colspan="label_span" class="o_label"><i>No mission this month.</i></td>
                 <td t-foreach="days" t-as="day"
                     t-attf-class="#{'o_weekend' if day['weekend'] else ('o_holiday' if day['holiday'] else '')}"/>
             </tr>
             <t t-if="show_absences">
                 <tr>
-                    <td colspan="3" class="o_section">Time off</td>
+                    <td t-att-colspan="label_span" class="o_section">Time off</td>
                     <td t-att-colspan="len(days)" style="border-left: none; border-right: none;"/>
                 </tr>
                 <tr t-foreach="data['absences']" t-as="line">
                     <td colspan="2" class="o_label" t-out="line['label']"/>
+                    <td t-if="has_hours" t-out="units['day']"/>
                     <td t-out="format_days(line['total'])"/>
                     <td t-foreach="days" t-as="day"
                         t-attf-class="#{'o_weekend' if day['weekend'] else ('o_holiday' if day['holiday'] else ('o_absence' if day['absence'] else ''))}"
                         t-out="format_days(line['values'][day_index])"/>
                 </tr>
             </t>
-            <tr class="o_total">
+            <tr class="o_total" t-if="show_day_total">
                 <td colspan="2">Total</td>
+                <td t-if="has_hours" t-out="units['day']"/>
                 <td t-out="format_days(data['mission_total'] + (data['absence_total'] if show_absences else 0))"/>
                 <td t-foreach="days" t-as="day"
                     t-attf-class="#{'o_weekend' if day['weekend'] else ('o_holiday' if day['holiday'] else ('o_absence' if day['absence'] and show_absences else ''))}"
                     t-out="format_days((data['totals'] if show_absences else data['mission_totals'])[day_index])"/>
+            </tr>
+            <tr class="o_total" t-if="has_hours">
+                <td colspan="2">Total</td>
+                <td t-out="units['hour']"/>
+                <td t-out="format_days(data['mission_hours_total'])"/>
+                <td t-foreach="days" t-as="day"
+                    t-attf-class="#{'o_weekend' if day['weekend'] else ('o_holiday' if day['holiday'] else ('o_absence' if day['absence'] and show_absences else ''))}"
+                    t-out="format_days(data['mission_hour_totals'][day_index])"/>
             </tr>
         </table>
         </div>
@@ -136,6 +155,9 @@
                     <div class="col-3"><strong>Month: </strong><span t-out="data['month_label']"/></div>
                     <div class="col-2"><strong>Working days: </strong><span t-out="format_days(data['potential_days'])"/></div>
                     <div class="col-4"><strong>Status: </strong><span t-out="data['status']"/></div>
+                </div>
+                <div t-if="data.get('has_hours')" class="row" style="font-size: 12px;">
+                    <div class="col-2 offset-6"><strong>Heures ouvrées : </strong><span t-out="format_days(data['potential_hours'])"/></div>
                 </div>
                 <div t-if="lines == 'missions'" class="row" style="font-size: 12px;">
                     <div class="col-12"><strong>Client: </strong><span t-out="data.get('partner') or ''"/></div>

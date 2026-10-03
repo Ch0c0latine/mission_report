@@ -12,6 +12,7 @@
                 <field name="potential_days" optional="show"/>
                 <field name="mission_days" optional="show"/>
                 <field name="absence_days" optional="show"/>
+                <field name="mission_hours" optional="hide"/>
                 <field name="submit_date" optional="hide"/>
                 <field name="validate_date" optional="hide"/>
                 <field name="company_id" groups="base.group_multi_company" optional="hide"/>
@@ -61,6 +62,9 @@
                             <field name="potential_days"/>
                             <field name="mission_days"/>
                             <field name="absence_days"/>
+                            <!-- Missions facturées à l'heure : leurs heures, à part des jours. -->
+                            <field name="potential_hours" invisible="not mission_hours"/>
+                            <field name="mission_hours" invisible="not mission_hours"/>
                         </group>
                         <group>
                             <field name="submit_date" invisible="not submit_date"/>

@@ -27,6 +27,13 @@
                 <field name="project_id" string="Mission" invisible="entry_type != 'mission'"
                        domain="[('id', 'in', available_project_ids)]"/>
                 <field name="partner_id" string="Client" invisible="entry_type != 'mission' or not project_id"/>
+                <!-- Mission facturée à l'heure : la durée de la saisie, en heures. Journée entière par
+                     défaut ; la demi-journée et les heures font paraître les champs d'Odoo
+                     (matin / après-midi, heures de début et de fin). -->
+                <field name="mission_hourly" invisible="1"/>
+                <field name="mission_duration" widget="radio" options="{'horizontal': true}"
+                       invisible="entry_type != 'mission' or not mission_hourly"
+                       readonly="state not in ('confirm', False)"/>
             </xpath>
 
             <!-- Congé : renommage + visible seulement en mode Congé -->

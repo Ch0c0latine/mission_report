@@ -16,6 +16,9 @@ the **delivered quantity** of the order line the mission's project belongs to
 carry the project). Nothing is typed by hand: the next invoice takes the days
 delivered since the last one. A report sent back to draft takes its days back.
 A daily task does the same for every validated report, as a safety net.
+An order can instead be billed by the hour (Billing, under the project; default in the Sales
+settings): its entries are then full days, half days or custom hours counted in hours, and the
+validated hours, never added to days, become the delivered quantity of its lines in hours.
 
 Needs `sale_project`. Lines whose quantity is not delivered by hand (for
 example from timesheets) are left alone.

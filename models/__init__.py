@@ -12,3 +12,4 @@ from . import hr_leave_report_calendar
 from . import igd
 from . import volet
 from . import activity_report_template
+from . import billing_unit

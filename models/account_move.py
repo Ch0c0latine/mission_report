@@ -87,7 +87,8 @@ class AccountMove(models.Model):
             return self.env['project.project']
         projects = self.env['project.project'].sudo().search([
             '|', ('sale_order_id', 'in', orders.ids), ('reinvoiced_sale_order_id', 'in', orders.ids)])
-        return projects | orders.order_line.project_id.sudo()
+        # Le projet de l'affaire elle-même aussi : une mission peut n'y être rattachée que par lui.
+        return projects | orders.order_line.project_id.sudo() | orders.sudo().project_id
 
     def mission_mail_object(self, short=False):
         """Objet de la commande (« Prestation d'assistance technique... »).
@@ -115,23 +116,35 @@ class AccountMove(models.Model):
             line.get('project_id') in projects.ids for line in r._get_report_data().get('missions', [])))
         return reports, projects
 
-    def mission_mail_days(self):
-        """[(jours réalisés, jours ouvrés, intervenant)] du mois concerné."""
+    def mission_mail_days(self, unit='day'):
+        """[(jours réalisés, jours ouvrés, intervenant)] du mois concerné.
+
+        ``unit`` 'hour' : [(heures réalisées, heures ouvrées, intervenant)] des missions
+        facturées à l'heure. Seuls les intervenants qui ont des lignes de cette unité.
+        """
         self.ensure_one()
         reports, projects = self._mission_reports()
         result = []
         for report in reports:
             data = report._get_report_data()
-            done = sum(line.get('total') or 0.0 for line in data.get('missions', [])
-                       if line.get('project_id') in projects.ids)
-            result.append((done, data.get('potential_days') or 0.0, report.employee_id.name))
+            lines = [line for line in data.get('missions', [])
+                     if line.get('project_id') in projects.ids and line.get('unit', 'day') == unit]
+            if not lines:
+                continue
+            done = sum(line.get('total') or 0.0 for line in lines)
+            potential = data.get('potential_hours') if unit == 'hour' else data.get('potential_days')
+            result.append((done, potential or 0.0, report.employee_id.name))
         return result
 
     def mission_mail_days_text(self):
-        """« 22 jours sur 22 réalisés par Camille Exemple. », une ligne par intervenant."""
+        """« 22 jours sur 22 réalisés par Camille Exemple. », une ligne par intervenant ;
+        « 63 heures sur 154 réalisées par … » pour une mission facturée à l'heure."""
         lines = []
         for done, potential, name in self.mission_mail_days():
             lines.append("%s jours sur %s réalisés par %s." % (
+                self._mission_format_days(done), self._mission_format_days(potential), name))
+        for done, potential, name in self.mission_mail_days(unit='hour'):
+            lines.append("%s heures sur %s réalisées par %s." % (
                 self._mission_format_days(done), self._mission_format_days(potential), name))
         return lines
 

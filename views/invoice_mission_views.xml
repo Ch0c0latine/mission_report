@@ -17,6 +17,29 @@
             <xpath expr="//field[@name='project_id']" position="after">
                 <field name="mission_date_start" invisible="not project_id"/>
                 <field name="mission_date_end" invisible="not project_id"/>
+                <!-- Unité de facturation : journées ou heures validées. -->
+                <field name="mission_billing_unit" widget="radio" options="{'horizontal': true}"/>
+            </xpath>
+            <!-- Lignes de prestation dans une autre unité que celle de l'affaire : averti, pas bloqué. -->
+            <xpath expr="//div[@name='button_box']" position="after">
+                <div class="alert alert-warning" role="alert" invisible="not mission_unit_warning">
+                    <field name="mission_unit_warning"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Paramètres des ventes : unité proposée pour les nouvelles affaires. -->
+    <record id="res_config_settings_view_form_mission_billing" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.mission.billing</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='invoicing_setting_container']" position="inside">
+                <setting id="mission_billing_unit_default" company_dependent="1" string="Facturation par défaut"
+                         help="Unité des nouvelles affaires de mission : journées ou heures validées.">
+                    <field name="mission_billing_unit_default" widget="radio" options="{'horizontal': true}"/>
+                </setting>
             </xpath>
         </field>
     </record>

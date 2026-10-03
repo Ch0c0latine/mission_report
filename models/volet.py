@@ -8,12 +8,14 @@ volet, au tarif de l'affaire d'origine, pour les jours ouvrés des intervenants
 (jours fériés et congés déjà posés déduits). La description de la prestation et
 la phrase sur les frais sont reprises de l'affaire d'origine, la note ne garde
 que les conditions ; le devis imprime le titre du volet et le détail par mois.
+
+Un volet facturé à l'heure compte, chaque mois, les heures ouvrées des
+intervenants plutôt que leurs jours.
 """
 import re
 from collections import defaultdict
-from datetime import datetime, time, timedelta
+from datetime import timedelta
 
-import pytz
 from babel.dates import format_date as babel_format_date
 from dateutil.relativedelta import relativedelta
 from lxml import etree, html as lxml_html
@@ -22,12 +24,12 @@ from markupsafe import Markup, escape
 from odoo import Command, _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools import is_html_empty
-from odoo.tools.intervals import Intervals
 from odoo.tools.misc import format_amount
 
 from .activity_report import INTERNAL, INTERNAL_KEY
+from .billing_unit import BILLING_UNITS
 from .mission_orders import VOLET_HEADING, VOLET_PLAN_PERIOD
-from .public_holiday_wizard import mission_timezone
+from .work_time import hours_by_day, work_intervals
 
 # Ligne de mois du prévisionnel d'une ancienne note : « octobre 2026 : 22 jours travaillés soit … ».
 PLAN_MONTH = re.compile(r'^[^\W\d_]+ \d{4} ?: ?[\d.,]+ ?jours?\b', re.IGNORECASE)
@@ -52,35 +54,28 @@ def work_days_by_month(env, employees, start, end):
     """
     result = defaultdict(float)
     for employee in employees:
-        calendar = employee.resource_calendar_id or employee.company_id.resource_calendar_id
-        if not calendar:
+        work, _tz = work_intervals(env, employee, start, end, leaves=True)
+        if work is None:
             continue
-        tz = mission_timezone(employee.company_id, employee)
-        start_dt = tz.localize(datetime.combine(start, time.min))
-        end_dt = tz.localize(datetime.combine(end, time.max))
-        resource = employee.resource_id
-        # Hors absences des ressources rattachées à un congé : les congés sont repris plus bas.
-        work = calendar._work_intervals_batch(
-            start_dt, end_dt, resources=resource, tz=tz,
-            domain=[('time_type', '=', 'leave'), ('holiday_id', '=', False)])[resource.id]
-        leaves = env['hr.leave'].sudo().search([
-            ('employee_id', '=', employee.id), ('project_id', '=', False),
-            ('state', 'in', ('confirm', 'validate1', 'validate')),
-            ('date_from', '<=', end_dt.astimezone(pytz.utc).replace(tzinfo=None)),
-            ('date_to', '>=', start_dt.astimezone(pytz.utc).replace(tzinfo=None))])
-        cuts = []
-        for leave in leaves:
-            first = max(start_dt, pytz.utc.localize(leave.date_from).astimezone(tz))
-            last = min(end_dt, pytz.utc.localize(leave.date_to).astimezone(tz))
-            if first < last:
-                cuts.append((first, last, leave))
-        hours = defaultdict(float)
-        for first, last, _meta in work - Intervals(cuts):
-            hours[first.date()] += (last - first).total_seconds() / 3600
+        calendar = employee.resource_calendar_id or employee.company_id.resource_calendar_id
         per_day = calendar.hours_per_day or 8.0
-        for day, worked in hours.items():
+        for day, worked in hours_by_day(work).items():
             result[(day.year, day.month)] += round(min(worked / per_day, 1.0) * 2) / 2
     return dict(result)
+
+
+def work_hours_by_month(env, employees, start, end):
+    """{(année, mois): heures} ouvrées des employés de ``start`` à ``end`` inclus.
+
+    Mêmes règles que work_days_by_month : les heures de travail du calendrier de
+    chacun, jours fériés et congés déduits.
+    """
+    result = defaultdict(float)
+    for employee in employees:
+        work, _tz = work_intervals(env, employee, start, end, leaves=True)
+        for day, worked in hours_by_day(work).items():
+            result[(day.year, day.month)] += worked
+    return {key: round(value, 2) for key, value in result.items()}
 
 
 def number(value):
@@ -280,10 +275,11 @@ class SaleOrderLine(models.Model):
                             self.mission_period_end.strftime('%d/%m/%Y'))
 
     def mission_quantity_label(self):
-        """« 22 jours » pour des lignes de journées (leur total), sinon la quantité et son unité."""
+        """« 22 jours » pour des lignes de journées (leur total), « 22 heures » pour une affaire
+        à l'heure, sinon la quantité et son unité."""
         quantity = sum(self.mapped('product_uom_qty'))
         if self and all(self.mapped('mission_day_line')):
-            return "%s %s" % (number(quantity), "jour" if quantity < 2 else "jours")
+            return "%s %s" % (number(quantity), self[:1].order_id.mission_unit_label(plural=quantity >= 2))
         return ("%s %s" % (number(quantity), self[:1].product_uom_id.name or "")).strip()
 
     def _mission_lines_on(self, day):
@@ -332,7 +328,13 @@ class MissionVoletWizard(models.TransientModel):
     needs_source_dates = fields.Boolean(compute='_compute_needs_source_dates')
     source_date_start = fields.Date(string="Début de l'affaire d'origine")
     source_date_end = fields.Date(string="Fin de l'affaire d'origine")
-    days = fields.Float(string="Jours ouvrés", compute='_compute_plan')
+    mission_billing_unit = fields.Selection(
+        BILLING_UNITS, string="Facturation", required=True, default='day',
+        help="Celle de l'affaire d'origine par défaut. À l'heure : chaque mois compte les heures "
+             "ouvrées des intervenants.")
+    unit_warning = fields.Char(string="Avertissement sur l'unité", compute='_compute_unit_warning')
+    days = fields.Float(string="Quantité prévue", compute='_compute_plan',
+                        help="Jours ouvrés, ou heures ouvrées pour un volet facturé à l'heure.")
     plan = fields.Html(string="Prévisionnel", compute='_compute_plan', sanitize=False)
     warning = fields.Char(compute='_compute_plan')
     note_warning = fields.Char(compute='_compute_note_warning')
@@ -360,6 +362,7 @@ class MissionVoletWizard(models.TransientModel):
         order = self.env['sale.order'].browse(res.get('order_id') or self.env.context.get('default_order_id'))
         if order:
             res['order_id'] = order.id
+            res['mission_billing_unit'] = order.mission_billing_unit or 'day'
             res['employee_ids'] = [(6, 0, order._volet_workers().ids)]
             start = self._default_start(order)
             if start:
@@ -380,6 +383,17 @@ class MissionVoletWizard(models.TransientModel):
             wizard.needs_source_dates = bool(order) and not period and not (
                 order.mission_date_start and order.mission_date_end)
 
+    @api.depends('order_id', 'mission_billing_unit')
+    def _compute_unit_warning(self):
+        for wizard in self:
+            changed = wizard.order_id and wizard.mission_billing_unit \
+                and wizard.mission_billing_unit != (wizard.order_id.mission_billing_unit or 'day')
+            wizard.unit_warning = changed and _(
+                "Les lignes du volet reprennent l'unité et le prix de l'affaire d'origine : passez-les "
+                "%s, à un prix %s, dans le nouveau volet.",
+                _("en heures") if wizard.mission_billing_unit == 'hour' else _("en jours"),
+                _("horaire") if wizard.mission_billing_unit == 'hour' else _("journalier")) or False
+
     @api.depends('order_id')
     def _compute_note_warning(self):
         for wizard in self:
@@ -394,7 +408,8 @@ class MissionVoletWizard(models.TransientModel):
     # -- prévisionnel --------------------------------------------------------
 
     def _rate(self):
-        """Tarif journalier de l'affaire : celui de sa ligne de journées (moyenne pondérée s'il y en a plusieurs)."""
+        """Tarif de l'affaire, journalier ou horaire : celui de sa ligne de journées (moyenne pondérée s'il y
+        en a plusieurs)."""
         lines = self.order_id._volet_day_lines()
         quantity = sum(lines.mapped('product_uom_qty'))
         if not lines:
@@ -404,11 +419,12 @@ class MissionVoletWizard(models.TransientModel):
         return lines[0].price_unit
 
     def _months(self):
-        """[(premier jour du mois, jours ouvrés)] du volet."""
+        """[(premier jour du mois, jours ouvrés)] du volet ; des heures ouvrées pour un volet à l'heure."""
         self.ensure_one()
         if not self.date_start or not self.date_end or self.date_end < self.date_start:
             return []
-        by_month = work_days_by_month(self.env, self.employee_ids, self.date_start, self.date_end)
+        count = work_hours_by_month if self.mission_billing_unit == 'hour' else work_days_by_month
+        by_month = count(self.env, self.employee_ids, self.date_start, self.date_end)
         return [(fields.Date.to_date("%d-%02d-01" % key), value) for key, value in sorted(by_month.items())]
 
     def _holidays_warning(self):
@@ -429,7 +445,7 @@ class MissionVoletWizard(models.TransientModel):
                  "Générez-les d'abord (Activité › Configuration › Générer les jours fériés français).",
                  ", ".join(missing))
 
-    @api.depends('employee_ids', 'date_start', 'date_end', 'order_id')
+    @api.depends('employee_ids', 'date_start', 'date_end', 'order_id', 'mission_billing_unit')
     def _compute_plan(self):
         for wizard in self:
             months = wizard._months()
@@ -447,7 +463,8 @@ class MissionVoletWizard(models.TransientModel):
                 "<table class='table table-sm'><thead><tr><th>%s</th><th class='text-end'>%s</th>"
                 "<th class='text-end'>%s</th></tr></thead><tbody>%s</tbody>"
                 "<tfoot><tr><th>%s</th><th class='text-end'>%s</th><th class='text-end'>%s</th></tr></tfoot></table>"
-            ) % (_("Mois"), _("Jours"), _("Montant HT"), rows, _("Total"), number(total),
+            ) % (_("Mois"), _("Heures") if wizard.mission_billing_unit == 'hour' else _("Jours"),
+                 _("Montant HT"), rows, _("Total"), number(total),
                  format_amount(wizard.env, total * rate, currency)) if months else False
 
     # -- création ------------------------------------------------------------
@@ -469,9 +486,10 @@ class MissionVoletWizard(models.TransientModel):
     def _volet_lines(self):
         """Les lignes du nouveau volet : celles de l'affaire d'origine, la ligne de journées en une par mois.
 
-        Chaque mois prend ses jours ouvrés (répartis au prorata des quantités
-        s'il y a plusieurs prestations), au prix de l'affaire d'origine ; les
-        frais repartent de zéro.
+        Chaque mois prend ses jours ouvrés (ses heures ouvrées pour un volet à
+        l'heure), répartis au prorata des quantités s'il y a plusieurs
+        prestations, dans l'unité et au prix de l'affaire d'origine ; les frais
+        repartent de zéro.
         """
         order = self.order_id
         months = [(month, days) for month, days in self._months() if days]
@@ -537,6 +555,7 @@ class MissionVoletWizard(models.TransientModel):
             'mission_date_start': self.date_start,
             'mission_date_end': self.date_end,
             'mission_volet_number': self._volet_number(),
+            'mission_billing_unit': self.mission_billing_unit,
             'mission_description': description,
             'mission_expenses_text': expenses,
             'note': note,

@@ -23,6 +23,7 @@ from odoo.tools import format_date
 from odoo.tools.misc import formatLang, get_lang
 
 from .public_holiday_wizard import mission_timezone
+from .work_time import hours_by_day, work_intervals
 
 #: Jeton posé dans le contexte par les écritures internes du module (circuit de
 #: validation, dates des affaires). Tiré au chargement et jamais envoyé au
@@ -76,6 +77,9 @@ class MissionActivityReport(models.Model):
 
     potential_days = fields.Float(string="Working days", compute='_compute_totals')
     mission_days = fields.Float(string="Mission days", compute='_compute_totals')
+    # Missions facturées à l'heure : leurs heures, jamais ajoutées aux jours.
+    potential_hours = fields.Float(string="Heures ouvrées", compute='_compute_totals')
+    mission_hours = fields.Float(string="Heures de mission", compute='_compute_totals')
     absence_days = fields.Float(string="Time off days", compute='_compute_totals')
     preview_html = fields.Html(compute='_compute_preview_html', sanitize=False)
 
@@ -131,11 +135,14 @@ class MissionActivityReport(models.Model):
         for report in self:
             if not (report.employee_id and report.date_from):
                 report.potential_days = report.mission_days = report.absence_days = 0.0
+                report.potential_hours = report.mission_hours = 0.0
                 continue
             data = report._get_report_data()
             report.potential_days = data['potential_days']
             report.mission_days = data['mission_total']
             report.absence_days = data['absence_total']
+            report.potential_hours = data['potential_hours'] or 0.0
+            report.mission_hours = data['mission_hours_total']
 
     def _compute_preview_html(self):
         for report in self:
@@ -260,8 +267,22 @@ class MissionActivityReport(models.Model):
         """The month's figures: frozen once validated, computed otherwise."""
         self.ensure_one()
         if self.state == 'validated' and self.snapshot:
-            return self.snapshot
+            return self._with_units(self.snapshot)
         return self._compute_report_data()
+
+    @api.model
+    def _with_units(self, data):
+        """Un compte rendu validé avant la facturation à l'heure : tout y est en jours."""
+        if 'mission_hours_total' in data and all('unit' in line for line in data.get('missions', [])):
+            return data
+        data = dict(data)
+        data['missions'] = [dict(line, unit=line.get('unit', 'day')) for line in data.get('missions', [])]
+        data.setdefault('mission_hours_total', 0.0)
+        data.setdefault('mission_hour_totals', [
+            None if day['weekend'] or day['holiday'] else 0.0 for day in data.get('days', [])])
+        # Inconnues à la validation : non affichées.
+        data.setdefault('potential_hours', None)
+        return data
 
     def _compute_report_data(self):
         """Day-by-day figures of the month, JSON-serialisable.
@@ -269,6 +290,11 @@ class MissionActivityReport(models.Model):
         Every value is a number of days. A day holds a value only if it is
         a working day of the employee (neither a weekend nor a public
         holiday); other days stay empty.
+
+        Une mission facturée à l'heure compte des heures : chaque ligne porte
+        son unité (« day » ou « hour »), celle de l'affaire de la mission à la
+        date du jour. Une mission qui change d'unité dans le mois a une ligne
+        par unité ; jours et heures ont des totaux séparés.
         """
         self.ensure_one()
         employee = self.employee_id.sudo()
@@ -288,6 +314,16 @@ class MissionActivityReport(models.Model):
         def is_working(day):
             return day.weekday() in working_weekdays and day not in holidays
 
+        # Heures de travail de chaque jour, selon le calendrier du salarié.
+        work, _tz = work_intervals(self.env, employee, date_from, date_to)
+        day_hours = hours_by_day(work)
+        units = {}
+
+        def unit_of(project, day):
+            if (project.id, day) not in units:
+                units[(project.id, day)] = project.sudo()._mission_billing_unit_on(day)
+            return units[(project.id, day)]
+
         missions, absences = {}, {}
         absence_days = set()
         for entry in entries:
@@ -297,46 +333,60 @@ class MissionActivityReport(models.Model):
                 per_day = entry.number_of_days
             else:
                 per_day = 1.0
-            if entry.project_id:
-                key = entry.project_id.id
-                line = missions.setdefault(key, {
-                    'partner_id': entry.project_id.partner_id.id or False,
-                    'partner': entry.project_id.partner_id.display_name or '',
-                    'project_id': entry.project_id.id,
-                    'project': entry.project_id.display_name,
-                    'label': entry.project_id.partner_id.display_name or entry.project_id.display_name,
-                    'values': {},
-                })
-            else:
-                key = entry.holiday_status_id.id
-                line = absences.setdefault(key, {
-                    'leave_type_id': entry.holiday_status_id.id,
-                    'label': entry.holiday_status_id.display_name,
-                    'values': {},
-                })
+            entry_hours = None
             day = max(entry.request_date_from, date_from)
             while day <= min(entry.request_date_to, date_to):
-                if is_working(day):
-                    line['values'][day.day] = line['values'].get(day.day, 0.0) + per_day
-                    if not entry.project_id:
-                        absence_days.add(day)
+                if not is_working(day):
+                    day += timedelta(days=1)
+                    continue
+                if entry.project_id:
+                    unit = unit_of(entry.project_id, day)
+                    value = per_day
+                    if unit == 'hour':
+                        if entry_hours is None:
+                            entry_hours = entry._mission_hours_by_day()
+                        value = entry_hours.get(day, 0.0)
+                    line = missions.setdefault((entry.project_id.id, unit), {
+                        'partner_id': entry.project_id.partner_id.id or False,
+                        'partner': entry.project_id.partner_id.display_name or '',
+                        'project_id': entry.project_id.id,
+                        'project': entry.project_id.display_name,
+                        'label': entry.project_id.partner_id.display_name or entry.project_id.display_name,
+                        'unit': unit,
+                        'values': {},
+                    })
+                else:
+                    value = per_day
+                    line = absences.setdefault(entry.holiday_status_id.id, {
+                        'leave_type_id': entry.holiday_status_id.id,
+                        'label': entry.holiday_status_id.display_name,
+                        'values': {},
+                    })
+                    absence_days.add(day)
+                line['values'][day.day] = line['values'].get(day.day, 0.0) + value
                 day += timedelta(days=1)
 
         def finish(line):
             # Working days without an entry hold 0, as on a paper report.
-            values = [line['values'].get(day.day, 0.0) if is_working(day) else None
+            values = [round(line['values'].get(day.day, 0.0), 2) if is_working(day) else None
                       for day in days]
             line['values'] = values
-            line['total'] = sum(value for value in values if value)
+            line['total'] = round(sum(value for value in values if value), 2)
             return line
 
+        def first_day(line):
+            return next((index for index, value in enumerate(line['values']) if value), len(days))
+
         mission_lines = [finish(line) for line in missions.values()]
-        mission_lines.sort(key=lambda line: (line['partner'].lower(), line['project'].lower()))
+        # Une mission qui change d'unité dans le mois : ses deux lignes dans l'ordre des dates.
+        mission_lines.sort(key=lambda line: (line['partner'].lower(), line['project'].lower(), first_day(line)))
         absence_lines = sorted((finish(line) for line in absences.values()),
                                key=lambda line: line['label'].lower())
+        day_lines = [line for line in mission_lines if line['unit'] == 'day']
+        hour_lines = [line for line in mission_lines if line['unit'] == 'hour']
 
         def column_sum(lines):
-            return [sum(line['values'][index] or 0.0 for line in lines) if is_working(day) else None
+            return [round(sum(line['values'][index] or 0.0 for line in lines), 2) if is_working(day) else None
                     for index, day in enumerate(days)]
 
         return {
@@ -354,11 +404,15 @@ class MissionActivityReport(models.Model):
                 'absence': day in absence_days,
             } for day in days],
             'potential_days': float(sum(1 for day in days if is_working(day))),
+            'potential_hours': round(sum(day_hours.get(day, 0.0) for day in days if is_working(day)), 2),
             'missions': mission_lines,
             'absences': absence_lines,
-            'mission_totals': column_sum(mission_lines),
-            'totals': column_sum(mission_lines + absence_lines),
-            'mission_total': sum(line['total'] for line in mission_lines),
+            # Jours : missions au jour et congés ; heures : missions à l'heure. Jamais additionnés.
+            'mission_totals': column_sum(day_lines),
+            'mission_hour_totals': column_sum(hour_lines),
+            'totals': column_sum(day_lines + absence_lines),
+            'mission_total': sum(line['total'] for line in day_lines),
+            'mission_hours_total': round(sum(line['total'] for line in hour_lines), 2),
             'absence_total': sum(line['total'] for line in absence_lines),
         }
 
@@ -427,15 +481,24 @@ class MissionActivityReport(models.Model):
                 weeks.append({'week': day['week'], 'span': 1})
         data['weeks'] = weeks
         data['status'] = self._get_status_label()
+        data['unit_labels'] = {'day': _("jours"), 'hour': _("heures")}
         if partner_id is not None:
             missions = [line for line in data['missions'] if line['partner_id'] == partner_id]
             data['missions'] = missions
             data['partner'] = missions[0]['partner'] if missions else ''
-            data['mission_totals'] = [
-                sum(line['values'][index] or 0.0 for line in missions)
-                if day['holiday'] is False and not day['weekend'] else None
-                for index, day in enumerate(data['days'])]
-            data['mission_total'] = sum(line['total'] for line in missions)
+
+            def column_sum(lines):
+                return [round(sum(line['values'][index] or 0.0 for line in lines), 2)
+                        if day['holiday'] is False and not day['weekend'] else None
+                        for index, day in enumerate(data['days'])]
+
+            day_lines = [line for line in missions if line['unit'] == 'day']
+            hour_lines = [line for line in missions if line['unit'] == 'hour']
+            data['mission_totals'] = column_sum(day_lines)
+            data['mission_hour_totals'] = column_sum(hour_lines)
+            data['mission_total'] = sum(line['total'] for line in day_lines)
+            data['mission_hours_total'] = round(sum(line['total'] for line in hour_lines), 2)
+        data['has_hours'] = any(line['unit'] == 'hour' for line in data['missions'])
         return data
 
     def _get_status_label(self):

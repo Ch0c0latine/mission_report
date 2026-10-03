@@ -57,7 +57,20 @@ class ProjectProject(models.Model):
         entre deux affaires va sur la précédente), la première avant elles.
         """
         self.ensure_one()
-        orders = self._mission_all_orders().filtered(lambda o: o.state == 'sale')
+        return self._mission_pick_order(self._mission_all_orders().filtered(lambda o: o.state == 'sale'), day)
+
+    def _mission_billing_unit_on(self, day):
+        """Unité de facturation de la mission à cette date : 'day' ou 'hour'.
+
+        Celle de l'affaire confirmée de la date, sinon celle d'un devis (une saisie peut
+        précéder la confirmation) ; au jour sans affaire.
+        """
+        self.ensure_one()
+        order = self._mission_order_on(day) or self._mission_pick_order(self._mission_all_orders(), day)
+        return order.mission_billing_unit or 'day'
+
+    def _mission_pick_order(self, orders, day):
+        """Parmi ces affaires, celle dont la période contient la date (voir _mission_order_on)."""
         if not orders:
             return self.env['sale.order']
         if len(orders) == 1 or not day:

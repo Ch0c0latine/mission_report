@@ -49,6 +49,7 @@
                         <field name="date_start" string="Début"/>
                         <field name="date_end" string="Fin"/>
                         <field name="employee_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                        <field name="mission_billing_unit" widget="radio" options="{'horizontal': true}"/>
                     </group>
                     <group string="Affaire d'origine">
                         <field name="source_date_start" string="Début" readonly="1" force_save="1"/>
@@ -63,6 +64,9 @@
                 </group>
                 <div class="alert alert-warning" role="alert" invisible="not warning">
                     <field name="warning"/>
+                </div>
+                <div class="alert alert-warning" role="alert" invisible="not unit_warning">
+                    <field name="unit_warning"/>
                 </div>
                 <div class="alert alert-warning" role="alert" invisible="not note_warning">
                     <field name="note_warning"/>

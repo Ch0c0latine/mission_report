@@ -33,6 +33,7 @@ LINE_VALUES = [
     ('project', "Mission"),
     ('leave_type', "Time off type"),
     ('total', "Line total (days)"),
+    ('unit', "Unité (jours ou heures)"),
 ]
 #: Values a header cell can receive.
 HEADER_VALUES = [
@@ -48,6 +49,8 @@ HEADER_VALUES = [
     ('mission_total', "Mission days"),
     ('absence_total', "Time off days"),
     ('total', "Total days"),
+    ('potential_hours', "Heures ouvrées"),
+    ('mission_hours_total', "Heures de mission"),
 ]
 VALUES = LINE_VALUES + [item for item in HEADER_VALUES
                         if item[0] not in {key for key, _label in LINE_VALUES}]
@@ -191,6 +194,8 @@ class MissionActivityReportTemplate(models.Model):
             'mission_total': _("Mission days"),
             'absence_total': _("Time off days"),
             'total': _("Total days"),
+            'potential_hours': _("Heures ouvrées"),
+            'mission_hours_total': _("Heures de mission"),
         }
         line = {
             'label': _("Client"),
@@ -198,6 +203,7 @@ class MissionActivityReportTemplate(models.Model):
             'project': _("Mission"),
             'leave_type': _("Time off type"),
             'total': _("Total"),
+            'unit': _("Unité"),
         }
         return header, line
 
@@ -414,7 +420,10 @@ class MissionActivityReportTemplate(models.Model):
         first_day = column_index_from_string(self.first_day_column.strip().upper())
         days = data['days']
 
-        blocks = [('mission', self.mission_first_row, self.mission_last_row, data['missions'])]
+        # Les missions à l'heure sont écrites à part, sous le total des jours : voir _export_hours.
+        hour_lines = [line for line in data['missions'] if line['unit'] == 'hour']
+        blocks = [('mission', self.mission_first_row, self.mission_last_row,
+                   [line for line in data['missions'] if line['unit'] != 'hour'])]
         if self.absence_first_row:
             blocks.append(('absence', self.absence_first_row, self.absence_last_row,
                            data['absences'] if self.kind == 'internal' else []))
@@ -443,6 +452,8 @@ class MissionActivityReportTemplate(models.Model):
                     cell = sheet.cell(row=row, column=first_day + offset)
                     cell.value = line['values'][offset] if line and offset < len(days) else None
             filled_rows.append((first, first + count - 1))
+        if hour_lines:
+            filled_rows.append(self._export_hours(sheet, data, hour_lines, filled_rows, first_day))
 
         for cell_map in self.cell_ids.filtered(lambda c: c.kind == 'header' and c.value):
             _set_text(sheet[cell_map.cell.strip().upper()], self._header_value(report, data, cell_map.value))
@@ -485,6 +496,50 @@ class MissionActivityReportTemplate(models.Model):
         book.save(output)
         return output.getvalue()
 
+    def _export_hours(self, sheet, data, lines, filled_rows, first_day):
+        """Les missions à l'heure, sous la ligne de total des jours : un titre, leurs lignes et
+        leur propre total, jamais additionnés aux jours. Renvoie (première, dernière) de leurs lignes.
+
+        Les lignes prennent la mise en forme de la première ligne de mission, le titre et le total
+        celle de la ligne de total.
+        """
+        from openpyxl.utils import column_index_from_string, get_column_letter  # noqa: PLC0415
+        total_row = filled_rows[-1][1] + 1
+        model_row = filled_rows[0][0]
+        count = len(lines)
+        self._resize_block(sheet, total_row, total_row, count + 2)
+        first, last = total_row + 2, total_row + 1 + count
+        for row in range(first, last + 1):
+            sheet.row_dimensions[row].height = sheet.row_dimensions[model_row].height
+            for cell in sheet[model_row]:
+                if cell.has_style:
+                    sheet.cell(row=row, column=cell.column)._style = copy(cell._style)
+        if sheet.cell(row=total_row, column=1).value == _("Total"):
+            sheet.cell(row=total_row, column=1).value = _("Total (jours)")
+        hours = data.get('potential_hours')
+        _set_text(sheet.cell(row=total_row + 1, column=1),
+                  _("Missions à l'heure, en heures (heures ouvrées du mois : %s)",
+                    self.env['mission.activity.report']._format_days(hours))
+                  if hours is not None else _("Missions à l'heure, en heures"))
+        columns = {column_index_from_string(c.cell.strip().upper()): c.value
+                   for c in self.cell_ids
+                   if c.kind == 'line' and c.value and c.block in ('mission', 'both')}
+        for index, line in enumerate(lines):
+            row = first + index
+            for column, value in columns.items():
+                _set_text(sheet.cell(row=row, column=column), self._line_value(line, value))
+            for offset in range(MAX_DAYS):
+                sheet.cell(row=row, column=first_day + offset).value = \
+                    line['values'][offset] if offset < len(data['days']) else None
+        total = last + 1
+        _set_text(sheet.cell(row=total, column=1), _("Total (heures)"))
+        sums = [first_day + offset for offset in range(len(data['days']))]
+        sums += [column for column, value in columns.items() if value == 'total']
+        for column in sums:
+            letter = get_column_letter(column)
+            sheet.cell(row=total, column=column).value = "=SUM(%s%s:%s%s)" % (letter, first, letter, last)
+        return first, last
+
     def _day_color(self, day):
         if day['weekend']:
             return self.weekend_color
@@ -506,6 +561,8 @@ class MissionActivityReportTemplate(models.Model):
             return line.get('label') if 'leave_type_id' in line else None
         if value == 'total':
             return line.get('total')
+        if value == 'unit':
+            return _("heures") if line.get('unit') == 'hour' else _("jours")
         return None
 
     def _header_value(self, report, data, value):
@@ -522,6 +579,8 @@ class MissionActivityReportTemplate(models.Model):
             'mission_total': data['mission_total'],
             'absence_total': data['absence_total'] if self.kind == 'internal' else None,
             'total': data['mission_total'] + (data['absence_total'] if self.kind == 'internal' else 0),
+            'potential_hours': data.get('potential_hours'),
+            'mission_hours_total': data.get('mission_hours_total'),
         }.get(value)
 
     @api.model

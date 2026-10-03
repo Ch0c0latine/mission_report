@@ -5,6 +5,11 @@ The days of a validated monthly report, per mission, are added up and set as
 the delivered quantity of the order line the project belongs to. Nothing is
 typed by hand: the next invoice takes the days delivered since the last one.
 A report sent back to draft takes its days back.
+
+Une affaire facturée à l'heure prend de même les heures validées : chaque
+valeur porte l'unité de sa ligne de compte rendu, et ne va que sur une affaire
+de la même unité (un compte rendu validé avant la facturation à l'heure est en
+jours).
 """
 import logging
 from collections import defaultdict
@@ -40,7 +45,10 @@ class MissionActivityReport(models.Model):
 
     @api.model
     def _sale_validated_days(self):
-        """{project id: [(date, days)]} over all the validated reports."""
+        """{project id: [(date, value, unit)]} over all the validated reports.
+
+        L'unité est « day » ou « hour » ; une ligne sans unité est en jours.
+        """
         result = {}
         for report in self.sudo().search([('state', '=', 'validated')]):
             data = report.snapshot or {}
@@ -49,9 +57,11 @@ class MissionActivityReport(models.Model):
                 project_id = line.get('project_id')
                 if not project_id:
                     continue
+                unit = line.get('unit', 'day')
                 for day, value in zip(days, line.get('values', [])):
                     if value:
-                        result.setdefault(project_id, []).append((fields.Date.to_date(day['date']), value))
+                        result.setdefault(project_id, []).append(
+                            (fields.Date.to_date(day['date']), value, unit))
         return result
 
     @api.model
@@ -80,6 +90,8 @@ class MissionActivityReport(models.Model):
         day line of that order whose period (one month of the volet) contains
         it, or the nearest one. An order without periods on its lines shares
         the days between its day lines in proportion to their ordered quantity.
+
+        Une affaire à l'heure ne prend que les heures, une affaire au jour que les jours.
         """
         if days is None:
             days = self._sale_validated_days()
@@ -88,8 +100,10 @@ class MissionActivityReport(models.Model):
             lines = self._sale_lines_of(project)
             # Jours par groupe de lignes qui se les partagent.
             totals = defaultdict(float)
-            for day, value in days.get(project.id, []):
+            for day, value, unit in days.get(project.id, []):
                 order = project._mission_order_on(day)
+                if unit != (order.mission_billing_unit or 'day'):
+                    continue
                 order_lines = lines.filtered(lambda l: l.order_id == order)
                 if order_lines:
                     totals[order_lines._mission_lines_on(day)] += value

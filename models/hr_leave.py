@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 import re
 
+import pytz
 from markupsafe import Markup
 
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
-from odoo.tools import format_date
+from odoo.tools import float_round, format_date
+from odoo.tools.intervals import Intervals
 from odoo.tools.translate import code_translations
+
+from .work_time import hours_by_day, work_intervals
 
 
 class HrLeave(models.Model):
@@ -47,6 +51,97 @@ class HrLeave(models.Model):
         readonly=False,
         help="Bascule entre une saisie de Mission (par défaut) et une saisie de Congé."
     )
+    # Mission facturée à l'heure : la saisie compte des heures. Le type « Activité » est en
+    # heures, mais une mission prend par défaut des journées entières ; la durée choisie ici
+    # donne la demi-journée ou les heures personnalisées d'Odoo (request_unit_half/hours).
+    mission_hourly = fields.Boolean(
+        string="Mission à l'heure", compute='_compute_mission_hourly',
+        help="La mission est facturée à l'heure à la date de la saisie.")
+    mission_duration = fields.Selection(
+        [('day', "Journée entière"), ('half', "Demi-journée"), ('hours', "Heures")],
+        string="Durée", default='day',
+        help="Mission facturée à l'heure : une journée entière compte les heures de travail du "
+             "jour, une demi-journée la moitié, des heures choisies exactement leurs heures.")
+
+    @api.depends('project_id', 'request_date_from')
+    def _compute_mission_hourly(self):
+        for leave in self:
+            leave.mission_hourly = bool(leave.project_id) and \
+                leave.project_id.sudo()._mission_billing_unit_on(leave.request_date_from) == 'hour'
+
+    @api.depends('leave_type_request_unit', 'project_id', 'mission_duration')
+    def _compute_request_unit_half(self):
+        missions = self.filtered('project_id')
+        super(HrLeave, self - missions)._compute_request_unit_half()
+        for leave in missions:
+            leave.request_unit_half = leave.mission_duration == 'half'
+
+    @api.depends('leave_type_request_unit', 'project_id', 'mission_duration')
+    def _compute_request_unit_hours(self):
+        missions = self.filtered('project_id')
+        super(HrLeave, self - missions)._compute_request_unit_hours()
+        for leave in missions:
+            leave.request_unit_hours = leave.mission_duration == 'hours'
+
+    @api.depends('number_of_hours', 'number_of_days', 'leave_type_request_unit', 'project_id',
+                 'request_date_from')
+    def _compute_duration_display(self):
+        # Le type « Activité » est en heures : une mission au jour s'affiche tout de même en jours.
+        super()._compute_duration_display()
+        for leave in self.filtered('project_id'):
+            if leave.mission_hourly:
+                hours, minutes = divmod(round(abs(leave.number_of_hours) * 60), 60)
+                leave.duration_display = "%d:%02d %s" % (hours, minutes, _("heures"))
+            else:
+                leave.duration_display = "%g %s" % (
+                    float_round(leave.number_of_days, precision_digits=2), _("jours"))
+
+    def _get_durations(self, check_leave_type=True, resource_calendar=None):
+        # Une demi-journée de mission compte la moitié des heures du jour, quelle que soit la
+        # coupure du calendrier entre le matin et l'après-midi.
+        result = super()._get_durations(check_leave_type=check_leave_type, resource_calendar=resource_calendar)
+        for leave in self.filtered(lambda l: l.project_id and l.mission_duration == 'half'
+                                   and l.employee_id and l.date_from and l.date_to):
+            days, _hours = result[leave.id]
+            result[leave.id] = (days, sum(leave._mission_hours_by_day().values()))
+        return result
+
+    def _mission_hours_by_day(self):
+        """{date: heures} de la saisie, jour par jour, selon le calendrier du salarié.
+
+        Journée entière : les heures de travail du jour ; demi-journée : la moitié
+        (le premier jour pris l'après-midi, le dernier le matin, ou le jour seul pris
+        le matin ou l'après-midi) ; heures personnalisées : les heures de travail
+        comprises entre le début et la fin. Jours fériés exclus.
+        """
+        self.ensure_one()
+        employee = self.employee_id.sudo()
+        if not (employee and self.request_date_from and self.request_date_to):
+            return {}
+        if self.mission_duration == 'hours' and self.request_date_from == self.request_date_to:
+            # Un seul jour : les heures calculées par Odoo, celles qu'affiche la saisie.
+            return {self.request_date_from: round(self.number_of_hours, 2)} if self.number_of_hours else {}
+        tz = pytz.timezone(employee.tz or self.tz or 'UTC')
+        work, tz = work_intervals(self.env, employee, self.request_date_from, self.request_date_to,
+                                  calendar=self.resource_calendar_id, tz=tz)
+        if work is None:
+            return {}
+        if self.mission_duration == 'hours' and self.date_from and self.date_to:
+            work = work & Intervals([(pytz.utc.localize(self.date_from).astimezone(tz),
+                                      pytz.utc.localize(self.date_to).astimezone(tz),
+                                      self.env['resource.calendar.attendance'])])
+        result = hours_by_day(work)
+        if self.mission_duration == 'half':
+            first, last = self.request_date_from, self.request_date_to
+            start, stop = self.request_date_from_period, self.request_date_to_period
+
+            def halved(day):
+                if first == last:
+                    return start == stop
+                return (day == first and start == 'pm') or (day == last and stop == 'am')
+
+            result = {day: hours / 2 if halved(day) else hours for day, hours in result.items()}
+        return {day: round(hours, 2) for day, hours in result.items() if hours}
 
     @api.depends('employee_id')
     def _compute_available_project_ids(self):
@@ -125,6 +220,15 @@ class HrLeave(models.Model):
             employee = self.env['hr.employee'].browse(res.get('employee_id'))                 or self.env.user.employee_id
             res['project_id'] = self._mission_projects_for_period(
                 employee, res.get('request_date_from'), res.get('request_date_to'))[:1].id or False
+        if res.get('project_id') and 'mission_duration' in fields_list:
+            # Un créneau horaire du calendrier (vue semaine ou jour) : des heures, sur une mission
+            # à l'heure seulement.
+            hourly = self.env['project.project'].browse(res['project_id']).sudo()._mission_billing_unit_on(
+                fields.Date.to_date(res.get('request_date_from'))) == 'hour'
+            res['mission_duration'] = 'hours' if hourly and res.get('request_unit_hours') else 'day'
+            for name, duration in (('request_unit_hours', 'hours'), ('request_unit_half', 'half')):
+                if name in res:
+                    res[name] = res['mission_duration'] == duration
         return res
 
     @api.model
@@ -148,6 +252,7 @@ class HrLeave(models.Model):
                 'name': 'Activité',
                 'requires_allocation': False,
                 'leave_validation_type': 'no_validation',
+                'request_unit': 'hour',
                 'active': False,
             })
         return leave_type
@@ -169,13 +274,31 @@ class HrLeave(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         activity_type = self._get_default_activity_leave_type()
+        Project = self.env['project.project'].sudo()
         for vals in vals_list:
+            if vals.get('project_id'):
+                self._mission_prepare_duration(vals, Project.browse(vals['project_id']))
             if vals.get('project_id') and not vals.get('holiday_status_id'):
                 vals['holiday_status_id'] = activity_type.id
             elif 'project_id' not in vals and vals.get('holiday_status_id') and                     not self._is_activity_leave_type(self.env['hr.leave.type'].browse(vals['holiday_status_id'])):
                 # Un congé créé par code (congé groupé, import) : pas de mission par défaut.
                 vals['project_id'] = False
         return super().create(vals_list)
+
+    @api.model
+    def _mission_prepare_duration(self, vals, project):
+        """La durée d'une mission : demi-journée et heures pour une mission à l'heure seulement.
+
+        Les cases d'Odoo (request_unit_half/hours) se déduisent de la durée : passées par un
+        créneau du calendrier, elles la donnent quand la durée n'est pas fournie.
+        """
+        hours, half = vals.pop('request_unit_hours', False), vals.pop('request_unit_half', False)
+        hourly = project._mission_billing_unit_on(fields.Date.to_date(vals.get('request_date_from'))) == 'hour'
+        if not hourly:
+            if vals.get('mission_duration', 'day') == 'day':
+                vals['mission_duration'] = 'day'
+        elif 'mission_duration' not in vals and (hours or half):
+            vals['mission_duration'] = 'hours' if hours else 'half'
 
     def write(self, vals):
         # Self-heal records still pointing at a stale/misconfigured Activité type
@@ -195,6 +318,20 @@ class HrLeave(models.Model):
     def _onchange_project_id(self):
         if self.project_id:
             self.holiday_status_id = False
+
+    @api.onchange('project_id', 'request_date_from')
+    def _onchange_mission_duration(self):
+        # Une mission au jour se saisit en journées entières.
+        if self.project_id and not self.mission_hourly:
+            self.mission_duration = 'day'
+
+    @api.constrains('project_id', 'mission_duration')
+    def _check_mission_duration(self):
+        for record in self:
+            if record.project_id and record.mission_duration != 'day' and not record.mission_hourly:
+                raise ValidationError(_(
+                    "La mission %s est facturée au jour : saisissez des journées entières.",
+                    record.project_id.display_name))
 
     @api.onchange('holiday_status_id')
     def _onchange_holiday_status_id(self):

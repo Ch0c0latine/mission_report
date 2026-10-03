@@ -9,3 +9,4 @@ from . import test_volet
 from . import test_revue_corrections
 from . import test_volets_mensuels
 from . import test_independence
+from . import test_heures
