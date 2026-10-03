@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 T.T.C. SAS
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0). -->
+<odoo>
+    <!-- Paramètres › Activité : tout ce qui se règle pour l'ensemble de la société, au même endroit. -->
+    <record id="res_config_settings_view_form_mission_report" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.mission.report</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="95"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app string="Activité" name="mission_report">
+                    <block title="Facturation" name="mission_billing_block">
+                        <setting id="mission_billing_unit_default" company_dependent="1"
+                                 string="Facturation par défaut"
+                                 help="Unité des nouvelles affaires de mission : journées ou heures validées. Chaque affaire peut en changer.">
+                            <field name="mission_billing_unit_default" widget="radio"
+                                   options="{'horizontal': true}"/>
+                        </setting>
+                    </block>
+
+                    <block title="Indemnités de grand déplacement (IGD)" name="mission_igd_block">
+                        <setting id="mission_igd_categories" string="Catégories de dépenses des IGD"
+                                 help="Les catégories de Notes de frais que « Générer les IGD » utilise. Le montant mensuel prévu se règle sur la fiche de chaque mission.">
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="igd_lodging_product_id" class="col-lg-4 o_light_label"/>
+                                    <field name="igd_lodging_product_id" options="{'no_create': True}"/>
+                                </div>
+                                <div class="row">
+                                    <label for="igd_meal_product_id" class="col-lg-4 o_light_label"/>
+                                    <field name="igd_meal_product_id" options="{'no_create': True}"/>
+                                </div>
+                                <div class="row">
+                                    <label for="igd_expat_product_id" class="col-lg-4 o_light_label"/>
+                                    <field name="igd_expat_product_id" options="{'no_create': True}"/>
+                                </div>
+                                <div class="row">
+                                    <label for="igd_real_meal_product_ids" class="col-lg-4 o_light_label"/>
+                                    <field name="igd_real_meal_product_ids" widget="many2many_tags"
+                                           options="{'no_create': True}"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+
+                    <block title="Jours fériés et comptes rendus" name="mission_tools_block">
+                        <setting id="mission_public_holidays" string="Jours fériés français"
+                                 help="À générer pour chaque année avant de préparer un volet : sans eux, les jours fériés compteraient comme des jours travaillés.">
+                            <div class="content-group">
+                                <button name="%(mission_report.action_mission_public_holiday_wizard)d"
+                                        type="action" string="Générer les jours fériés"
+                                        class="btn-link ps-0" icon="oi-arrow-right"/>
+                            </div>
+                        </setting>
+                        <setting id="mission_report_templates" string="Modèles Excel des comptes rendus"
+                                 help="Le classeur dans lequel les comptes rendus s'exportent : téléchargez-le, mettez-le à votre image, redéposez-le.">
+                            <div class="content-group">
+                                <button name="%(mission_report.action_mission_activity_report_template)d"
+                                        type="action" string="Modèles Excel"
+                                        class="btn-link ps-0" icon="oi-arrow-right"/>
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>

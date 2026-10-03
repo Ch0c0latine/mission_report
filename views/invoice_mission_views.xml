@@ -31,21 +31,6 @@
         </field>
     </record>
 
-    <!-- Paramètres des ventes : unité proposée pour les nouvelles affaires. -->
-    <record id="res_config_settings_view_form_mission_billing" model="ir.ui.view">
-        <field name="name">res.config.settings.view.form.mission.billing</field>
-        <field name="model">res.config.settings</field>
-        <field name="inherit_id" ref="sale.res_config_settings_view_form"/>
-        <field name="arch" type="xml">
-            <xpath expr="//block[@name='invoicing_setting_container']" position="inside">
-                <setting id="mission_billing_unit_default" company_dependent="1" string="Facturation par défaut"
-                         help="Unité des nouvelles affaires de mission : journées ou heures validées.">
-                    <field name="mission_billing_unit_default" widget="radio" options="{'horizontal': true}"/>
-                </setting>
-            </xpath>
-        </field>
-    </record>
-
     <!-- Facture : mois concerné. -->
     <record id="view_move_form_mission_month" model="ir.ui.view">
         <field name="name">account.move.form.mission.month</field>

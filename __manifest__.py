@@ -47,6 +47,7 @@
         'data/mail_template_invoice.xml',
         'views/igd_views.xml',
         'views/volet_views.xml',
+        'views/res_config_settings_views.xml',
     ],
     'assets': {
         'web.assets_backend': [

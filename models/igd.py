@@ -51,6 +51,20 @@ class ResCompany(models.Model):
         help="Un jour qui porte un repas au réel ne reçoit pas d'IGD repas.")
 
 
+class ResConfigSettings(models.TransientModel):
+    _inherit = 'res.config.settings'
+
+    # Les catégories d'IGD se règlent dans Paramètres › Activité (réservé aux administrateurs).
+    igd_lodging_product_id = fields.Many2one(
+        related='company_id.igd_lodging_product_id', readonly=False)
+    igd_meal_product_id = fields.Many2one(
+        related='company_id.igd_meal_product_id', readonly=False)
+    igd_expat_product_id = fields.Many2one(
+        related='company_id.igd_expat_product_id', readonly=False)
+    igd_real_meal_product_ids = fields.Many2many(
+        related='company_id.igd_real_meal_product_ids', readonly=False)
+
+
 class ProjectProject(models.Model):
     _inherit = 'project.project'
 
@@ -261,7 +275,7 @@ class MissionActivityReport(models.Model):
         if not lodging and not meal:
             raise UserError(_(
                 "Choisissez les catégories IGD logement et repas sur la société "
-                "(Paramètres › Sociétés › onglet IGD)."))
+                "(Paramètres › Activité)."))
         return company, lodging, meal
 
     def _igd_presence_days(self, data, project):

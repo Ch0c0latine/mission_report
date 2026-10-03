@@ -70,30 +70,17 @@
         <field name="model">project.project</field>
         <field name="inherit_id" ref="project.edit_project"/>
         <field name="arch" type="xml">
-            <xpath expr="//page[@name='settings']/group" position="inside">
-                <group name="igd" string="IGD" groups="base.group_system">
+            <!-- Sous les champs principaux de la fiche, pas dans l'onglet Paramètres. -->
+            <xpath expr="//notebook" position="before">
+                <group name="igd" string="Indemnités de grand déplacement (IGD)" groups="base.group_system">
                     <field name="igd_currency_id" invisible="1"/>
                     <field name="igd_monthly_budget"/>
                     <field name="igd_start" invisible="not igd_monthly_budget"/>
+                    <div class="text-muted" colspan="2">
+                        « Générer les IGD » (application Notes de frais) s'en sert pour créer les IGD du mois.
+                        Réservé aux administrateurs, jamais imprimé.
+                    </div>
                 </group>
-            </xpath>
-        </field>
-    </record>
-
-    <record id="res_company_view_form_igd" model="ir.ui.view">
-        <field name="name">res.company.form.igd</field>
-        <field name="model">res.company</field>
-        <field name="inherit_id" ref="base.view_company_form"/>
-        <field name="arch" type="xml">
-            <xpath expr="//notebook" position="inside">
-                <page name="igd" string="IGD" groups="base.group_system">
-                    <group>
-                        <field name="igd_lodging_product_id"/>
-                        <field name="igd_meal_product_id"/>
-                        <field name="igd_expat_product_id"/>
-                        <field name="igd_real_meal_product_ids" widget="many2many_tags"/>
-                    </group>
-                </page>
             </xpath>
         </field>
     </record>
