@@ -78,7 +78,6 @@
                     <field name="igd_start" invisible="not igd_monthly_budget"/>
                     <div class="text-muted" colspan="2">
                         « Générer les IGD » (application Notes de frais) s'en sert pour créer les IGD du mois.
-                        Réservé aux administrateurs, jamais imprimé.
                     </div>
                 </group>
             </xpath>
