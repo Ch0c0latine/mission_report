@@ -17,7 +17,6 @@ mensuel (part du mois, rattrapage, reste) n'est donné qu'à eux.
 """
 from datetime import date
 
-from dateutil.relativedelta import relativedelta
 from markupsafe import Markup, escape
 
 from odoo import _, api, fields, models
@@ -244,26 +243,29 @@ class MissionActivityReport(models.Model):
         return sorted(set(days))
 
     def _igd_months_with_presence(self, project):
-        """Mois de présence sur la mission jusqu'à celui du rapport, rattrapage compris.
+        """Mois à compter jusqu'à celui du rapport : celui-ci, et les mois précédents où il y
+        avait de la présence sur la mission et déjà des IGD saisies.
 
-        Un mois sans rapport enregistré compte aussi : son rapport est calculé
-        à la volée, sans être créé.
+        Un mois sans aucune IGD n'est pas à rattraper : le rattrapage ne reprend que
+        ce qu'un mois commencé a laissé en dessous du montant prévu. Le rapport d'un mois
+        sans rapport enregistré est calculé à la volée, sans être créé.
         """
-        first = self.env['hr.leave'].sudo().search([
-            ('employee_id', '=', self.employee_id.id), ('project_id', '=', project.id),
-            ('state', '=', 'validate')], order='request_date_from', limit=1).request_date_from
-        if not first:
-            return 0
-        month = max(project.igd_start.replace(day=1) if project.igd_start else date(1900, 1, 1),
-                    first.replace(day=1))
         last = self.date_from.replace(day=1)
+        first = project.igd_start.replace(day=1) if project.igd_start else date(1900, 1, 1)
+        recorded = self.env['hr.expense'].sudo().search([
+            ('employee_id', '=', self.employee_id.id), ('project_id', '=', project.id),
+            ('product_id', 'in', self.env['product.product']._igd_product_ids()),
+            ('state', '!=', 'refused'), ('date', '>=', first), ('date', '<', last)])
+        months = sorted({day.replace(day=1) for day in recorded.mapped('date')} | {last})
         count = 0
-        while month <= last:
-            report = self.search([('employee_id', '=', self.employee_id.id), ('date_from', '=', month)], limit=1) \
-                or self.new({'employee_id': self.employee_id.id, 'date_from': month})
+        for month in months:
+            if month == last:
+                report = self
+            else:
+                report = self.search([('employee_id', '=', self.employee_id.id), ('date_from', '=', month)],
+                                     limit=1) or self.new({'employee_id': self.employee_id.id, 'date_from': month})
             if report._igd_presence_days(report._get_report_data(), project):
                 count += 1
-            month += relativedelta(months=1)
         return count
 
     def _igd_generate(self, notes=None, summary=None):

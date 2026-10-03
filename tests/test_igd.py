@@ -100,8 +100,17 @@ class TestIgd(TestSaleDelivery):
                        [('product_id.igd_category', '!=', True)]):
             self.assertEqual(Expense.search(domain + [('id', 'in', both.ids)]), other, domain)
 
-    def test_a_month_without_report_still_counts_for_the_catch_up(self):
-        # April has presence on the mission but nobody opened its report: it is still due.
+    def test_a_month_without_any_igd_is_not_caught_up(self):
+        # April has presence on the mission but no IGD was ever entered for it: nothing to catch up.
         self._entry(self.project_a, '2031-04-07', '2031-04-11')
+        meals = self._generated().filtered(lambda e: e.product_id == self.meal)
+        self.assertEqual(len(meals), 2, "one month due only")
+
+    def test_a_month_with_igd_but_no_report_counts_for_the_catch_up(self):
+        # April has presence and one IGD entered, nobody opened its report: the rest is due in May.
+        self._entry(self.project_a, '2031-04-07', '2031-04-11')
+        self.env['hr.expense'].create({
+            'name': 'IGD', 'employee_id': self.employee.id, 'product_id': self.lodging.id,
+            'date': date(2031, 4, 7), 'project_id': self.project_a.id})
         meals = self._generated().filtered(lambda e: e.product_id == self.meal)
         self.assertEqual(len(meals), 9, "two months due: meals on every day of presence")
