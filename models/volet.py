@@ -36,7 +36,8 @@ PLAN_TAIL = re.compile(r'^de ?:?$', re.IGNORECASE)
 # Le paragraphe du tarif, l'introduction et les lignes de mois du prévisionnel, quand ils sont dans le
 # même bloc que la suite : on les retire du texte et on garde le reste.
 PLAN_RATE_SENTENCE = re.compile(r'^Les prestations seront réalisées[^.]*\. ?')
-PLAN_INTRO = re.compile(r'^Ce volet concerne la période du [^:]*:[^:]*?prévisionnel de ?:? ?', re.IGNORECASE)
+PLAN_INTRO = re.compile(r'^Ce volet concerne la période du \d\d/\d\d/\d{4} au \d\d/\d\d/\d{4} ?:[^:]*?soit[^:]*:? ?',
+                        re.IGNORECASE)
 PLAN_LINES = re.compile(r'^(?:[^\W\d_]+ \d{4} ?: ?[\d.,]+ ?jours? travaillés? soit ?[\d .,]+ ?(?:EUR|€) ?)+',
                         re.IGNORECASE)
 NOTE_BLOCKS = {'p', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'table', 'blockquote', 'pre'}
