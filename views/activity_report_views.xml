@@ -276,7 +276,7 @@
               action="action_mission_activity_report_my"
               sequence="5"/>
     <menuitem id="menu_mission_activity_report_all"
-              name="Team activity reports"
+              name="Comptes rendus de l'équipe"
               parent="hr_holidays.menu_hr_holidays_my_leaves"
               action="action_mission_activity_report_all"
               groups="hr_holidays.group_hr_holidays_user"

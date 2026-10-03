@@ -808,11 +808,6 @@ msgid "Monthly activity report"
 msgstr "Compte rendu d'activité mensuel"
 
 #. module: mission_report
-#: model:ir.ui.menu,name:mission_report.menu_mission_activity_report_all
-msgid "Team activity reports"
-msgstr "Comptes rendus de l'équipe"
-
-#. module: mission_report
 #: model:ir.actions.act_window,name:mission_report.action_mission_activity_report_my
 #: model:ir.ui.menu,name:mission_report.menu_mission_activity_report_my
 msgid "My activity reports"

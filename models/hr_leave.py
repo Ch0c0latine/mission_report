@@ -361,6 +361,8 @@ class HrLeave(models.Model):
         'hr_holidays.menu_hr_holidays_configuration',
         'hr_holidays.hr_leave_menu_my',
         'hr_holidays.menu_open_department_leave_approve',
+        # views/activity_report_views.xml
+        'mission_report.menu_mission_activity_report_all',
         # views/hr_leave_views.xml
         'hr_holidays.hr_leave_action_my',
         'hr_holidays.hr_leave_action_action_approve_department',
