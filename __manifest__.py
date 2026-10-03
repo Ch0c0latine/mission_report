@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Activité',
-    'version': '19.0.2.1.0',
+    'version': '19.0.2.2.0',
     'summary': 'Activity and mission reports by project based on leaves logic',
     'description': """
         Module mission_report adapting hr_holidays logic for activity and mission reporting by project.
@@ -22,8 +22,9 @@
         'project',
         # Les journées validées alimentent les lignes de commande des missions.
         'sale_project',
-        # Tableau des frais refacturés et justificatifs joints aux factures.
-        'expense_scan',
+        # Les IGD sont des dépenses. Le module expense_scan, s'il est installé, complète le
+        # courriel de facture (tableau des frais, justificatifs) : il n'est pas requis.
+        'hr_expense',
     ],
     'data': [
         'security/ir.model.access.csv',

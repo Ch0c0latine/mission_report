@@ -175,24 +175,17 @@ class AccountMove(models.Model):
                 'mission_report.action_report_activity_client', res_ids=report.ids)
             files.append(("CRA_%s_%s.pdf" % (report.employee_id.name, period), pdf, 'application/pdf'))
 
-        # Frais refacturés portés par la facture (à défaut, ceux du mois sur ses missions).
-        Expense = self.env['hr.expense'].sudo()
-        expenses = Expense.search([('expense_scan_invoice_id', '=', self.id)]) \
-            if 'expense_scan_invoice_id' in Expense._fields else Expense
-        if not expenses and month and projects:
-            last = month.replace(day=calendar.monthrange(month.year, month.month)[1])
-            expenses = Expense.search([
-                ('project_id', 'in', projects.ids), ('reinvoice_mode', '=', 'project'),
-                ('approval_state', '=', 'approved'), ('date', '>=', month), ('date', '<=', last)])
-        if expenses and 'expense.scan.sheet' in self.env:
-            template = orders.mission_expense_template_id[:1]
-            built = self.env['expense.scan.sheet'].sudo().with_context(
-                expense_scan_sheet_project_ids=projects.ids)._build(
-                expenses, excel_template=template or False, receipts=True)
-            for name, content in built:
-                mimetype = 'application/pdf' if name.endswith('.pdf') else \
-                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                files.append((name, content, mimetype))
+        # Frais refacturés portés par la facture (à défaut, ceux du mois sur ses missions) : le tableau
+        # Excel et les justificatifs, quand le module expense_scan est installé.
+        if hasattr(self, 'expense_scan_sheet_files'):
+            Expense = self.env['hr.expense'].sudo()
+            expenses = Expense.search([('expense_scan_invoice_id', '=', self.id)])
+            if not expenses and month and projects:
+                last = month.replace(day=calendar.monthrange(month.year, month.month)[1])
+                expenses = Expense.search([
+                    ('project_id', 'in', projects.ids), ('reinvoice_mode', '=', 'project'),
+                    ('approval_state', '=', 'approved'), ('date', '>=', month), ('date', '<=', last)])
+            files += self.expense_scan_sheet_files(expenses, projects)
         return files
 
     def _mission_mail_attachments(self):

@@ -184,6 +184,7 @@ class SaleOrder(models.Model):
 
 
 class HrExpense(models.Model):
+    """Points d'accroche du module expense_scan : sans lui, ces méthodes ne sont jamais appelées."""
     _inherit = 'hr.expense'
 
     @api.model

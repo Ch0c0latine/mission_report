@@ -1,6 +1,13 @@
 # mission_report
 Odoo module for Mission Report and leave management - daily Timesheet management with calendar view, monthly reports and client deliverables
 
+## Installation
+
+Self-sufficient: it needs the Odoo apps Time Off, Project, Sales (`sale_project`) and
+Expenses, and no other module. If the receipt scanner `expense_scan` is installed too, the
+re-invoiced expenses follow the period of each order and the e-mail of an invoice carries
+their Excel table (model chosen on the project) and receipts; without it nothing changes.
+
 ## Invoicing the days
 
 When a monthly activity report is validated, its days per mission are added to

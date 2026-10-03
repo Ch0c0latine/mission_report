@@ -17,11 +17,6 @@ class SaleOrder(models.Model):
         string="Destinataires des factures",
         help="Contacts à qui envoyer les factures de cette affaire. Vide : le client de la facture.",
     )
-    mission_expense_template_id = fields.Many2one(
-        'expense.scan.export.template', string="Modèle Excel des frais",
-        help="Tableau des frais refacturés joint au courriel d'envoi des factures "
-             "(par exemple le modèle du client). Vide : pas de tableau Excel.",
-    )
 
     @api.depends('order_line', 'project_id')
     def _compute_mission_employee_names(self):
