@@ -21,7 +21,7 @@
                     </block>
 
                     <block title="Indemnités de grand déplacement (IGD)" name="mission_igd_block">
-                        <setting id="mission_igd_categories" string="Catégories de dépenses des IGD"
+                        <setting id="mission_igd_categories" class="col-lg-12" string="Catégories de dépenses des IGD"
                                  help="Les catégories de Notes de frais que « Générer les IGD » utilise. Le montant mensuel prévu se règle sur la fiche de chaque mission.">
                             <div class="content-group">
                                 <div class="row mt16">
