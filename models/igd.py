@@ -117,25 +117,50 @@ class MissionIgdWizard(models.TransientModel):
         help="Un salarié génère les siennes ; un responsable des dépenses peut choisir son équipe.")
     report_month = fields.Selection(
         selection=lambda self: self.env['mission.activity.report']._selection_report_month(),
-        string="Mois", required=True, default=lambda self: str(date.today().month))
+        string="Mois", required=True, default=lambda self: str(fields.Date.context_today(self).month))
     report_year = fields.Selection(
         selection=lambda self: self.env['mission.activity.report']._selection_report_year(),
-        string="Année", required=True, default=lambda self: str(date.today().year))
+        string="Année", required=True, default=lambda self: str(fields.Date.context_today(self).year))
     result = fields.Html(readonly=True, sanitize=False)
     created_expense_ids = fields.Many2many(
         'hr.expense', 'mission_igd_wizard_expense_rel', 'wizard_id', 'expense_id')
     missing_employee_ids = fields.Many2many(
         'hr.employee', 'mission_igd_wizard_missing_rel', 'wizard_id', 'employee_id')
 
+    def _igd_allowed_employees(self, employees):
+        """Parmi ces salariés, ceux pour qui l'utilisateur peut générer des IGD.
+
+        Les responsables des dépenses gardent tout ; un approbateur d'équipe est
+        limité au domaine de la règle d'Odoo sur les dépenses (ir_rule_hr_expense_approver) :
+        lui-même, ses subordonnés, les salariés de ses départements et ceux dont il est
+        l'approbateur des dépenses ; les autres ne génèrent que les leurs.
+        """
+        user = self.env.user
+        if user.has_group('hr_expense.group_hr_expense_user') or user.has_group(IGD_GROUP):
+            return employees
+        # sudo : un salarié ne lit pas toutes les fiches ; la liste est celle de la règle ci-dessous.
+        Employee = self.env['hr.employee'].sudo()
+        own = Employee.search([('id', 'in', employees.ids), ('user_id', '=', user.id)])
+        if not user.has_group('hr_expense.group_hr_expense_team_approver'):
+            return own
+        return own | Employee.search([
+            ('id', 'in', employees.ids),
+            '|', '|',
+            ('id', 'child_of', user.employee_ids.ids),
+            ('department_id.manager_id.user_id', '=', user.id),
+            ('expense_manager_id', '=', user.id),
+        ])
+
     def action_generate(self):
         """Crée les IGD du mois choisi pour les salariés choisis et en rend compte."""
         self.ensure_one()
-        user = self.env.user
-        manager = user.has_group('hr_expense.group_hr_expense_team_approver')
-        employees = self.employee_ids or user.employee_id
-        for employee in employees:
-            if employee.user_id != user and not manager:
-                raise UserError(_("Vous ne pouvez générer que vos propres IGD."))
+        employees = self.employee_ids or self.env.user.employee_id
+        refused = employees - self._igd_allowed_employees(employees)
+        if refused:
+            raise UserError(_(
+                "Vous ne pouvez générer des IGD que pour vous-même, vos subordonnés, les salariés "
+                "de vos départements ou ceux dont vous approuvez les dépenses. Non autorisé : %s.",
+                ", ".join(refused.sudo().mapped('name'))))
         day = date(int(self.report_year), int(self.report_month), 1)
         Report = self.env['mission.activity.report'].sudo()
         created = self.env['hr.expense']

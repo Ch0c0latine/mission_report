@@ -21,6 +21,8 @@ from datetime import date, datetime
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 
+from .activity_report import INTERNAL, INTERNAL_KEY
+
 _SPACE = r'(?:&nbsp;|\s|\xa0)*'
 # « Volet 2 : période du 01/10/2026 au 31/03/2027 », avec ou sans espaces insécables.
 VOLET_HEADING = re.compile(
@@ -134,7 +136,7 @@ class SaleOrder(models.Model):
                 vals['mission_date_start'] = period[0]
             if not order.mission_date_end:
                 vals['mission_date_end'] = period[1]
-            order.sudo().with_context(mission_no_check=True).write(vals)
+            order.sudo().with_context(**{INTERNAL_KEY: INTERNAL}).write(vals)
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -144,7 +146,8 @@ class SaleOrder(models.Model):
 
     def write(self, vals):
         result = super().write(vals)
-        if not self.env.context.get('mission_no_check') and (
+        # Jeton interne : un drapeau de contexte simple pourrait être posé par un client.
+        if self.env.context.get(INTERNAL_KEY) != INTERNAL and (
                 'project_id' in vals or 'mission_date_start' in vals or 'mission_date_end' in vals):
             self._mission_check_periods()
         return result

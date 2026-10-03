@@ -57,6 +57,19 @@ CELL_REF_RE = re.compile(
     r"(?<![A-Za-z0-9_!'.$])(\$?[A-Z]{1,3}\$?)(\d+)"
     r"(?::(\$?[A-Z]{1,3}\$?)(\d+))?(?![0-9A-Za-z_(])")
 MAX_DAYS = 31
+#: Début d'une chaîne qu'un tableur lirait comme une formule.
+FORMULA_PREFIXES = ('=', '+', '-', '@')
+
+
+def _set_text(cell, value):
+    """Écrit la valeur dans la cellule ; un texte reste un texte, jamais une formule.
+
+    openpyxl lit « =... » comme une formule : un client, une mission ou un
+    salarié nommé « =HYPERLINK(...) » s'exécuterait à l'ouverture du fichier.
+    """
+    cell.value = value
+    if isinstance(value, str) and value.startswith(FORMULA_PREFIXES):
+        cell.data_type = 's'
 
 
 def _import_openpyxl():
@@ -424,15 +437,15 @@ class MissionActivityReportTemplate(models.Model):
                 row = first + index
                 line = lines[index] if index < len(lines) else None
                 for column, value in columns.items():
-                    sheet.cell(row=row, column=column).value = \
-                        self._line_value(line, value) if line else None
+                    _set_text(sheet.cell(row=row, column=column),
+                              self._line_value(line, value) if line else None)
                 for offset in range(MAX_DAYS):
                     cell = sheet.cell(row=row, column=first_day + offset)
                     cell.value = line['values'][offset] if line and offset < len(days) else None
             filled_rows.append((first, first + count - 1))
 
         for cell_map in self.cell_ids.filtered(lambda c: c.kind == 'header' and c.value):
-            sheet[cell_map.cell.strip().upper()].value = self._header_value(report, data, cell_map.value)
+            _set_text(sheet[cell_map.cell.strip().upper()], self._header_value(report, data, cell_map.value))
 
         # Day header rows, and the days the month does not have.
         rows = [row for row in (self.week_row, self.day_row, self.weekday_row) if row]

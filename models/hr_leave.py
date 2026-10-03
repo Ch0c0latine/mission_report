@@ -53,8 +53,10 @@ class HrLeave(models.Model):
         for record in self:
             user = record.employee_id.user_id
             if user:
-                tasks = self.env['project.task'].search([('user_ids', 'in', user.id)])
-                record.available_project_ids = tasks.project_id
+                # sudo : la règle de visibilité des tâches cacherait celles de l'employé
+                # à un responsable qui saisit pour lui ; seuls les projets sont gardés.
+                tasks = self.env['project.task'].sudo().search([('user_ids', 'in', user.id)])
+                record.available_project_ids = self.env['project.project'].browse(tasks.project_id.ids)
             else:
                 record.available_project_ids = self.env['project.project']
 
@@ -68,11 +70,14 @@ class HrLeave(models.Model):
         user = employee.user_id
         if not user:
             return self.env['project.project']
-        projects = self.env['project.task'].search([('user_ids', 'in', user.id)]).project_id
+        # sudo : voir _compute_available_project_ids ; seuls les projets sont gardés.
+        tasks = self.env['project.task'].sudo().search([('user_ids', 'in', user.id)])
+        projects = self.env['project.project'].browse(tasks.project_id.ids)
         date_from = date_from or fields.Date.context_today(self)
         date_to = date_to or date_from
 
         def active(project):
+            project = project.sudo()
             if (project.date_start and project.date_start > date_to) or                     (project.date and project.date < date_from):
                 return False
             dated = project.sudo()._mission_all_orders().filtered(
@@ -212,7 +217,7 @@ class HrLeave(models.Model):
             if not record.project_id or not record.employee_id:
                 continue
             user = record.employee_id.user_id
-            has_task = user and self.env['project.task'].search_count([
+            has_task = user and self.env['project.task'].sudo().search_count([
                 ('project_id', '=', record.project_id.id),
                 ('user_ids', 'in', user.id),
             ])

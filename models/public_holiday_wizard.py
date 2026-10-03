@@ -53,11 +53,22 @@ def french_public_holidays(env, year, alsace_moselle=False):
     return sorted(holidays)
 
 
+def mission_timezone(company, employee=None):
+    """Fuseau de lecture des jours fériés et des jours ouvrés.
+
+    Calendrier de travail de l'employé, sinon celui de la société : son fuseau ;
+    à défaut, le fuseau de l'employé, puis UTC.
+    """
+    employee = employee.sudo() if employee else employee
+    calendar_ = (employee and employee.resource_calendar_id) or company.sudo().resource_calendar_id
+    return pytz.timezone((calendar_ and calendar_.tz) or (employee and employee.tz) or 'UTC')
+
+
 class MissionPublicHolidayWizard(models.TransientModel):
     _name = 'mission.public.holiday.wizard'
     _description = "Generate French public holidays"
 
-    year = fields.Integer(required=True, default=lambda self: fields.Date.today().year)
+    year = fields.Integer(required=True, default=lambda self: fields.Date.context_today(self).year)
     company_id = fields.Many2one(
         'res.company', string="Company", required=True, default=lambda self: self.env.company)
     alsace_moselle = fields.Boolean(
@@ -98,7 +109,7 @@ class MissionPublicHolidayWizard(models.TransientModel):
         at all is refused.
         """
         self.ensure_one()
-        tz = pytz.timezone(self.company_id.resource_calendar_id.tz or self.env.user.tz or 'UTC')
+        tz = mission_timezone(self.company_id)
         Leaves = self.env['resource.calendar.leaves']
         vals_list = []
         for day, name in french_public_holidays(self.env, self.year, self.alsace_moselle):

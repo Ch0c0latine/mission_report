@@ -11,6 +11,7 @@ Two renderings share the same data: the internal report (missions and time
 off) and the client report (the missions of one client only).
 """
 import calendar
+import secrets
 from datetime import date, datetime, time, timedelta
 
 import pytz
@@ -20,6 +21,18 @@ from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError
 from odoo.tools import format_date
 from odoo.tools.misc import formatLang, get_lang
+
+from .public_holiday_wizard import mission_timezone
+
+#: Jeton posé dans le contexte par les écritures internes du module (circuit de
+#: validation, dates des affaires). Tiré au chargement et jamais envoyé au
+#: client : un drapeau booléen, lui, peut être posé par n'importe quel appel RPC.
+INTERNAL = secrets.token_hex(8)
+INTERNAL_KEY = 'mission_report_internal'
+
+#: Champs du circuit de validation : seuls les boutons les modifient.
+WORKFLOW_FIELDS = ('state', 'snapshot', 'submit_date', 'submitted_by_id',
+                   'validate_date', 'validated_by_id')
 
 
 class MissionActivityReport(models.Model):
@@ -37,7 +50,7 @@ class MissionActivityReport(models.Model):
     company_id = fields.Many2one(related='employee_id.company_id', store=True)
     date_from = fields.Date(
         string="Month", required=True, index=True,
-        default=lambda self: fields.Date.today().replace(day=1),
+        default=lambda self: fields.Date.context_today(self).replace(day=1),
         help="Any day of the month: the report covers the whole month.")
     date_to = fields.Date(compute='_compute_date_to', store=True)
     # Month and year chosen from lists rather than a day in a calendar.
@@ -144,9 +157,19 @@ class MissionActivityReport(models.Model):
     # The month is always stored as its first day.
     # ------------------------------------------------------------------
 
+    def _is_internal(self):
+        """Écriture faite par le module lui-même, jamais par un appel du client."""
+        return self.env.context.get(INTERNAL_KEY) == INTERNAL
+
     @api.model_create_multi
     def create(self, vals_list):
+        internal = self._is_internal()
         for vals in vals_list:
+            if not internal:
+                if vals.get('state', 'draft') != 'draft' or any(
+                        vals.get(name) for name in WORKFLOW_FIELDS if name != 'state'):
+                    raise UserError(_("Un compte rendu se crée en brouillon : utilisez les boutons "
+                                      "Soumettre et Valider."))
             if vals.get('date_from'):
                 vals['date_from'] = fields.Date.to_date(vals['date_from']).replace(day=1)
         return super().create(vals_list)
@@ -154,9 +177,7 @@ class MissionActivityReport(models.Model):
     def write(self, vals):
         if vals.get('date_from'):
             vals['date_from'] = fields.Date.to_date(vals['date_from']).replace(day=1)
-        protected = {'state', 'snapshot', 'submit_date', 'submitted_by_id',
-                     'validate_date', 'validated_by_id'}
-        if protected & set(vals) and not self.env.context.get('mission_report_workflow'):
+        if set(WORKFLOW_FIELDS) & set(vals) and not self._is_internal():
             raise UserError(_("Use the Submit, Validate and Reset buttons to change the status."))
         if {'employee_id', 'date_from'} & set(vals) and self.filtered(lambda r: r.state != 'draft'):
             raise UserError(_("Reset the report to draft before changing its employee or month."))
@@ -182,7 +203,7 @@ class MissionActivityReport(models.Model):
         return user in (employee.leave_manager_id | employee.parent_id.user_id)
 
     def _workflow_write(self, vals):
-        return self.with_context(mission_report_workflow=True).write(vals)
+        return self.with_context(**{INTERNAL_KEY: INTERNAL}).write(vals)
 
     def action_submit(self):
         for report in self:
@@ -361,7 +382,7 @@ class MissionActivityReport(models.Model):
         read in the schedule's timezone.
         """
         calendar_ = employee.resource_calendar_id or employee.company_id.resource_calendar_id
-        tz = pytz.timezone((calendar_ and calendar_.tz) or employee.tz or 'UTC')
+        tz = mission_timezone(employee.company_id, employee)
         start = tz.localize(datetime.combine(date_from, time.min)).astimezone(pytz.utc).replace(tzinfo=None)
         end = tz.localize(datetime.combine(date_to, time.max)).astimezone(pytz.utc).replace(tzinfo=None)
         leaves = self.env['resource.calendar.leaves'].sudo().search([
