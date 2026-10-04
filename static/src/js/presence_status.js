@@ -63,7 +63,7 @@ function missionLabel(value, record) {
 
 const activityPatch = () => ({
     get icon() {
-        return this.value === ACTIVITY ? "fa-wrench" : super.icon;
+        return this.value === ACTIVITY ? "fa-briefcase" : super.icon;
     },
     get color() {
         return this.value === ACTIVITY ? "text-success" : super.color;
