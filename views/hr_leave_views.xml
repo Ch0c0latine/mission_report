@@ -67,11 +67,11 @@
                 <attribute name="class" remove="col-md-6" separator=" "/>
             </xpath>
 
-            <!-- Une demi-journée est un seul jour, matin ou après-midi : un seul sélecteur (celui de
-                 la première date) ; celui de la dernière date, qui n'a de sens que sur plusieurs
-                 jours, est masqué et suit le premier. -->
+            <!-- Une mission en demi-journée : un seul sélecteur, matin ou après-midi, valable pour
+                 chaque jour de la plage ; celui de la dernière date est masqué et suit le premier.
+                 Un congé garde les deux (premier jour l'après-midi, dernier jour le matin). -->
             <xpath expr="//field[@name='request_date_to_period']" position="attributes">
-                <attribute name="invisible">1</attribute>
+                <attribute name="invisible">not request_unit_half or entry_type == 'mission'</attribute>
             </xpath>
 
             <!-- Pas de <footer> ici : on laisse le pied de page natif d'hr_holidays (dont le bouton

@@ -136,15 +136,9 @@ class HrLeave(models.Model):
                                       self.env['resource.calendar.attendance'])])
         result = hours_by_day(work)
         if self.mission_duration == 'half':
-            first, last = self.request_date_from, self.request_date_to
-            start, stop = self.request_date_from_period, self.request_date_to_period
-
-            def halved(day):
-                if first == last:
-                    return start == stop
-                return (day == first and start == 'pm') or (day == last and stop == 'am')
-
-            result = {day: hours / 2 if halved(day) else hours for day, hours in result.items()}
+            # Une demi-journée de mission vaut pour chaque jour de la plage : trois jours en
+            # demi-journée du matin font trois matinées.
+            result = {day: hours / 2 for day, hours in result.items()}
         return {day: round(hours, 2) for day, hours in result.items() if hours}
 
     @api.depends('employee_id')
@@ -395,12 +389,11 @@ class HrLeave(models.Model):
         if self.project_id:
             self.holiday_status_id = False
 
-    @api.onchange('request_unit_half', 'mission_duration', 'request_date_from', 'request_date_from_period')
-    def _onchange_mission_single_half_day(self):
-        """Une demi-journée tient sur un seul jour : la fin suit le début, et l'une comme l'autre
-        sont du même moment (matin ou après-midi)."""
-        if self.request_unit_half and self.request_date_from:
-            self.request_date_to = self.request_date_from
+    @api.onchange('request_unit_half', 'mission_duration', 'request_date_from_period')
+    def _onchange_mission_half_day_period(self):
+        """Mission en demi-journée : un seul moment (matin ou après-midi), le même chaque jour de
+        la plage ; la période de la dernière date suit celle de la première."""
+        if self.project_id and self.request_unit_half:
             self.request_date_to_period = self.request_date_from_period
 
     @api.onchange('project_id', 'request_date_from')

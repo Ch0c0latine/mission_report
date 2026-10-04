@@ -221,3 +221,14 @@ class TestMissionOrders(TestSaleDelivery):
         self.assertEqual(leave.state, 'confirm')
         leave.action_mission_restore()
         self.assertEqual(leave.state, 'validate')
+
+    def test_a_half_day_mission_over_several_days_counts_every_half_day(self):
+        leave = self.env['hr.leave'].search([('project_id', '=', self.project_a.id)], limit=1)
+        full = leave._mission_hours_by_day()
+        self.assertGreater(len(full), 1)
+        leave.write({'mission_duration': 'half', 'request_date_from_period': 'am', 'request_date_to_period': 'am'})
+        half = leave._mission_hours_by_day()
+        self.assertEqual(set(half), set(full))
+        for day, hours in full.items():
+            self.assertAlmostEqual(half[day], hours / 2, places=1)
+
