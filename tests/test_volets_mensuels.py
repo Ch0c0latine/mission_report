@@ -303,3 +303,39 @@ class TestVoletsMensuels(TestSaleDelivery):
         self.assertEqual(first.qty_delivered, 9.0)
         self.assertEqual(second.qty_delivered, 9.0)
 
+    def test_a_new_volet_does_not_copy_the_month_plan(self):
+        plan = ("<div>juillet 2026 : 22 jours travaillés soit 13 970 EUR</div>"
+                "<div>août 2026 : 11 jours travaillés soit 6 985 EUR</div>")
+        self.order.write({
+            'project_id': self.project_a.id, 'mission_volet_number': 1,
+            'mission_date_start': '2031-01-01', 'mission_date_end': '2031-04-30',
+            'mission_description': plan,
+            'mission_expenses_text': "<p>Les frais seront facturés au réel.</p>" + plan,
+            'note': plan + "<p>Principe de facturation : mensuel.</p>",
+        })
+        new = self._create(self._wizard(self.order, '2031-05-01', '2031-05-31'))
+        self.assertFalse(new.mission_description)
+        self.assertNotIn("jours travaillés", new.mission_expenses_text)
+        self.assertIn("Les frais seront facturés au réel.", new.mission_expenses_text)
+        self.assertNotIn("jours travaillés", new.note)
+        self.assertIn("Principe de facturation", new.note)
+
+    def test_the_expenses_of_a_new_volet_are_a_provision_from_the_previous_ones(self):
+        fee = self.env['product.product'].create({'name': 'Frais de mission', 'type': 'service', 'can_be_expensed': True})
+        self.order.write({'project_id': self.project_a.id, 'mission_date_start': '2031-01-01',
+                          'mission_date_end': '2031-04-30'})
+        self.order.order_line = [Command.create({'product_id': fee.id, 'product_uom_qty': 0.0, 'price_unit': 1.0})]
+        expense_line = self.order.order_line.filtered(lambda l: l.product_id == fee)
+        day_line = self.line
+        day_line.qty_delivered = 10.0
+        expense_line.qty_delivered = 500.0  # 50 per day worked
+        wizard = self._wizard(self.order, '2031-05-01', '2031-05-31')
+        new = self._create(wizard)
+        new_fee = new.order_line.filtered(lambda l: l.product_id == fee)
+        self.assertAlmostEqual(new_fee.product_uom_qty * new_fee.price_unit, 50.0 * wizard.days, places=1)
+        self.assertIn("Provision estimative", new_fee.name)
+        # No expenses before: the line starts from zero.
+        expense_line.qty_delivered = 0.0
+        again = self._create(self._wizard(self.order, '2031-06-01', '2031-06-30'))
+        self.assertEqual(again.order_line.filtered(lambda l: l.product_id == fee).product_uom_qty, 0.0)
+

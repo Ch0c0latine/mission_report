@@ -125,6 +125,21 @@ def _plan_remainder(text):
     return text.strip()
 
 
+def strip_plan(value):
+    """Un texte sans les lignes de mois du prévisionnel (« juillet 2026 : 22 jours travaillés soit … »).
+
+    Les lignes de l'offre se suffisent pour le prévisionnel : un nouveau volet ne reprend pas
+    celui de l'affaire d'origine, ni dans la description, ni dans les frais, ni dans les conditions.
+    """
+    if is_html_empty(value):
+        return value
+    blocks = _note_blocks(value)
+    kept = [html for html, text in blocks if not PLAN_MONTH.match(text)]
+    if not blocks or len(kept) == len(blocks):
+        return value
+    return "".join(kept) or False
+
+
 def split_volet_note(note):
     """(description, frais, conditions) d'une note à l'ancienne, None si elle ne se découpe pas.
 
@@ -485,6 +500,30 @@ class MissionVoletWizard(models.TransientModel):
         numbers += [int(found.group(1)) for found in (VOLET_HEADING.search(o.note or '') for o in orders) if found]
         return max(numbers + [len(orders)]) + 1
 
+    def _expense_estimate(self):
+        """(provision, tarif, jours, frais) : les frais de mission des volets précédents, au prorata des jours.
+
+        Le tarif est la moyenne des frais déjà engagés (facturés, sinon livrés) par jour (ou par
+        heure) travaillé des volets précédents ; la provision du nouveau volet est ce tarif
+        multiplié par ses jours. Sans frais ni jours passés : False, la ligne repart de zéro.
+        """
+        self.ensure_one()
+        unit = self.mission_billing_unit or 'day'
+        previous = self.order_id.project_id.sudo()._mission_all_orders() | self.order_id.sudo()
+        spent = worked = 0.0
+        for order in previous.filtered(lambda o: (o.mission_billing_unit or 'day') == unit):
+            lines = order.order_line.filtered(lambda l: not l.display_type)
+            spent += sum(max(l.qty_invoiced, l.qty_delivered) * l.price_unit
+                         for l in lines if l.product_id.can_be_expensed)
+            day_lines = lines.filtered('mission_day_line')
+            if day_lines:
+                first = day_lines[:1].product_id
+                worked += sum(day_lines.filtered(lambda l: l.product_id == first).mapped('qty_delivered'))
+        if spent <= 0 or worked <= 0 or self.days <= 0:
+            return False
+        rate = spent / worked
+        return round(rate * self.days, 2), rate, worked, spent
+
     def _volet_lines(self):
         """Les lignes du nouveau volet : celles de l'affaire d'origine, la ligne de journées en une par mois.
 
@@ -494,6 +533,7 @@ class MissionVoletWizard(models.TransientModel):
         prorata des quantités ; les frais repartent de zéro.
         """
         order = self.order_id
+        estimate = self._expense_estimate()
         months = [(month, days) for month, days in self._months() if days]
         lines = order._get_copiable_order_lines().sorted(lambda l: (l.sequence, l.id))
         groups = defaultdict(lambda: self.env['sale.order.line'])
@@ -510,6 +550,18 @@ class MissionVoletWizard(models.TransientModel):
                 vals = line.copy_data({'sequence': len(commands) + 1})[0]
                 if not line.display_type and line.product_id.can_be_expensed:
                     vals['product_uom_qty'] = 0.0
+                    if line.price_unit and estimate:
+                        provision, rate, worked, spent = estimate
+                        vals['product_uom_qty'] = round(provision / line.price_unit, 2)
+                        unit = _("heures") if self.mission_billing_unit == 'hour' else _("jours")
+                        vals['name'] = _(
+                            "%(name)s\nProvision estimative d'après les volets précédents : %(rate)s par %(one)s "
+                            "travaillé (%(spent)s pour %(worked)s %(unit)s), pour %(days)s %(unit)s.",
+                            name=(line.name or '').split('\n')[0],
+                            rate=format_amount(self.env, rate, order.currency_id),
+                            one=_("heure") if self.mission_billing_unit == 'hour' else _("jour"),
+                            spent=format_amount(self.env, spent, order.currency_id),
+                            worked=number(worked), days=number(self.days), unit=unit)
                 commands.append(Command.create(vals))
                 continue
             key = (line.product_id, line.price_unit)
@@ -558,6 +610,7 @@ class MissionVoletWizard(models.TransientModel):
             parts = split_volet_note(order.note)
             if parts:
                 description, expenses, note = parts
+        description, expenses, note = strip_plan(description), strip_plan(expenses), strip_plan(note)
         new = order.copy({
             'project_id': order.project_id.id,
             'mission_date_start': self.date_start,
