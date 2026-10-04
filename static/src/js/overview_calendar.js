@@ -28,6 +28,8 @@ const LEAVE_DELAY = 300;
 // Passer d'un jour à son voisin, bulle ouverte : un peu plus de patience, pour ne pas alterner
 // entre deux bulles quand la souris longe la limite des cases.
 const SWITCH_DELAY = 250;
+// Bande, au bord de chaque case, où la souris ne survole aucun jour.
+const CELL_EDGE = 3;
 
 patch(TimeOffReportCalendarController.prototype, {
     /** Clic sur une saisie : sa fiche (les employés ne lisent que les leurs : ils gardent la bulle). */
@@ -100,15 +102,19 @@ patch(TimeOffCalendarYearRenderer.prototype, {
         super.setup();
         this.hoverTimer = null;
         this.leaveTimer = null;
-        onMounted(() => this.rootRef.el.addEventListener("click", (ev) => this.onYearClick(ev)));
+        onMounted(() => {
+            const root = this.rootRef.el;
+            root.addEventListener("click", (ev) => this.onYearClick(ev));
+            root.addEventListener("mousemove", (ev) => this.onYearMove(ev));
+            root.addEventListener("mouseleave", () => {
+                this.hoverCell = null;
+                this.scheduleClose();
+            });
+        });
         onWillUnmount(() => {
             browser.clearTimeout(this.hoverTimer);
             browser.clearTimeout(this.leaveTimer);
         });
-    },
-
-    get options() {
-        return { ...super.options, dayCellDidMount: this.onDayCellMount };
     },
 
     /** Un clic sur un jour crée une saisie ; la liste de la journée vient au survol. */
@@ -126,24 +132,56 @@ patch(TimeOffCalendarYearRenderer.prototype, {
         }
     },
 
-    onDayCellMount({ el }) {
+    /**
+     * Survol : la case sous la souris est calculée sur la position du pointeur. Les saisies
+     * multi-jours sont dessinées par FullCalendar dans la case de leur premier jour, si bien que
+     * l'entrée de cette case se déclenchait aussi sur ses voisines, et sur la limite entre deux
+     * cases : une bulle décalée apparaissait là où rien n'est survolable. Une bande de
+     * quelques pixels au bord de chaque case ne compte pas.
+     */
+    onYearMove(ev) {
         if (this.env.isSmall) {
             return;
         }
-        el.addEventListener("mouseenter", () => {
-            browser.clearTimeout(this.leaveTimer);
-            browser.clearTimeout(this.hoverTimer);
-            // La bulle de ce jour est déjà ouverte (la souris est revenue d'un bord de case) :
-            // on la garde, sans la fermer ni la rouvrir, ce qui la faisait scintiller.
-            if (this.shownEl === el && document.querySelector(".o_cw_popover_holidays")) {
-                return;
+        const cell = this.dayCellAt(ev.clientX, ev.clientY);
+        if (cell === this.hoverCell) {
+            return;
+        }
+        this.hoverCell = cell;
+        browser.clearTimeout(this.leaveTimer);
+        browser.clearTimeout(this.hoverTimer);
+        if (!cell) {
+            this.scheduleClose();
+            return;
+        }
+        // La bulle de ce jour est déjà ouverte : on la garde, sans la fermer ni la rouvrir.
+        if (this.shownEl === cell && document.querySelector(".o_cw_popover_holidays")) {
+            return;
+        }
+        this.hoverTimer = browser.setTimeout(
+            () => this.showDayPopover(cell),
+            this.shownEl ? SWITCH_DELAY : HOVER_DELAY
+        );
+    },
+
+    dayCellAt(x, y) {
+        const month = document.elementFromPoint(x, y)?.closest(".fc-month-container");
+        if (!month) {
+            return null;
+        }
+        const cells = month.querySelectorAll(".fc-daygrid-day[data-date]:not(.fc-day-other)");
+        for (const cell of cells) {
+            const box = cell.getBoundingClientRect();
+            if (
+                x >= box.left + CELL_EDGE &&
+                x <= box.right - CELL_EDGE &&
+                y >= box.top + CELL_EDGE &&
+                y <= box.bottom - CELL_EDGE
+            ) {
+                return cell;
             }
-            this.hoverTimer = browser.setTimeout(
-                () => this.showDayPopover(el),
-                this.shownEl ? SWITCH_DELAY : HOVER_DELAY
-            );
-        });
-        el.addEventListener("mouseleave", () => this.scheduleClose());
+        }
+        return null;
     },
 
     closeDayPopovers() {
