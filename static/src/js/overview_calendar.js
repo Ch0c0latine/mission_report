@@ -40,40 +40,52 @@ const CELL_EDGE = 3;
 patch(TimeOffCalendarController.prototype, {
     setup() {
         super.setup(...arguments);
-        // Le numéro d'une semaine ouvre la semaine, le numéro d'un jour ouvre le jour.
-        this.onNavigationClick = (ev) => this.goFromNumber(ev);
-        onMounted(() => document.addEventListener("click", this.onNavigationClick, true));
-        onWillUnmount(() => document.removeEventListener("click", this.onNavigationClick, true));
+        // Le numéro d'une semaine ouvre la semaine, le numéro d'un jour ouvre le jour. Le clic
+        // est capté avant FullCalendar, dont la sélection d'une case créerait une saisie.
+        this.onNumberEvent = (ev) => this.goFromNumber(ev);
+        const names = ["pointerdown", "mousedown", "mouseup", "pointerup", "touchstart", "click"];
+        onMounted(() => names.forEach((n) => document.addEventListener(n, this.onNumberEvent, true)));
+        onWillUnmount(() => names.forEach((n) => document.removeEventListener(n, this.onNumberEvent, true)));
+    },
+
+    /** La date et l'échelle où mène l'élément cliqué (numéro de semaine ou de jour), sinon null. */
+    numberTarget(target) {
+        const scale = this.model.scale;
+        const week = target.closest("a.fc-daygrid-week-number, th.o-fc-week a");
+        if (week && (scale === "month" || scale === "year")) {
+            const day = week.closest("tr")?.querySelector("[data-date]");
+            return day ? { date: day.dataset.date, scale: "week" } : null;
+        }
+        const number = target.closest("a.fc-daygrid-day-number");
+        if (number && scale === "month") {
+            const day = number.closest(".fc-daygrid-day[data-date]");
+            return day ? { date: day.dataset.date, scale: "day" } : null;
+        }
+        const head = target.closest(".fc-col-header-cell[data-date]");
+        if (head && scale === "week") {
+            return { date: head.dataset.date, scale: "day" };
+        }
+        return null;
     },
 
     goFromNumber(ev) {
         if (!ev.target.closest?.(".o_calendar_container")) {
             return;
         }
-        const scale = this.model.scale;
-        const go = (date, to) => {
-            ev.preventDefault();
-            ev.stopPropagation();
-            this.model.load({ date: luxon.DateTime.fromISO(date), scale: to });
-        };
-        const week = ev.target.closest("a.fc-daygrid-week-number, th.o-fc-week a");
-        if (week && (scale === "month" || scale === "year")) {
-            const day = week.closest("tr")?.querySelector("[data-date]");
-            if (day) {
-                return go(day.dataset.date, "week");
-            }
+        const found = this.numberTarget(ev.target);
+        if (!found) {
+            return;
         }
-        const number = ev.target.closest("a.fc-daygrid-day-number");
-        if (number && scale === "month") {
-            const day = number.closest(".fc-daygrid-day[data-date]");
-            if (day) {
-                return go(day.dataset.date, "day");
-            }
+        ev.stopPropagation();
+        if (ev.type !== "click") {
+            return;
         }
-        const head = ev.target.closest(".fc-col-header-cell[data-date]");
-        if (head && scale === "week") {
-            return go(head.dataset.date, "day");
-        }
+        ev.preventDefault();
+        // Après la fin du clic : la grille n'est remplacée qu'ensuite.
+        browser.setTimeout(
+            () => this.model.load({ date: luxon.DateTime.fromISO(found.date), scale: found.scale }),
+            0
+        );
     },
 
     /** Vue annuelle : « Mois en cours » ramène à la vue mensuelle du mois d'aujourd'hui. */
