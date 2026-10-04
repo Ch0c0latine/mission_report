@@ -88,10 +88,11 @@ class MissionActivityReport(models.Model):
         """Set the delivered days of the missions' order lines.
 
         Without ``project_ids``, every mission with a validated report. A day
-        goes to the order of the mission whose period contains it, then to the
-        day line of that order whose period (one month of the volet) contains
-        it, or the nearest one. An order without periods on its lines shares
-        the days between its day lines in proportion to their ordered quantity.
+        goes to the order of the mission whose period contains it, then, for each
+        product of that order, to the day line whose period (one month of the volet)
+        contains it, or the nearest one. Lines of one product without periods share
+        the days in proportion to their ordered quantity ; another product (a daily
+        fee, say) takes every day.
 
         Une affaire à l'heure ne prend que les heures, une affaire au jour que les jours.
         """
@@ -107,8 +108,12 @@ class MissionActivityReport(models.Model):
                 if unit != (order.mission_billing_unit or 'day'):
                     continue
                 order_lines = lines.filtered(lambda l: l.order_id == order)
-                if order_lines:
-                    totals[order_lines._mission_lines_on(day)] += value
+                # Chaque prestation (produit) prend tous les jours : « Assistance » et « Frais par
+                # jour travaillé » en reçoivent chacune autant. Seules les lignes d'un même produit
+                # (les lignes mensuelles d'un volet, par exemple) se les partagent.
+                for product in order_lines.product_id:
+                    product_lines = order_lines.filtered(lambda l: l.product_id == product)
+                    totals[product_lines._mission_lines_on(day)] += value
             delivered = defaultdict(float)
             for group, total in totals.items():
                 for line, share in group._mission_prorata(total):

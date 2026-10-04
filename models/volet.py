@@ -489,9 +489,9 @@ class MissionVoletWizard(models.TransientModel):
         """Les lignes du nouveau volet : celles de l'affaire d'origine, la ligne de journées en une par mois.
 
         Chaque mois prend ses jours ouvrés (ses heures ouvrées pour un volet à
-        l'heure), répartis au prorata des quantités s'il y a plusieurs
-        prestations, dans l'unité et au prix de l'affaire d'origine ; les frais
-        repartent de zéro.
+        l'heure), dans l'unité et au prix de l'affaire d'origine : chaque prestation les
+        reprend tous, et ne les partage qu'entre ses propres lignes (prix différents) au
+        prorata des quantités ; les frais repartent de zéro.
         """
         order = self.order_id
         months = [(month, days) for month, days in self._months() if days]
@@ -499,7 +499,11 @@ class MissionVoletWizard(models.TransientModel):
         groups = defaultdict(lambda: self.env['sale.order.line'])
         for line in lines.filtered('mission_day_line'):
             groups[(line.product_id, line.price_unit)] |= line
-        total = sum(line.product_uom_qty for group in groups.values() for line in group)
+        # Chaque produit reprend tous les jours de la période ; ses lignes (un prix différent) se
+        # les partagent au prorata de leurs quantités.
+        totals = defaultdict(float)
+        for (product, _price), group in groups.items():
+            totals[product] += sum(group.mapped('product_uom_qty'))
         commands, done = [], set()
         for line in lines:
             if not line.mission_day_line:
@@ -513,7 +517,9 @@ class MissionVoletWizard(models.TransientModel):
                 continue
             done.add(key)
             group = groups[key]
-            share = sum(group.mapped('product_uom_qty')) / total if total else 1.0 / len(groups)
+            total = totals[line.product_id]
+            siblings = [key for key in groups if key[0] == line.product_id]
+            share = sum(group.mapped('product_uom_qty')) / total if total else 1.0 / len(siblings)
             name = line.product_id.with_context(lang=order.partner_id.lang).display_name
             for month, days in months:
                 first = max(month, self.date_start)

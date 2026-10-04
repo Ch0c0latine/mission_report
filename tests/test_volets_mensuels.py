@@ -294,3 +294,12 @@ class TestVoletsMensuels(TestSaleDelivery):
         self.assertEqual((day.mission_day_line, expense.mission_day_line, note.mission_day_line),
                          (True, False, False))
         self.assertFalse(day.mission_period_label())
+
+    def test_a_second_product_takes_every_day_too(self):
+        fee = self.env['product.product'].create({'name': 'Frais par jour', 'type': 'service'})
+        self.order.order_line = [Command.create({'product_id': fee.id, 'product_uom_qty': self.line.product_uom_qty})]
+        self._validate(self.report)
+        first, second = self.order.order_line
+        self.assertEqual(first.qty_delivered, 9.0)
+        self.assertEqual(second.qty_delivered, 9.0)
+
