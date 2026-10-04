@@ -1,7 +1,7 @@
 /**
  * Vue d'ensemble : navigation et saisie depuis le calendrier.
  *
- * - Cliquer sur une saisie ouvre sa fiche dans une fenêtre (approuver, refuser, annuler).
+ * - Cliquer sur une saisie ouvre la fenêtre d'Odoo (ruban d'état, approuver, refuser), sans quitter le calendrier.
  * - Cliquer sur un jour, ou glisser sur une plage, crée une saisie.
  * - Vue annuelle : la liste des saisies d'un jour s'affiche au survol ; le titre
  *   d'un mois mène à la vue mensuelle de ce mois.
@@ -30,43 +30,6 @@ const SWITCH_DELAY = 250;
 const CELL_EDGE = 3;
 
 patch(TimeOffReportCalendarController.prototype, {
-    /**
-     * Clic sur une saisie : sa fiche dans une fenêtre, sans quitter le calendrier, avec de quoi
-     * l'approuver, la refuser ou l'annuler (boutons d'hr_holidays). Qui ne peut pas lire la saisie
-     * elle-même (celle d'un autre service) garde la bulle d'origine.
-     */
-    async editRecord(record) {
-        if (!record.id) {
-            return;
-        }
-        const readable = await this.env.services.orm.search("hr.leave", [["id", "=", record.id]], {
-            limit: 1,
-        });
-        if (!readable.length) {
-            return super.editRecord(...arguments);
-        }
-        const onClosed = () => {
-            this.model.load();
-            this.env.timeOffBus?.trigger("update_dashboard");
-        };
-        return new Promise((resolve) => {
-            this.displayDialog(
-                TimeOffFormViewDialog,
-                {
-                    resModel: "hr.leave",
-                    resId: record.id,
-                    title: "Saisie",
-                    context: { form_view_ref: "hr_holidays.hr_leave_view_form" },
-                    size: "md",
-                    onRecordSaved: onClosed,
-                    onRecordDeleted: (rec) => this._deleteRecord(rec.resId, rec.data.can_cancel),
-                    onLeaveCancelled: onClosed,
-                },
-                { onClose: () => resolve() }
-            );
-        });
-    },
-
     /** Clic sur un jour ou une plage : nouvelle saisie. */
     createRecord(record) {
         const start = record.start;
