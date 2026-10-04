@@ -47,3 +47,18 @@
     margin-top: -15px !important;
 }
 
+// Numéros qui mènent à la semaine ou au jour : curseur main et soulignement au survol (sans
+// quoi le curseur de texte laisse croire qu'ils ne se cliquent pas).
+.o_calendar_container {
+    a.fc-daygrid-week-number,
+    .o-fc-week a,
+    .fc-dayGridMonth-view a.fc-daygrid-day-number,
+    .fc-timeGridWeek-view .fc-col-header-cell a {
+        cursor: pointer;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
