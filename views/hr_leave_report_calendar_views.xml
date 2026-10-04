@@ -58,6 +58,11 @@
             <xpath expr="//form" position="attributes">
                 <attribute name="string">Saisie</attribute>
             </xpath>
+            <!-- Un ruban d'état aussi pour une saisie soumise, en attente d'approbation. -->
+            <xpath expr="//widget[@name='web_ribbon']" position="before">
+                <widget name="web_ribbon" title="Soumis" bg_color="text-bg-warning"
+                        invisible="state not in ('confirm', 'validate1')"/>
+            </xpath>
             <!-- "Type de congés" : le type vaut "Activité" pour une mission. -->
             <xpath expr="//field[@name='holiday_status_id']" position="attributes">
                 <attribute name="string">Type de saisie</attribute>

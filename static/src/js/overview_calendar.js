@@ -30,6 +30,16 @@ const SWITCH_DELAY = 250;
 const CELL_EDGE = 3;
 
 patch(TimeOffReportCalendarController.prototype, {
+    /**
+     * Clic sur une saisie : la fenêtre d'Odoo (ruban d'état, approuver, refuser). À sa fermeture,
+     * le calendrier est relu : une approbation par ses boutons ne déclenche pas de rechargement.
+     */
+    async editRecord() {
+        await super.editRecord(...arguments);
+        await this.model.load();
+        this.env.timeOffBus?.trigger("update_dashboard");
+    },
+
     /** Clic sur un jour ou une plage : nouvelle saisie. */
     createRecord(record) {
         const start = record.start;

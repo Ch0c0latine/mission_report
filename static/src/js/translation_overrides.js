@@ -16,7 +16,7 @@ const OVERRIDES = {
     // Titres du popup de saisie, passés par
     // hr_holidays/static/src/views/calendar/calendar_controller.js : le premier
     // à l'ouverture d'une saisie existante, le second à la création.
-    "Time Off Request": "Saisie d'activité",
+    "Time Off Request": "Saisie",
     "New Time Off": "Nouvelle saisie",
     // Boutons du pied de page du popup, définis dans
     // hr_holidays/static/src/views/view_dialog/form_view_dialog.xml
