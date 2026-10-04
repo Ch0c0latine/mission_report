@@ -25,14 +25,16 @@ class HrLeaveReportCalendar(models.Model):
             what = leave.project_id.name if leave.project_id else leave.holiday_status_id.name
             entry.name = "%s · %s : %s" % (entry.employee_id.name, what or '', leave.duration_display or '')
 
-    def action_mission_edit(self):
+    def action_mission_edit(self, reopened=False):
         """« Modifier » dans la fenêtre de la saisie : la fiche complète, dans une fenêtre
         (voir leave_edit_action.js), puis le calendrier est relu."""
         self.ensure_one()
+        leave = self.env['hr.leave'].browse(self.sudo().leave_id.id)
+        leave._mission_check_unlocked()
         return {
             'type': 'ir.actions.client',
             'tag': 'mission_report.edit_leave',
-            'params': {'leave_id': self.sudo().leave_id.id},
+            'params': {'leave_id': leave.id, 'reopened': reopened},
         }
 
     def action_mission_reopen(self):
@@ -45,7 +47,7 @@ class HrLeaveReportCalendar(models.Model):
             if not leave.can_back_to_approve:
                 raise UserError(_("Votre profil ne permet pas de remettre cette saisie en attente d'approbation."))
             leave.action_back_to_approval()
-        return self.action_mission_edit()
+        return self.action_mission_edit(reopened=True)
 
     def action_mission_delete(self):
         """Supprime une saisie refusée ou annulée, avec les droits de l'utilisateur."""

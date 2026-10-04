@@ -7,12 +7,13 @@ import pytz
 from markupsafe import Markup
 
 from odoo import models, fields, api, _
-from odoo.exceptions import ValidationError
-from odoo.tools import float_round, format_date
+from odoo.exceptions import UserError, ValidationError
+from odoo.tools import float_is_zero, float_round, format_date
 from odoo.tools.intervals import Intervals
 from odoo.tools.safe_eval import safe_eval
 from odoo.tools.translate import code_translations
 
+from .activity_report import INTERNAL, INTERNAL_KEY
 from .work_time import hours_by_day, work_intervals
 
 
@@ -303,6 +304,71 @@ class HrLeave(models.Model):
         elif 'mission_duration' not in vals and (hours or half):
             vals['mission_duration'] = 'hours' if hours else 'half'
 
+    # Champs qui décident des journées d'une saisie : figés une fois la saisie reprise dans un
+    # compte rendu soumis ou validé, ou facturée.
+    MISSION_LOCK_FIELDS = (
+        'request_date_from', 'request_date_to', 'date_from', 'date_to', 'request_hour_from',
+        'request_hour_to', 'request_unit_half', 'request_unit_hours', 'mission_duration',
+        'project_id', 'employee_id')
+
+    def _mission_lock_reason(self):
+        """Le motif qui interdit de modifier les journées de la saisie, sinon False."""
+        self.ensure_one()
+        start = self.request_date_from
+        end = self.request_date_to or start
+        if not start or not self.employee_id:
+            return False
+        Report = self.env['mission.activity.report'].sudo()
+        report = Report.search([
+            ('employee_id', '=', self.employee_id.id), ('state', 'in', ('submitted', 'validated')),
+            ('date_from', '<=', end), ('date_to', '>=', start)], limit=1)
+        if report:
+            return _("Cette saisie figure dans le compte rendu « %(report)s » (%(state)s) : ses journées "
+                     "ne peuvent plus être modifiées.", report=report.display_name,
+                     state=dict(report._fields['state'].selection)[report.state].lower())
+        if self.project_id:
+            first, last = start.replace(day=1), end.replace(day=1)
+            invoices = self.project_id.sudo()._mission_all_orders().invoice_ids.filtered(
+                lambda m: m.state != 'cancel' and m.mission_month and first <= m.mission_month <= last)
+            if invoices:
+                return _("Cette saisie a été facturée (%(invoices)s) : ses journées ne peuvent plus être "
+                         "modifiées.", invoices=", ".join(invoices.mapped('name')))
+        return False
+
+    def _mission_check_unlocked(self):
+        for leave in self:
+            reason = leave._mission_lock_reason()
+            if reason:
+                raise UserError(reason)
+
+    def action_back_to_approval(self):
+        self._mission_check_unlocked()
+        return super().action_back_to_approval()
+
+    def action_mission_restore(self):
+        """Fin d'une réouverture sans ré-approbation : la saisie retrouve son approbation."""
+        pending = self.exists().filtered(lambda leave: leave.state == 'confirm')
+        if pending:
+            pending.action_approve()
+        return True
+
+    def unlink(self):
+        self._mission_check_unlocked()
+        return super().unlink()
+
+    @api.constrains('date_from', 'date_to', 'employee_id', 'request_unit_hours', 'request_unit_half')
+    def _check_mission_working_day(self):
+        """Odoo accepte une demande sans aucun jour travaillé (un dimanche, un jour férié) : une
+        durée de 0 jour. Ici elle est refusée."""
+        for leave in self:
+            if leave.state in ('refuse', 'cancel') or not leave.employee_id:
+                continue
+            if float_is_zero(leave.number_of_days, precision_digits=2) \
+                    and float_is_zero(leave.number_of_hours, precision_digits=2):
+                raise ValidationError(_(
+                    "Cette période ne compte aucun jour travaillé (week-end ou jour férié) : "
+                    "choisissez d'autres dates."))
+
     def write(self, vals):
         # Self-heal records still pointing at a stale/misconfigured Activité type
         # (e.g. created before _get_default_activity_leave_type started avoiding
@@ -315,6 +381,8 @@ class HrLeave(models.Model):
                 project_id = vals.get('project_id', record.project_id.id)
                 if project_id and record.holiday_status_id != activity_type:
                     super(HrLeave, record).write({'holiday_status_id': activity_type.id})
+        if self.env.context.get(INTERNAL_KEY) != INTERNAL and any(f in vals for f in self.MISSION_LOCK_FIELDS):
+            self.filtered(lambda leave: leave.state not in ('refuse', 'cancel'))._mission_check_unlocked()
         return super().write(vals)
 
     @api.onchange('project_id')

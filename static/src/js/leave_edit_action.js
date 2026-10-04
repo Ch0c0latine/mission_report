@@ -5,8 +5,9 @@
  *
  * Boutons de cette fenêtre (contexte mission_edit), plus sobres que ceux d'hr_holidays :
  * - pas de « Refuser » : refuser se fait depuis la fenêtre à ruban du calendrier ;
- * - « Enregistrer » seulement pour une saisie en attente d'approbation : enregistrer une saisie
- *   approuvée la ferait sortir de l'approbation sans que personne ne l'ait demandé ;
+ * - « Enregistrer » seulement pour une saisie en attente d'approbation ; une saisie approuvée
+ *   rouverte pour modification (mission_reopened) s'enregistre par « Approuver », et retrouve
+ *   son approbation si la fenêtre se ferme sans cela ;
  * - « Supprimer » aussi pour une saisie refusée ou annulée (hr_holidays ne l'offrait qu'au
  *   propriétaire d'une saisie en attente), avec confirmation ; « Annuler la saisie » reste
  *   pour une saisie approuvée.
@@ -39,7 +40,13 @@ patch(TimeOffDialogFormController.prototype, {
             return super.canSave;
         }
         const record = this.record;
-        return this.hasNoWarning && !record.isNew && record.data.state === "confirm" && record.dirty;
+        return (
+            this.hasNoWarning &&
+            !this.props.context?.mission_reopened &&
+            !record.isNew &&
+            record.data.state === "confirm" &&
+            record.dirty
+        );
     },
 
     get canDelete() {
@@ -72,6 +79,7 @@ registry.category("actions").add("mission_report.edit_leave", (env, action) => {
                 context: {
                     form_view_ref: "hr_holidays.hr_leave_view_form",
                     mission_edit: true,
+                    mission_reopened: Boolean(action.params.reopened),
                 },
                 size: "md",
                 onRecordSaved: reload,
@@ -92,7 +100,10 @@ registry.category("actions").add("mission_report.edit_leave", (env, action) => {
                 onLeaveCancelled: reload,
             },
             {
-                onClose: () => {
+                onClose: async () => {
+                    if (action.params.reopened) {
+                        await orm.call("hr.leave", "action_mission_restore", [[action.params.leave_id]]);
+                    }
                     reload();
                     resolve();
                 },

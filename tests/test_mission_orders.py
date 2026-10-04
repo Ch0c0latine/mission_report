@@ -190,3 +190,34 @@ class TestMissionOrders(TestSaleDelivery):
         leave.action_approve()
         self.assertEqual(leave.state, 'validate')
 
+    def test_a_submitted_report_locks_the_days_of_its_entries(self):
+        leave = self.env['hr.leave'].search([('project_id', '=', self.project_a.id), ('state', '=', 'validate')], limit=1)
+        self.assertFalse(leave._mission_lock_reason())
+        report = self.env['mission.activity.report'].search([
+            ('employee_id', '=', leave.employee_id.id), ('date_from', '<=', leave.request_date_to),
+            ('date_to', '>=', leave.request_date_from)], limit=1)
+        if not report:
+            report = self.env['mission.activity.report'].create({
+                'employee_id': leave.employee_id.id, 'date_from': leave.request_date_from.replace(day=1)})
+        report.action_submit()
+        self.assertTrue(leave._mission_lock_reason())
+        with self.assertRaises(UserError):
+            leave.write({'request_date_to': leave.request_date_from})
+        with self.assertRaises(UserError):
+            self._report_row(leave).action_mission_reopen()
+        with self.assertRaises(UserError):
+            leave.unlink()
+        self.assertEqual(leave.state, 'validate')
+
+    def test_a_period_without_working_day_is_refused(self):
+        with self.assertRaisesRegex(ValidationError, 'aucun jour travaillé'):
+            self.env['hr.leave'].create({
+                'employee_id': self.employee.id, 'project_id': self.project_b.id,
+                'request_date_from': '2031-06-14', 'request_date_to': '2031-06-15'})  # Saturday, Sunday
+
+    def test_closing_a_reopened_entry_restores_its_approval(self):
+        leave = self.env['hr.leave'].search([('project_id', '=', self.project_a.id), ('state', '=', 'validate')], limit=1)
+        self._report_row(leave).action_mission_reopen()
+        self.assertEqual(leave.state, 'confirm')
+        leave.action_mission_restore()
+        self.assertEqual(leave.state, 'validate')
