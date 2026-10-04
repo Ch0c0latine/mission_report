@@ -18,7 +18,7 @@ Les dates se lisent aussi dans le titre du volet de la note de l'affaire
 renseignées.
 """
 import re
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
@@ -183,19 +183,47 @@ class SaleOrder(models.Model):
                 continue
             group = (order | others).sudo()
             group._mission_fill_dates_from_note()
-            missing = group.filtered(lambda o: not o.mission_date_start or not o.mission_date_end)
+            group._mission_close_neighbour_periods(order)
+            ordered = group.sorted(lambda o: (o.mission_date_start or date.min, o.id))
+            # Seule la première affaire peut rester sans début, seule la dernière sans fin.
+            missing = group.browse()
+            for index, other in enumerate(ordered):
+                if (not other.mission_date_start and index) or                         (not other.mission_date_end and index < len(ordered) - 1):
+                    missing |= other
             if missing:
                 raise ValidationError(_(
                     "La mission « %(project)s » a plusieurs affaires. Renseignez les dates de "
                     "début et de fin de chacune (%(names)s).",
                     project=project.display_name, names=", ".join(missing.mapped('name'))))
-            ordered = group.sorted('mission_date_start')
             for left, right in zip(ordered, ordered[1:]):
-                if left.mission_date_end >= right.mission_date_start:
+                if (left.mission_date_end or date.max) >= (right.mission_date_start or date.min):
                     raise ValidationError(_(
                         "Les périodes des affaires %(left)s et %(right)s de la mission « %(project)s » "
                         "se chevauchent.", left=left.name, right=right.name,
                         project=project.display_name))
+
+    def _mission_close_neighbour_periods(self, order):
+        """Une affaire dont on vient de saisir une date ferme sa voisine sans date.
+
+        Le début saisi fixe la fin de l'affaire précédente (la veille) ; la fin saisie fixe le
+        début de la suivante (le lendemain). Rien n'est touché si la voisine a déjà sa date.
+        """
+        internal = self.with_context(**{INTERNAL_KEY: INTERNAL}).sudo()
+        others = (self - order).sudo()
+        if order.mission_date_start:
+            before = others.filtered(lambda o: not o.mission_date_end and (
+                not o.mission_date_start or o.mission_date_start < order.mission_date_start))
+            before = before.sorted(lambda o: (o.mission_date_start or date.min, o.id))[-1:]
+            if before:
+                internal.browse(before.id).write(
+                    {'mission_date_end': order.mission_date_start - timedelta(days=1)})
+        if order.mission_date_end:
+            after = others.filtered(lambda o: not o.mission_date_start and (
+                not o.mission_date_end or o.mission_date_end > order.mission_date_end))
+            after = after.sorted(lambda o: (o.mission_date_end or date.max, o.id))[:1]
+            if after:
+                internal.browse(after.id).write(
+                    {'mission_date_start': order.mission_date_end + timedelta(days=1)})
 
 
 class HrExpense(models.Model):

@@ -4,6 +4,7 @@
 from odoo import Command
 from odoo.exceptions import ValidationError
 
+from ..models.activity_report import INTERNAL, INTERNAL_KEY
 from .test_sale_delivery import TestSaleDelivery
 
 
@@ -44,6 +45,16 @@ class TestMissionOrders(TestSaleDelivery):
         with self.assertRaises(ValidationError):
             third.write({'mission_date_start': '2031-06-01', 'mission_date_end': '2031-06-30',
                          'project_id': self.project_a.id})
+
+    def test_the_start_entered_closes_the_previous_order_without_dates(self):
+        quiet = self.env.context.copy()
+        quiet[INTERNAL_KEY] = INTERNAL
+        (self.order | self.second).with_context(quiet).write(
+            {'mission_date_start': False, 'mission_date_end': False})
+        self.order.with_context(quiet).write({'mission_date_start': '2031-01-01'})
+        self.second.write({'mission_date_start': '2031-03-01'})  # the first order has no end
+        self.assertEqual(str(self.order.mission_date_end), '2031-02-28')
+        self.assertFalse(self.second.mission_date_end)  # the last one may stay open
 
     def test_dates_are_read_from_the_volet_title(self):
         third = self._third(note="<h5>Volet&nbsp;3&nbsp;:&nbsp;période du 01/01/2032 au&nbsp;30/06/2032</h5>")
