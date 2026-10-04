@@ -28,3 +28,22 @@
         color: var(--bs-warning-text-emphasis, #664d03);
     }
 }
+
+// Vue mensuelle : une saisie d'un seul jour (demi-journée, heures) est une barre, posée dans la
+// case selon l'heure ; deux barres de la même personne partagent une ligne.
+.fc-daygrid-event.o_mission_timebar {
+    display: block;
+    height: 14px;
+    line-height: 14px;
+    border-radius: 3px;
+    padding: 0 4px;
+    margin-right: 0;
+
+    .fc-time {
+        display: none;
+    }
+}
+.fc-daygrid-event-harness.o_mission_samerow {
+    margin-top: -15px !important;
+}
+

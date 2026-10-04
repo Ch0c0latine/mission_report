@@ -18,6 +18,7 @@ import { useBus } from "@web/core/utils/hooks";
 import { patch } from "@web/core/utils/patch";
 
 import { missionBus } from "./leave_edit_action";
+import { TimeOffCalendarCommonRenderer } from "@hr_holidays/views/calendar/common/calendar_common_renderer";
 import { TimeOffReportCalendarController } from "@hr_holidays/views/calendar/calendar_controller";
 import { TimeOffCalendarModel } from "@hr_holidays/views/calendar/calendar_model";
 import { TimeOffCalendarYearRenderer } from "@hr_holidays/views/calendar/year/calendar_year_renderer";
@@ -28,6 +29,10 @@ const LEAVE_DELAY = 300;
 // Passer d'un jour à son voisin, bulle ouverte : un peu plus de patience, pour ne pas alterner
 // entre deux bulles quand la souris longe la limite des cases.
 const SWITCH_DELAY = 250;
+// Journée représentée par une case : les barres d'une demi-journée ou d'heures s'y placent
+// selon l'heure (matin = de la gauche jusqu'au milieu, fin d'après-midi = à droite).
+const DAY_START = 8;
+const DAY_END = 17;
 // Bande, au bord de chaque case, où la souris ne survole aucun jour.
 const CELL_EDGE = 3;
 
@@ -295,5 +300,73 @@ patch(TimeOffCalendarYearRenderer.prototype, {
         }
         this.closeDayPopovers();
         this.props.model.load({ date: luxon.DateTime.fromISO(first.dataset.date), scale: "month" });
+    },
+});
+
+patch(TimeOffCalendarCommonRenderer.prototype, {
+    get options() {
+        return { ...super.options, eventOrder: (a, b) => this.missionEventOrder(a, b) };
+    },
+
+    /**
+     * Vue mensuelle : une saisie d'un seul jour (demi-journée, heures) s'affichait en pastille,
+     * à part des autres. Elle devient une barre, comme les saisies de plusieurs jours.
+     */
+    eventClassNames(info) {
+        const classes = super.eventClassNames(info);
+        if (!classes.includes("o_event_dot")) {
+            return classes;
+        }
+        return classes.filter((name) => name !== "o_event_dot").concat("o_mission_timebar");
+    },
+
+    /** Les barres d'une même personne se suivent (début, puis nom), pour se partager une ligne. */
+    missionEventOrder(a, b) {
+        const records = this.props.model.records;
+        const ra = records[a.id];
+        const rb = records[b.id];
+        const bars = ra && rb && ra.isMonth && !ra.isAllDay && !ra.isTimeHidden && !rb.isAllDay && !rb.isTimeHidden;
+        if (bars) {
+            const name = (r) => (r.rawRecord?.employee_id?.[1] || "").toString();
+            return name(ra).localeCompare(name(rb)) || ra.start.toMillis() - rb.start.toMillis();
+        }
+        // Le reste, dans l'ordre habituel de FullCalendar : début, durée décroissante, titre.
+        const start = a.start - b.start;
+        const duration = (b.end - b.start) - (a.end - a.start);
+        return start || duration || String(a.title).localeCompare(String(b.title));
+    },
+
+    onEventDidMount({ el, event }) {
+        super.onEventDidMount(...arguments);
+        const record = this.props.model.records[event.id];
+        if (!record || !el.classList.contains("o_mission_timebar")) {
+            return;
+        }
+        const hour = (date) => date.hour + date.minute / 60;
+        const span = DAY_END - DAY_START;
+        const left = Math.min(Math.max((hour(record.start) - DAY_START) / span, 0), 0.94);
+        const right = Math.min(Math.max((hour(record.end) - DAY_START) / span, left + 0.06), 1);
+        el.style.marginLeft = `${(left * 100).toFixed(1)}%`;
+        el.style.width = `${((right - left) * 100).toFixed(1)}%`;
+        el.dataset.missionEmployee = record.rawRecord?.employee_id?.[0] || "";
+        el.querySelector(".fc-time")?.remove();
+        browser.setTimeout(() => this.shareDayRows(el), 0);
+    },
+
+    /** Deux barres de la même personne le même jour : sur une seule ligne. */
+    shareDayRows(el) {
+        const container = el.closest(".fc-daygrid-day-events");
+        if (!container) {
+            return;
+        }
+        let previous = null;
+        for (const harness of container.querySelectorAll(":scope > .fc-daygrid-event-harness")) {
+            const bar = harness.querySelector(".o_mission_timebar");
+            harness.classList.toggle(
+                "o_mission_samerow",
+                Boolean(bar) && bar.dataset.missionEmployee === previous
+            );
+            previous = bar ? bar.dataset.missionEmployee : null;
+        }
     },
 });
