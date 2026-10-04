@@ -11,7 +11,7 @@
         <field name="parent_res_model">project.project</field>
         <field name="python_method">action_mission_entries</field>
         <field name="context">{'from_embedded_action': true}</field>
-        <field name="groups_ids" eval="[(4, ref('hr_holidays.group_hr_holidays_responsible'))]"/>
+        <field name="groups_ids" eval="[(6, 0, [ref('hr_holidays.group_hr_holidays_responsible')])]"/>
     </record>
     <record id="embedded_action_project_entries_dashboard" model="ir.embedded.actions">
         <field name="name">Pointages</field>
@@ -20,6 +20,6 @@
         <field name="parent_res_model">project.project</field>
         <field name="python_method">action_mission_entries</field>
         <field name="context">{'from_embedded_action': true}</field>
-        <field name="groups_ids" eval="[(4, ref('hr_holidays.group_hr_holidays_responsible'))]"/>
+        <field name="groups_ids" eval="[(6, 0, [ref('hr_holidays.group_hr_holidays_responsible')])]"/>
     </record>
 </odoo>

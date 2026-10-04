@@ -114,3 +114,32 @@ class TestMissionOrders(TestSaleDelivery):
         # Refused and cancelled entries are left out.
         entries[:1].write({'state': 'refuse'})
         self.assertNotIn(entries[:1].id, self.env['hr.leave'].search(action['domain']).ids)
+
+    def _plain_user(self, login, group_xmlids=()):
+        groups = [self.env.ref('base.group_user').id] + [self.env.ref(x).id for x in group_xmlids]
+        return self.env['res.users'].create({
+            'name': login, 'login': login + '@example.com', 'email': login + '@example.com',
+            'group_ids': [Command.set(groups)]})
+
+    def test_the_project_entries_tab_follows_the_rights(self):
+        tabs = self.env['ir.embedded.actions'].search([('python_method', '=', 'action_mission_entries')])
+        self.assertEqual(len(tabs), 2)
+        plain = self._plain_user('plain_mission_report')
+        responsible = self._plain_user('resp_mission_report', ['hr_holidays.group_hr_holidays_responsible'])
+        self.assertFalse(tabs.with_user(plain).filtered(lambda t: t.id in tabs.ids and t._is_visible_for_user()
+                                                        if hasattr(t, '_is_visible_for_user') else
+                                                        not t.groups_ids or (t.groups_ids & plain.group_ids)))
+        self.assertTrue(tabs.filtered(lambda t: t.groups_ids & responsible.group_ids))
+        # Whatever the rights, reading the entries never fails: a plain user sees only his own.
+        action = self.project_a.action_mission_entries()
+        for user in (plain, responsible):
+            count = self.env['hr.leave'].with_user(user).search_count(action['domain'])
+            self.assertEqual(count, 0)
+
+    def test_the_project_entries_tab_without_any_entry(self):
+        empty = self.env['project.project'].create({'name': 'Empty project'})
+        action = empty.action_mission_entries()
+        self.assertEqual(action['context']['pivot_measures'], ['number_of_days'])
+        self.assertFalse(self.env['hr.leave'].search(action['domain']))
+        self.assertEqual(self.env['hr.leave'].read_group(
+            action['domain'], ['number_of_days:sum'], ['employee_id']), [])
