@@ -19,7 +19,7 @@ import { patch } from "@web/core/utils/patch";
 
 import { missionBus } from "./leave_edit_action";
 import { TimeOffCalendarCommonRenderer } from "@hr_holidays/views/calendar/common/calendar_common_renderer";
-import { TimeOffReportCalendarController } from "@hr_holidays/views/calendar/calendar_controller";
+import { TimeOffCalendarController, TimeOffReportCalendarController } from "@hr_holidays/views/calendar/calendar_controller";
 import { TimeOffCalendarModel } from "@hr_holidays/views/calendar/calendar_model";
 import { TimeOffCalendarYearRenderer } from "@hr_holidays/views/calendar/year/calendar_year_renderer";
 import { TimeOffFormViewDialog } from "@hr_holidays/views/view_dialog/form_view_dialog";
@@ -36,6 +36,13 @@ const DAY_START = 8;
 const DAY_END = 17;
 // Bande, au bord de chaque case, où la souris ne survole aucun jour.
 const CELL_EDGE = 3;
+
+patch(TimeOffCalendarController.prototype, {
+    /** Vue annuelle : « Mois en cours » ramène à la vue mensuelle du mois d'aujourd'hui. */
+    async showCurrentMonth() {
+        await this.model.load({ date: luxon.DateTime.local(), scale: "month" });
+    },
+});
 
 patch(TimeOffReportCalendarController.prototype, {
     setup() {

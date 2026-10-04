@@ -2,13 +2,39 @@
 <!-- Copyright 2026 T.T.C. SAS
      License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0). -->
 <templates xml:space="preserve">
-    <!-- Vue mensuelle : retour à la vue annuelle en un clic. -->
+    <!-- Barre de navigation des calendriers de saisies, sans sélecteur d'échelle :
+         vue mensuelle : ← octobre 2026 → · Aujourd'hui · Vue annuelle ;
+         vue annuelle  : ← 2026 → · Mois en cours. -->
     <t t-name="mission_report.CalendarController" t-inherit="hr_holidays.CalendarController"
        t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_calendar_navigation_buttons')]" position="replace">
+            <div class="o_mission_navigation d-flex align-items-center gap-2">
+                <button t-if="!ui.isSmall" class="o_calendar_button_prev btn btn-secondary d-none d-md-block d-print-none"
+                        title="Précédent" aria-label="Précédent" t-on-click.stop="() => this.setDate('previous')">
+                    <i class="oi oi-arrow-left"/>
+                </button>
+                <h5 class="o_mission_navigation_title mb-0 text-nowrap">
+                    <t t-if="model.meta.scale === 'year'"><t t-esc="currentYear"/></t>
+                    <t t-else=""><t t-esc="currentMonth"/></t>
+                </h5>
+                <button t-if="!ui.isSmall" class="o_calendar_button_next btn btn-secondary d-none d-md-block d-print-none"
+                        title="Suivant" aria-label="Suivant" t-on-click.stop="() => this.setDate('next')">
+                    <i class="oi oi-arrow-right"/>
+                </button>
+            </div>
+        </xpath>
+        <xpath expr="//ViewScaleSelector" position="replace"/>
+        <xpath expr="//h5[hasclass('d-inline-flex')]" position="replace"/>
+        <xpath expr="//button[hasclass('o_calendar_button_today')]" position="attributes">
+            <attribute name="t-if">model.meta.scale !== 'year'</attribute>
+        </xpath>
         <xpath expr="//button[hasclass('o_calendar_button_today')]" position="after">
             <button t-if="model.meta.scale === 'month' and model.meta.scales.includes('year')"
                     class="btn btn-secondary o_mission_year_button d-print-none order-2 order-lg-0"
                     t-on-click.stop="() => this.setScale('year')">Vue annuelle</button>
+            <button t-if="model.meta.scale === 'year'"
+                    class="btn btn-secondary o_mission_month_button d-print-none order-2 order-lg-0"
+                    t-on-click.stop="() => this.showCurrentMonth()">Mois en cours</button>
         </xpath>
     </t>
 </templates>
