@@ -1,7 +1,7 @@
 /**
  * Vue d'ensemble : navigation et saisie depuis le calendrier.
  *
- * - Cliquer sur une saisie ouvre sa fiche (Management > Saisies), pas une popup.
+ * - Cliquer sur une saisie ouvre sa fiche dans une fenêtre (approuver, refuser, annuler).
  * - Cliquer sur un jour, ou glisser sur une plage, crée une saisie.
  * - Vue annuelle : la liste des saisies d'un jour s'affiche au survol ; le titre
  *   d'un mois mène à la vue mensuelle de ce mois.
@@ -14,7 +14,6 @@
 import { onMounted, onWillUnmount } from "@odoo/owl";
 import { browser } from "@web/core/browser/browser";
 import { serializeDate } from "@web/core/l10n/dates";
-import { user } from "@web/core/user";
 import { patch } from "@web/core/utils/patch";
 
 import { TimeOffReportCalendarController } from "@hr_holidays/views/calendar/calendar_controller";
@@ -22,7 +21,6 @@ import { TimeOffCalendarModel } from "@hr_holidays/views/calendar/calendar_model
 import { TimeOffCalendarYearRenderer } from "@hr_holidays/views/calendar/year/calendar_year_renderer";
 import { TimeOffFormViewDialog } from "@hr_holidays/views/view_dialog/form_view_dialog";
 
-const APPROVAL_ACTION = "hr_holidays.hr_leave_action_action_approve_department";
 const HOVER_DELAY = 120;
 const LEAVE_DELAY = 300;
 // Passer d'un jour à son voisin, bulle ouverte : un peu plus de patience, pour ne pas alterner
@@ -32,17 +30,40 @@ const SWITCH_DELAY = 250;
 const CELL_EDGE = 3;
 
 patch(TimeOffReportCalendarController.prototype, {
-    /** Clic sur une saisie : sa fiche (les employés ne lisent que les leurs : ils gardent la bulle). */
+    /**
+     * Clic sur une saisie : sa fiche dans une fenêtre, sans quitter le calendrier, avec de quoi
+     * l'approuver, la refuser ou l'annuler (boutons d'hr_holidays). Qui ne peut pas lire la saisie
+     * elle-même (celle d'un autre service) garde la bulle d'origine.
+     */
     async editRecord(record) {
         if (!record.id) {
             return;
         }
-        if (!(await user.hasGroup("hr_holidays.group_hr_holidays_user"))) {
+        const readable = await this.env.services.orm.search("hr.leave", [["id", "=", record.id]], {
+            limit: 1,
+        });
+        if (!readable.length) {
             return super.editRecord(...arguments);
         }
-        await this.action.doAction(APPROVAL_ACTION, {
-            props: { resId: record.id },
-            viewType: "form",
+        const onClosed = () => {
+            this.model.load();
+            this.env.timeOffBus?.trigger("update_dashboard");
+        };
+        return new Promise((resolve) => {
+            this.displayDialog(
+                TimeOffFormViewDialog,
+                {
+                    resModel: "hr.leave",
+                    resId: record.id,
+                    title: "Saisie",
+                    context: { form_view_ref: "hr_holidays.hr_leave_view_form" },
+                    size: "md",
+                    onRecordSaved: onClosed,
+                    onRecordDeleted: (rec) => this._deleteRecord(rec.resId, rec.data.can_cancel),
+                    onLeaveCancelled: onClosed,
+                },
+                { onClose: () => resolve() }
+            );
         });
     },
 
