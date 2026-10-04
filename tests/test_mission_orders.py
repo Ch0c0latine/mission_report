@@ -144,3 +144,7 @@ class TestMissionOrders(TestSaleDelivery):
         self.assertFalse(self.env['hr.leave'].search(action['domain']))
         self.assertEqual(self.env['hr.leave'].read_group(
             action['domain'], ['number_of_days:sum'], ['employee_id']), [])
+
+    def test_the_overview_calendar_colour_field_is_readable_by_every_user(self):
+        field = self.env['hr.leave.report.calendar']._fields['holiday_status_id']
+        self.assertEqual(field.groups, 'base.group_user')
