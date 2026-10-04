@@ -39,8 +39,22 @@ VOLET_PLAN_PERIOD = re.compile(
 class ProjectProject(models.Model):
     _inherit = 'project.project'
 
+    def _mission_entries_measures(self):
+        """Mesures du récapitulatif : des heures pour une mission facturée à l'heure, des jours
+        pour une mission au jour, les deux quand ses affaires diffèrent (ou n'existent pas)."""
+        self.ensure_one()
+        units = set(self._mission_all_orders().mapped('mission_billing_unit'))
+        if units == {'hour'}:
+            return ['number_of_hours']
+        if units == {'day'} or not units:
+            return ['number_of_days']
+        return ['number_of_days', 'number_of_hours']
+
     def action_mission_entries(self):
-        """Les pointages (saisies d'activité) de la mission, par salarié et par mois."""
+        """Les pointages (saisies d'activité) de la mission, par salarié et par mois.
+
+        Les saisies refusées ou annulées ne comptent pas ; celles en attente d'approbation, si.
+        """
         self.ensure_one()
         return {
             'type': 'ir.actions.act_window',
@@ -49,8 +63,12 @@ class ProjectProject(models.Model):
             'view_mode': 'pivot,list',
             'views': [(False, 'pivot'), (False, 'list')],
             'search_view_id': [self.env.ref('mission_report.hr_leave_view_search_mission_report').id],
-            'domain': [('project_id', '=', self.id)],
-            'context': {'search_default_groupby_employee': 1, 'from_embedded_action': True},
+            'domain': [('project_id', '=', self.id), ('state', 'not in', ('refuse', 'cancel'))],
+            'context': {
+                'search_default_groupby_employee': 1,
+                'pivot_measures': self._mission_entries_measures(),
+                'from_embedded_action': True,
+            },
         }
 
     def _mission_all_orders(self):

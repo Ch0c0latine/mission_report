@@ -94,3 +94,23 @@ class TestMissionOrders(TestSaleDelivery):
         wizard.write({'date_start': '2032-01-01', 'date_end': '2032-01-31'})
         new = self.env['sale.order'].browse(wizard.action_create()['res_id'])
         self.assertEqual(new.mission_volet_number, 5)
+
+    def test_the_project_entries_tab(self):
+        action = self.project_a.action_mission_entries()
+        self.assertEqual(action['res_model'], 'hr.leave')
+        self.assertEqual(action['context']['pivot_measures'], ['number_of_days'])
+        entries = self.env['hr.leave'].search(action['domain'])
+        self.assertTrue(entries)
+        self.assertEqual(set(entries.mapped('project_id')), self.project_a)
+        # A project without any order is counted in days; one billed by the hour in hours.
+        self.assertEqual(self.project_b.action_mission_entries()['context']['pivot_measures'],
+                         ['number_of_days'])
+        (self.order | self.second).write({'mission_billing_unit': 'hour'})
+        self.assertEqual(self.project_a.action_mission_entries()['context']['pivot_measures'],
+                         ['number_of_hours'])
+        self.second.write({'mission_billing_unit': 'day'})
+        self.assertEqual(self.project_a.action_mission_entries()['context']['pivot_measures'],
+                         ['number_of_days', 'number_of_hours'])
+        # Refused and cancelled entries are left out.
+        entries[:1].write({'state': 'refuse'})
+        self.assertNotIn(entries[:1].id, self.env['hr.leave'].search(action['domain']).ids)
