@@ -95,6 +95,21 @@
         </field>
     </record>
 
+    <!-- Cartes des saisies (Management > Saisies) : un lien vers la vue d'ensemble, sur le mois de
+         la saisie, pour la situer parmi les autres et la valider en contexte. -->
+    <record id="hr_leave_view_kanban_inherit_mission_report" model="ir.ui.view">
+        <field name="name">hr.leave.view.kanban.inherit.mission.report</field>
+        <field name="model">hr.leave</field>
+        <field name="inherit_id" ref="hr_holidays.hr_leave_view_kanban"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('o_hr_holidays_name')]" position="inside">
+                <a type="object" name="action_mission_show_overview" class="small d-block mt-1">
+                    <i class="fa fa-calendar me-1" role="img" aria-label="Calendrier"/>Voir dans la vue d'ensemble
+                </a>
+            </xpath>
+        </field>
+    </record>
+
     <!-- Vue Liste : ajout project_id, modification du nom "Demandes en attente" par "Saisies en attente" et masquage du bouton "Nouveaux congés de groupe" -->
     <record id="hr_leave_view_tree_inherit_mission_report" model="ir.ui.view">
         <field name="name">hr.leave.view.list.inherit.mission.report</field>
