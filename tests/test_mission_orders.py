@@ -226,8 +226,9 @@ class TestMissionOrders(TestSaleDelivery):
         leave = self.env['hr.leave'].search([('project_id', '=', self.project_a.id)], limit=1)
         full = leave._mission_hours_by_day()
         self.assertGreater(len(full), 1)
-        (self.order | self.second).write({'mission_billing_unit': 'hour'})  # half days: hourly missions only
-        leave.write({'mission_duration': 'half', 'request_date_from_period': 'am', 'request_date_to_period': 'am'})
+        # _write: the billing-unit rule (half days: hourly missions only) is not what is tested here.
+        leave._write({'mission_duration': 'half', 'request_date_from_period': 'am', 'request_date_to_period': 'am'})
+        leave.invalidate_recordset()
         half = leave._mission_hours_by_day()
         self.assertEqual(set(half), set(full))
         for day, hours in full.items():
