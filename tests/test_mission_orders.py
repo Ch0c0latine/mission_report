@@ -101,7 +101,7 @@ class TestMissionOrders(TestSaleDelivery):
         self.assertEqual(action['context']['pivot_measures'], ['number_of_days'])
         entries = self.env['hr.leave'].search(action['domain'])
         self.assertTrue(entries)
-        self.assertEqual(set(entries.mapped('project_id')), self.project_a)
+        self.assertEqual(entries.mapped('project_id'), self.project_a)
         # A project without any order is counted in days; one billed by the hour in hours.
         self.assertEqual(self.project_b.action_mission_entries()['context']['pivot_measures'],
                          ['number_of_days'])
