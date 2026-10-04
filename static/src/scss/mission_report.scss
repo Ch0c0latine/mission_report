@@ -62,3 +62,13 @@
     }
 }
 
+// Vues semaine et jour : colonne et en-tête d'un jour férié teintés comme les cases du mois.
+.fc-timegrid-col.o_mission_holiday,
+.fc-col-header-cell.o_mission_holiday {
+    background-color: var(--bs-warning-bg-subtle, #fff3cd) !important;
+}
+.fc-col-header-cell.o_mission_holiday a {
+    color: var(--bs-warning-text-emphasis, #664d03);
+    font-weight: 600;
+}
+

@@ -14,7 +14,7 @@
 import { onMounted, onWillStart, onWillUnmount, onWillUpdateProps } from "@odoo/owl";
 import { browser } from "@web/core/browser/browser";
 import { serializeDate } from "@web/core/l10n/dates";
-import { useBus } from "@web/core/utils/hooks";
+import { useBus, useService } from "@web/core/utils/hooks";
 import { patch } from "@web/core/utils/patch";
 
 import { missionBus } from "./leave_edit_action";
@@ -36,6 +36,27 @@ const DAY_START = 8;
 const DAY_END = 17;
 // Bande, au bord de chaque case, où la souris ne survole aucun jour.
 const CELL_EDGE = 3;
+
+/** Les jours fériés de la période affichée : {date ISO: nom}. */
+async function fetchHolidays(orm, model) {
+    const { rangeStart, rangeEnd, employeeId } = model;
+    const holidays = await orm.call(
+        "hr.employee",
+        "get_public_holidays_data",
+        [serializeDate(rangeStart, "datetime"), serializeDate(rangeEnd, "datetime")],
+        { context: { employee_id: employeeId } }
+    );
+    const byDay = new Map();
+    for (const holiday of holidays) {
+        const last = luxon.DateTime.fromISO(holiday.end).minus({ milliseconds: 1 });
+        let day = luxon.DateTime.fromISO(holiday.start).startOf("day");
+        while (day <= last) {
+            byDay.set(day.toISODate(), holiday.title);
+            day = day.plus({ days: 1 });
+        }
+    }
+    return byDay;
+}
 
 patch(TimeOffCalendarController.prototype, {
     setup() {
@@ -209,22 +230,7 @@ patch(TimeOffCalendarYearRenderer.prototype, {
     },
 
     async loadHolidays(props) {
-        const { rangeStart, rangeEnd, employeeId } = props.model;
-        const holidays = await this.orm.call(
-            "hr.employee",
-            "get_public_holidays_data",
-            [serializeDate(rangeStart, "datetime"), serializeDate(rangeEnd, "datetime")],
-            { context: { employee_id: employeeId } }
-        );
-        this.holidayByDay = new Map();
-        for (const holiday of holidays) {
-            const last = luxon.DateTime.fromISO(holiday.end).minus({ milliseconds: 1 });
-            let day = luxon.DateTime.fromISO(holiday.start).startOf("day");
-            while (day <= last) {
-                this.holidayByDay.set(day.toISODate(), holiday.title);
-                day = day.plus({ days: 1 });
-            }
-        }
+        this.holidayByDay = await fetchHolidays(this.orm, props.model);
     },
 
     /** Un jour férié : case teintée et nom en infobulle (le grisé seul ne le distinguait pas d'un week-end). */
@@ -362,8 +368,40 @@ patch(TimeOffCalendarYearRenderer.prototype, {
 });
 
 patch(TimeOffCalendarCommonRenderer.prototype, {
+    setup() {
+        super.setup(...arguments);
+        // Jours fériés (vues mensuelle, semaine et jour) : teinte, et nom en infobulle.
+        this.holidayOrm = useService("orm");
+        this.holidayByDay = new Map();
+        onWillStart(async () => {
+            this.holidayByDay = await fetchHolidays(this.holidayOrm, this.props.model);
+        });
+        onWillUpdateProps(async (props) => {
+            this.holidayByDay = await fetchHolidays(this.holidayOrm, props.model);
+        });
+    },
+
+    getDayCellClassNames(info) {
+        const classes = super.getDayCellClassNames(info);
+        const key = luxon.DateTime.fromJSDate(info.date).toISODate();
+        return this.holidayByDay.has(key) ? [...classes, "o_mission_holiday"] : classes;
+    },
+
+    nameHoliday(el, date) {
+        const title = this.holidayByDay.get(luxon.DateTime.fromJSDate(date).toISODate());
+        if (title) {
+            el.classList.add("o_mission_holiday");
+            el.title = title;
+        }
+    },
+
     get options() {
-        return { ...super.options, eventOrder: (a, b) => this.missionEventOrder(a, b) };
+        return {
+            ...super.options,
+            eventOrder: (a, b) => this.missionEventOrder(a, b),
+            dayCellDidMount: (info) => this.nameHoliday(info.el, info.date),
+            dayHeaderDidMount: (info) => this.nameHoliday(info.el, info.date),
+        };
     },
 
     /**
