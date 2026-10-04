@@ -67,6 +67,28 @@
                 <attribute name="class" remove="col-md-6" separator=" "/>
             </xpath>
 
+            <!-- Les dates (et la durée, les heures) d'une saisie se modifient tant qu'elle n'est ni refusée
+                 ni annulée, même approuvée : Odoo ne l'autorisait qu'en attente d'approbation.
+                 Les droits d'écriture, eux, restent ceux d'hr_holidays. -->
+            <xpath expr="//field[@name='request_date_from']" position="attributes">
+                <attribute name="readonly">state in ('cancel', 'refuse')</attribute>
+            </xpath>
+            <xpath expr="//field[@name='request_date_from_period']" position="attributes">
+                <attribute name="readonly">state in ('cancel', 'refuse')</attribute>
+            </xpath>
+            <xpath expr="//field[@name='request_date_to_period']" position="attributes">
+                <attribute name="readonly">state in ('cancel', 'refuse')</attribute>
+            </xpath>
+            <xpath expr="//field[@name='request_hour_from']" position="attributes">
+                <attribute name="readonly">state in ('cancel', 'refuse')</attribute>
+            </xpath>
+            <xpath expr="//field[@name='request_hour_to']" position="attributes">
+                <attribute name="readonly">state in ('cancel', 'refuse')</attribute>
+            </xpath>
+            <xpath expr="//field[@name='mission_duration']" position="attributes">
+                <attribute name="readonly">state in ('cancel', 'refuse')</attribute>
+            </xpath>
+
             <!-- Pas de <footer> ici : on laisse le pied de page natif d'hr_holidays (dont le bouton
                  Supprimer fonctionne, contrairement à celui qu'on avait reconstruit). Ses libellés
                  sont renommés via i18n/fr.po. -->
