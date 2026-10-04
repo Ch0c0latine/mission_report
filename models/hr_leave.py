@@ -363,8 +363,11 @@ class HrLeave(models.Model):
         for leave in self:
             if leave.state in ('refuse', 'cancel') or not leave.employee_id:
                 continue
-            if float_is_zero(leave.number_of_days, precision_digits=2) \
-                    and float_is_zero(leave.number_of_hours, precision_digits=2):
+            if not (leave.request_date_from and leave.request_date_to):
+                continue
+            # Les heures travaillées selon le calendrier du salarié, jours fériés exclus : la même
+            # base que les comptes rendus (Odoo ne calcule pas de durée pour une saisie neuve).
+            if float_is_zero(sum(leave._mission_hours_by_day().values()), precision_digits=2):
                 raise ValidationError(_(
                     "Cette période ne compte aucun jour travaillé (week-end ou jour férié) : "
                     "choisissez d'autres dates."))
