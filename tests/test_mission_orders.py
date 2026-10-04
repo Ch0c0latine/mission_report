@@ -244,3 +244,18 @@ class TestMissionOrders(TestSaleDelivery):
         row.invalidate_recordset(['mission_day_start', 'mission_day_end'])
         self.assertEqual((row.mission_day_start, row.mission_day_end), (8.0, 17.0))
 
+    def _trimmed(self, start, end):
+        leave = self.env['hr.leave'].create({
+            'employee_id': self.employee.id, 'project_id': self.project_b.id,
+            'request_date_from': start, 'request_date_to': end})
+        return str(leave.request_date_from), str(leave.request_date_to)
+
+    def test_an_entry_does_not_start_or_end_on_a_day_off(self):
+        # 2031-06-13 is a Friday, 14-15 the week-end, 16 a Monday.
+        self.assertEqual(self._trimmed('2031-06-14', '2031-06-17'), ('2031-06-16', '2031-06-17'))
+        self.assertEqual(self._trimmed('2031-06-09', '2031-06-15'), ('2031-06-09', '2031-06-13'))
+
+    def test_a_day_off_in_the_middle_is_kept(self):
+        self.assertEqual(self._trimmed('2031-06-23', '2031-06-30'), ('2031-06-23', '2031-06-30'))
+        self.assertEqual(self._trimmed('2031-07-04', '2031-07-08'), ('2031-07-04', '2031-07-08'))
+

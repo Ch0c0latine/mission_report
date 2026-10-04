@@ -269,11 +269,36 @@ class HrLeave(models.Model):
         on_leave = self.filtered(lambda leave: not leave.project_id).employee_id
         return on_mission - on_leave
 
+    @api.model
+    def _mission_trim_dates(self, vals, employee, start=None, end=None):
+        """Une saisie qui commence ou finit sur un jour non travaillé (week-end, jour férié, selon le
+        calendrier du salarié) ne l'inclut pas : le début avance au premier jour travaillé, la fin
+        recule au dernier. Les jours non travaillés du milieu ne changent pas."""
+        if vals.get('request_unit_hours') or vals.get('mission_duration') == 'hours':
+            return
+        start = fields.Date.to_date(vals.get('request_date_from', start))
+        end = fields.Date.to_date(vals.get('request_date_to', end))
+        employee = employee.sudo()
+        if not (employee and start and end) or end < start:
+            return
+        work, _tz = work_intervals(self.env, employee, start, end, calendar=employee.resource_calendar_id)
+        if work is None:
+            return
+        days = sorted(hours_by_day(work))
+        if not days:
+            return
+        if start < days[0]:
+            vals['request_date_from'] = days[0]
+        if end > days[-1]:
+            vals['request_date_to'] = days[-1]
+
     @api.model_create_multi
     def create(self, vals_list):
         activity_type = self._get_default_activity_leave_type()
         Project = self.env['project.project'].sudo()
         for vals in vals_list:
+            if vals.get('employee_id') and vals.get('request_date_from') and vals.get('request_date_to'):
+                self._mission_trim_dates(vals, self.env['hr.employee'].browse(vals['employee_id']))
             if vals.get('project_id'):
                 self._mission_prepare_duration(vals, Project.browse(vals['project_id']))
             if vals.get('project_id') and not vals.get('holiday_status_id'):
@@ -382,6 +407,15 @@ class HrLeave(models.Model):
                     super(HrLeave, record).write({'holiday_status_id': activity_type.id})
         if self.env.context.get(INTERNAL_KEY) != INTERNAL and any(f in vals for f in self.MISSION_LOCK_FIELDS):
             self.filtered(lambda leave: leave.state not in ('refuse', 'cancel'))._mission_check_unlocked()
+        if 'request_date_from' in vals or 'request_date_to' in vals:
+            result = True
+            for leave in self:
+                leave_vals = dict(vals)
+                employee = (self.env['hr.employee'].browse(leave_vals['employee_id'])
+                            if leave_vals.get('employee_id') else leave.employee_id)
+                leave._mission_trim_dates(leave_vals, employee, leave.request_date_from, leave.request_date_to)
+                result = super(HrLeave, leave).write(leave_vals) and result
+            return result
         return super().write(vals)
 
     @api.onchange('project_id')
