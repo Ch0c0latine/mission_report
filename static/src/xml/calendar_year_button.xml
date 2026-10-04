@@ -4,7 +4,9 @@
 <templates xml:space="preserve">
     <!-- Barre de navigation des calendriers de saisies, sans sélecteur d'échelle :
          vue mensuelle : ← octobre 2026 → · Aujourd'hui · Vue annuelle ;
-         vue annuelle  : ← 2026 → · Mois en cours. -->
+         vue annuelle  : ← 2026 → · Mois en cours ;
+         semaine et jour (par un numéro de semaine, un numéro de jour) : ← période → · Aujourd'hui ·
+         Vue mensuelle. -->
     <t t-name="mission_report.CalendarController" t-inherit="hr_holidays.CalendarController"
        t-inherit-mode="extension">
         <xpath expr="//div[hasclass('o_calendar_navigation_buttons')]" position="replace">
@@ -15,7 +17,9 @@
                 </button>
                 <h5 class="o_mission_navigation_title mb-0 text-nowrap">
                     <t t-if="model.meta.scale === 'year'"><t t-esc="currentYear"/></t>
-                    <t t-else=""><t t-esc="currentMonth"/></t>
+                    <t t-elif="model.meta.scale === 'month'"><t t-esc="currentMonth"/></t>
+                    <t t-elif="model.meta.scale === 'week'"><t t-esc="weekHeader"/></t>
+                    <t t-else=""><t t-esc="dayHeader"/></t>
                 </h5>
                 <button t-if="!env.isSmall" class="o_calendar_button_next btn btn-secondary d-none d-md-block d-print-none"
                         title="Suivant" aria-label="Suivant" t-on-click.stop="() => this.setDate('next')">
@@ -35,6 +39,9 @@
             <button t-if="model.meta.scale === 'year'"
                     class="btn btn-secondary o_mission_month_button d-print-none order-2 order-lg-0"
                     t-on-click.stop="() => this.showCurrentMonth()">Mois en cours</button>
+            <button t-if="model.meta.scale === 'week' or model.meta.scale === 'day'"
+                    class="btn btn-secondary o_mission_month_view_button d-print-none order-2 order-lg-0"
+                    t-on-click.stop="() => this.setScale('month')">Vue mensuelle</button>
         </xpath>
     </t>
 </templates>

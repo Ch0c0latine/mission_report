@@ -38,6 +38,44 @@ const DAY_END = 17;
 const CELL_EDGE = 3;
 
 patch(TimeOffCalendarController.prototype, {
+    setup() {
+        super.setup(...arguments);
+        // Le numéro d'une semaine ouvre la semaine, le numéro d'un jour ouvre le jour.
+        this.onNavigationClick = (ev) => this.goFromNumber(ev);
+        onMounted(() => document.addEventListener("click", this.onNavigationClick, true));
+        onWillUnmount(() => document.removeEventListener("click", this.onNavigationClick, true));
+    },
+
+    goFromNumber(ev) {
+        if (!ev.target.closest?.(".o_calendar_container")) {
+            return;
+        }
+        const scale = this.model.scale;
+        const go = (date, to) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            this.model.load({ date: luxon.DateTime.fromISO(date), scale: to });
+        };
+        const week = ev.target.closest("a.fc-daygrid-week-number, th.o-fc-week a");
+        if (week && (scale === "month" || scale === "year")) {
+            const day = week.closest("tr")?.querySelector("[data-date]");
+            if (day) {
+                return go(day.dataset.date, "week");
+            }
+        }
+        const number = ev.target.closest("a.fc-daygrid-day-number");
+        if (number && scale === "month") {
+            const day = number.closest(".fc-daygrid-day[data-date]");
+            if (day) {
+                return go(day.dataset.date, "day");
+            }
+        }
+        const head = ev.target.closest(".fc-col-header-cell[data-date]");
+        if (head && scale === "week") {
+            return go(head.dataset.date, "day");
+        }
+    },
+
     /** Vue annuelle : « Mois en cours » ramène à la vue mensuelle du mois d'aujourd'hui. */
     async showCurrentMonth() {
         await this.model.load({ date: luxon.DateTime.local(), scale: "month" });
