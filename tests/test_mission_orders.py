@@ -116,10 +116,11 @@ class TestMissionOrders(TestSaleDelivery):
         self.assertNotIn(entries[:1].id, self.env['hr.leave'].search(action['domain']).ids)
 
     def _plain_user(self, login, group_xmlids=()):
-        groups = [self.env.ref('base.group_user').id] + [self.env.ref(x).id for x in group_xmlids]
-        return self.env['res.users'].create({
-            'name': login, 'login': login + '@example.com', 'email': login + '@example.com',
-            'group_ids': [Command.set(groups)]})
+        user = self.env['res.users'].create({
+            'name': login, 'login': login + '@example.com', 'email': login + '@example.com'})
+        for xmlid in group_xmlids:
+            user.write({'group_ids': [Command.link(self.env.ref(xmlid).id)]})
+        return user
 
     def test_the_project_entries_tab_follows_the_rights(self):
         tabs = self.env['ir.embedded.actions'].search([('python_method', '=', 'action_mission_entries')])
