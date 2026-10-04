@@ -112,10 +112,28 @@ patch(TimeOffCalendarYearRenderer.prototype, {
                 this.hoverCell = null;
                 this.scheduleClose();
             });
+            // La bulle (hors du calendrier, ajoutée à la page) reste ouverte tant que la souris y est,
+            // pour que ses saisies se cliquent ; elle se ferme à sa sortie.
+            document.addEventListener("mouseover", this.onBubbleOver);
+            document.addEventListener("mouseout", this.onBubbleOut);
         });
+        this.onBubbleOver = (ev) => {
+            if (ev.target.closest?.(".o_cw_popover_holidays")) {
+                browser.clearTimeout(this.leaveTimer);
+                browser.clearTimeout(this.hoverTimer);
+            }
+        };
+        this.onBubbleOut = (ev) => {
+            const leaving = ev.target.closest?.(".o_cw_popover_holidays");
+            if (leaving && !ev.relatedTarget?.closest?.(".o_cw_popover_holidays")) {
+                this.scheduleClose();
+            }
+        };
         onWillUnmount(() => {
             browser.clearTimeout(this.hoverTimer);
             browser.clearTimeout(this.leaveTimer);
+            document.removeEventListener("mouseover", this.onBubbleOver);
+            document.removeEventListener("mouseout", this.onBubbleOut);
         });
     },
 
@@ -198,19 +216,6 @@ patch(TimeOffCalendarYearRenderer.prototype, {
         this.leaveTimer = browser.setTimeout(() => this.closeDayPopovers(), LEAVE_DELAY);
     },
 
-    /** La bulle reste ouverte tant que la souris est dessus. */
-    keepPopoverWhileHovered() {
-        browser.setTimeout(() => {
-            const bubble = document.querySelector(".o_cw_popover_holidays");
-            if (!bubble || bubble.dataset.missionHover) {
-                return;
-            }
-            bubble.dataset.missionHover = "1";
-            bubble.addEventListener("mouseenter", () => browser.clearTimeout(this.leaveTimer));
-            bubble.addEventListener("mouseleave", () => this.scheduleClose());
-        }, 0);
-    },
-
     async showDayPopover(el) {
         const dateStr = el.dataset.date;
         if (!dateStr) {
@@ -238,7 +243,6 @@ patch(TimeOffCalendarYearRenderer.prototype, {
         } else {
             this.openPopover(el, date, records);
         }
-        this.keepPopoverWhileHovered();
     },
 
     /**
