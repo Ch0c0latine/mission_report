@@ -11,7 +11,7 @@
  * Les écrans viennent d'hr_holidays (calendrier de l'onglet « Vue d'ensemble »,
  * js_class time_off_report_calendar) : on les complète par patch.
  */
-import { onMounted, onWillUnmount } from "@odoo/owl";
+import { onMounted, onWillStart, onWillUnmount, onWillUpdateProps } from "@odoo/owl";
 import { browser } from "@web/core/browser/browser";
 import { serializeDate } from "@web/core/l10n/dates";
 import { useBus } from "@web/core/utils/hooks";
@@ -104,6 +104,10 @@ patch(TimeOffCalendarYearRenderer.prototype, {
         super.setup();
         this.hoverTimer = null;
         this.leaveTimer = null;
+        // Jours fériés de l'année affichée : repérés sur la grille, avec leur nom au survol.
+        this.holidayByDay = new Map();
+        onWillStart(() => this.loadHolidays(this.props));
+        onWillUpdateProps((props) => this.loadHolidays(props));
         onMounted(() => {
             const root = this.rootRef.el;
             root.addEventListener("click", (ev) => this.onYearClick(ev));
@@ -135,6 +139,38 @@ patch(TimeOffCalendarYearRenderer.prototype, {
             document.removeEventListener("mouseover", this.onBubbleOver);
             document.removeEventListener("mouseout", this.onBubbleOut);
         });
+    },
+
+    get options() {
+        return { ...super.options, dayCellDidMount: (info) => this.markHoliday(info) };
+    },
+
+    async loadHolidays(props) {
+        const { rangeStart, rangeEnd, employeeId } = props.model;
+        const holidays = await this.orm.call(
+            "hr.employee",
+            "get_public_holidays_data",
+            [serializeDate(rangeStart, "datetime"), serializeDate(rangeEnd, "datetime")],
+            { context: { employee_id: employeeId } }
+        );
+        this.holidayByDay = new Map();
+        for (const holiday of holidays) {
+            const last = luxon.DateTime.fromISO(holiday.end).minus({ milliseconds: 1 });
+            let day = luxon.DateTime.fromISO(holiday.start).startOf("day");
+            while (day <= last) {
+                this.holidayByDay.set(day.toISODate(), holiday.title);
+                day = day.plus({ days: 1 });
+            }
+        }
+    },
+
+    /** Un jour férié : case teintée et nom en infobulle (le grisé seul ne le distinguait pas d'un week-end). */
+    markHoliday({ el }) {
+        const title = this.holidayByDay.get(el.dataset.date);
+        if (title) {
+            el.classList.add("o_mission_holiday");
+            el.title = title;
+        }
     },
 
     /** Un clic sur un jour crée une saisie ; la liste de la journée vient au survol. */

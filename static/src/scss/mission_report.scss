@@ -17,3 +17,14 @@
         text-decoration: underline;
     }
 }
+
+// Vue annuelle : un jour férié se distingue d'un week-end (même grisé) par une teinte chaude,
+// un numéro en gras et son nom en infobulle.
+.fc-daygrid-day.o_mission_holiday {
+    background-color: var(--bs-warning-bg-subtle, #fff3cd) !important;
+
+    .fc-daygrid-day-number {
+        font-weight: 600;
+        color: var(--bs-warning-text-emphasis, #664d03);
+    }
+}
