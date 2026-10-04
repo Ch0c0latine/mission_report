@@ -395,6 +395,14 @@ class HrLeave(models.Model):
         if self.project_id:
             self.holiday_status_id = False
 
+    @api.onchange('request_unit_half', 'mission_duration', 'request_date_from', 'request_date_from_period')
+    def _onchange_mission_single_half_day(self):
+        """Une demi-journée tient sur un seul jour : la fin suit le début, et l'une comme l'autre
+        sont du même moment (matin ou après-midi)."""
+        if self.request_unit_half and self.request_date_from:
+            self.request_date_to = self.request_date_from
+            self.request_date_to_period = self.request_date_from_period
+
     @api.onchange('project_id', 'request_date_from')
     def _onchange_mission_duration(self):
         # Une mission au jour se saisit en journées entières.

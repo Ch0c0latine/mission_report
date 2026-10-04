@@ -67,6 +67,13 @@
                 <attribute name="class" remove="col-md-6" separator=" "/>
             </xpath>
 
+            <!-- Une demi-journée est un seul jour, matin ou après-midi : un seul sélecteur (celui de
+                 la première date) ; celui de la dernière date, qui n'a de sens que sur plusieurs
+                 jours, est masqué et suit le premier. -->
+            <xpath expr="//field[@name='request_date_to_period']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
             <!-- Pas de <footer> ici : on laisse le pied de page natif d'hr_holidays (dont le bouton
                  Supprimer fonctionne, contrairement à celui qu'on avait reconstruit). Ses libellés
                  sont renommés via i18n/fr.po. -->
