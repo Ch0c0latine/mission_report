@@ -169,7 +169,7 @@ class TestMissionOrders(TestSaleDelivery):
         leave = self.env['hr.leave'].search([('project_id', '=', self.project_a.id)], limit=1)
         action = self._report_row(leave).action_mission_edit()
         self.assertEqual(action['tag'], 'mission_report.edit_leave')
-        self.assertEqual(action['params'], {'leave_id': leave.id})
+        self.assertEqual(action['params'], {'leave_id': leave.id, 'reopened': False})
 
     def test_a_leave_can_be_located_in_the_overview(self):
         leave = self.env['hr.leave'].search([('project_id', '=', self.project_a.id)], limit=1)

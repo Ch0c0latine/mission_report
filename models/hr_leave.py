@@ -365,6 +365,8 @@ class HrLeave(models.Model):
                 continue
             if not (leave.request_date_from and leave.request_date_to):
                 continue
+            if leave.request_unit_hours or leave.mission_duration == 'hours':
+                continue  # heures saisies : leur durée n'est connue qu'une fois l'enregistrement fait
             # Les heures travaillées selon le calendrier du salarié, jours fériés exclus : la même
             # base que les comptes rendus (Odoo ne calcule pas de durée pour une saisie neuve).
             if float_is_zero(sum(leave._mission_hours_by_day().values()), precision_digits=2):
