@@ -135,6 +135,20 @@ class SaleOrder(models.Model):
         string="Fin de l'affaire",
         help="Facultatif tant que la mission n'a qu'une affaire. Dernier jour couvert par l'affaire.")
 
+    mission_delivery_date = fields.Date(
+        string="Date de livraison", compute='_compute_mission_delivery_date', store=True,
+        help="La date de livraison saisie sur la commande, à défaut la fin de l'affaire : de quoi "
+             "suivre d'un coup d'œil la fin des volets et des commandes.")
+
+    @api.depends('commitment_date', 'mission_date_end')
+    def _compute_mission_delivery_date(self):
+        for order in self:
+            if order.commitment_date:
+                order.mission_delivery_date = fields.Datetime.context_timestamp(
+                    order, order.commitment_date).date()
+            else:
+                order.mission_delivery_date = order.mission_date_end
+
     @api.constrains('mission_date_start', 'mission_date_end')
     def _check_mission_dates(self):
         for order in self:

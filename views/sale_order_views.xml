@@ -11,6 +11,10 @@
             <field name="partner_id" position="after">
                 <field name="mission_employee_names" optional="show"/>
             </field>
+            <!-- La colonne « Date de livraison » : celle de la commande, sinon la fin de l'affaire. -->
+            <field name="commitment_date" position="replace">
+                <field name="mission_delivery_date" string="Date de livraison" optional="show"/>
+            </field>
         </field>
     </record>
 </odoo>

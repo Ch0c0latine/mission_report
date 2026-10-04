@@ -587,6 +587,14 @@ class MissionVoletWizard(models.TransientModel):
                 })[0]))
         return commands
 
+    def _template_vals(self, order):
+        """Le modèle de devis du nouveau volet : celui de l'affaire d'origine, à défaut celui de la
+        société. Il n'est qu'indiqué : les lignes et la note, déjà reprises, ne sont pas touchées."""
+        if 'sale_order_template_id' not in order._fields:
+            return {}
+        template = order.sale_order_template_id or order.company_id.sale_order_template_id
+        return {'sale_order_template_id': template.id} if template else {}
+
     def action_create(self):
         self.ensure_one()
         order = self.order_id
@@ -617,6 +625,7 @@ class MissionVoletWizard(models.TransientModel):
             'mission_date_end': self.date_end,
             'mission_volet_number': self._volet_number(),
             'mission_billing_unit': self.mission_billing_unit,
+            **self._template_vals(order),
             'mission_description': description,
             'mission_expenses_text': expenses,
             'note': note,
