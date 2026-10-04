@@ -35,6 +35,18 @@ class HrLeaveReportCalendar(models.Model):
             'params': {'leave_id': self.sudo().leave_id.id},
         }
 
+    def action_mission_reopen(self):
+        """Modifier une saisie approuvée : elle repasse d'abord en attente d'approbation (le
+        process d'hr_holidays n'autorise pas de changer les dates d'une saisie approuvée), puis la
+        fiche s'ouvre ; une fois modifiée, elle est approuvée de nouveau."""
+        self.ensure_one()
+        leave = self.env['hr.leave'].browse(self.sudo().leave_id.id)
+        if leave.state in ('validate1', 'validate'):
+            if not leave.can_back_to_approve:
+                raise UserError(_("Votre profil ne permet pas de remettre cette saisie en attente d'approbation."))
+            leave.action_back_to_approval()
+        return self.action_mission_edit()
+
     def action_mission_delete(self):
         """Supprime une saisie refusée ou annulée, avec les droits de l'utilisateur."""
         self.ensure_one()

@@ -179,3 +179,14 @@ class TestMissionOrders(TestSaleDelivery):
         self.assertTrue(action['context']['initial_date'].startswith(str(leave.request_date_from)))
         self.assertNotIn('search_default_my_team', action['context'])
 
+    def test_reopening_an_approved_entry_puts_it_back_to_approval(self):
+        leave = self.env['hr.leave'].search([('project_id', '=', self.project_a.id), ('state', '=', 'validate')], limit=1)
+        self.assertTrue(leave)
+        action = self._report_row(leave).action_mission_reopen()
+        self.assertEqual(leave.state, 'confirm')
+        self.assertEqual(action['tag'], 'mission_report.edit_leave')
+        # Its dates can now be changed, then it is approved again.
+        leave.write({'request_date_to': leave.request_date_to})
+        leave.action_approve()
+        self.assertEqual(leave.state, 'validate')
+
