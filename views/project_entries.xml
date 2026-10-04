@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 T.T.C. SAS
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0). -->
+<odoo>
+    <!-- « Pointages » : un onglet de la barre d'un projet (page des tâches et tableau de bord),
+         à la suite des autres, pour ceux qui voient les saisies d'activité. -->
+    <record id="embedded_action_project_entries_tasks" model="ir.embedded.actions">
+        <field name="name">Pointages</field>
+        <field name="sequence">60</field>
+        <field name="parent_action_id" ref="project.act_project_project_2_project_task_all"/>
+        <field name="parent_res_model">project.project</field>
+        <field name="python_method">action_mission_entries</field>
+        <field name="context">{'from_embedded_action': true}</field>
+        <field name="groups_ids" eval="[(4, ref('hr_holidays.group_hr_holidays_user'))]"/>
+    </record>
+    <record id="embedded_action_project_entries_dashboard" model="ir.embedded.actions">
+        <field name="name">Pointages</field>
+        <field name="sequence">60</field>
+        <field name="parent_action_id" ref="project.project_update_all_action"/>
+        <field name="parent_res_model">project.project</field>
+        <field name="python_method">action_mission_entries</field>
+        <field name="context">{'from_embedded_action': true}</field>
+        <field name="groups_ids" eval="[(4, ref('hr_holidays.group_hr_holidays_user'))]"/>
+    </record>
+</odoo>

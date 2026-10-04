@@ -43,6 +43,7 @@
         'data/wording_data.xml',
         'data/cron_sale_delivered.xml',
         'views/sale_order_views.xml',
+        'views/project_entries.xml',
         'views/invoice_mission_views.xml',
         'data/mail_template_invoice.xml',
         'views/igd_views.xml',

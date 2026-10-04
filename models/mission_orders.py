@@ -39,6 +39,20 @@ VOLET_PLAN_PERIOD = re.compile(
 class ProjectProject(models.Model):
     _inherit = 'project.project'
 
+    def action_mission_entries(self):
+        """Les pointages (saisies d'activité) de la mission, par salarié et par mois."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _("Pointages"),
+            'res_model': 'hr.leave',
+            'view_mode': 'pivot,list',
+            'views': [(False, 'pivot'), (False, 'list')],
+            'search_view_id': [self.env.ref('mission_report.hr_leave_view_search_mission_report').id],
+            'domain': [('project_id', '=', self.id)],
+            'context': {'search_default_groupby_employee': 1, 'from_embedded_action': True},
+        }
+
     def _mission_all_orders(self):
         """Toutes les affaires de la mission, de la plus ancienne à la plus récente."""
         self.ensure_one()
