@@ -25,6 +25,9 @@ import { TimeOffFormViewDialog } from "@hr_holidays/views/view_dialog/form_view_
 const APPROVAL_ACTION = "hr_holidays.hr_leave_action_action_approve_department";
 const HOVER_DELAY = 120;
 const LEAVE_DELAY = 300;
+// Passer d'un jour à son voisin, bulle ouverte : un peu plus de patience, pour ne pas alterner
+// entre deux bulles quand la souris longe la limite des cases.
+const SWITCH_DELAY = 250;
 
 patch(TimeOffReportCalendarController.prototype, {
     /** Clic sur une saisie : sa fiche (les employés ne lisent que les leurs : ils gardent la bulle). */
@@ -130,12 +133,21 @@ patch(TimeOffCalendarYearRenderer.prototype, {
         el.addEventListener("mouseenter", () => {
             browser.clearTimeout(this.leaveTimer);
             browser.clearTimeout(this.hoverTimer);
-            this.hoverTimer = browser.setTimeout(() => this.showDayPopover(el), HOVER_DELAY);
+            // La bulle de ce jour est déjà ouverte (la souris est revenue d'un bord de case) :
+            // on la garde, sans la fermer ni la rouvrir, ce qui la faisait scintiller.
+            if (this.shownEl === el && document.querySelector(".o_cw_popover_holidays")) {
+                return;
+            }
+            this.hoverTimer = browser.setTimeout(
+                () => this.showDayPopover(el),
+                this.shownEl ? SWITCH_DELAY : HOVER_DELAY
+            );
         });
         el.addEventListener("mouseleave", () => this.scheduleClose());
     },
 
     closeDayPopovers() {
+        this.shownEl = null;
         this.popover.close();
         this.mandatoryDayPopover.close();
     },
@@ -173,6 +185,7 @@ patch(TimeOffCalendarYearRenderer.prototype, {
             return;
         }
         this.closeDayPopovers();
+        this.shownEl = el;
         const props = this.getPopoverProps(date, records);
         if (isMandatory) {
             const data = await this.orm.call("hr.employee", "get_mandatory_days_data", [date, date]);
