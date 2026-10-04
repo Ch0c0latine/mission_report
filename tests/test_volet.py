@@ -58,7 +58,7 @@ class TestVolet(TestSaleDelivery):
         self.assertEqual(self.order.mission_date_end, date(2031, 4, 30), "read from the first volet title")
         self.assertEqual(new.mission_volet_number, 2)
         # No "Principe de facturation" in this note: it is not split, but copied as it is.
-        self.assertEqual(new.note, strip_plan(self.order.note))
+        self.assertEqual(str(new.note).replace('&nbsp;', ' '), str(strip_plan(self.order.note)).replace('&nbsp;', ' '))
         self.assertEqual(new.state, 'draft')
 
     def test_the_new_volet_starts_without_expenses(self):

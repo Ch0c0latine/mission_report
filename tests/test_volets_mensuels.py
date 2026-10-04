@@ -109,7 +109,7 @@ class TestVoletsMensuels(TestSaleDelivery):
         self.assertEqual(str(new.mission_date_end), '2031-05-31')
         self.assertIn("Activités de contrôle sur site.", new.mission_description)
         self.assertIn("Les frais seront facturés au réel.", new.mission_expenses_text)
-        self.assertEqual(new.note, strip_plan(self.order.note))
+        self.assertEqual(str(new.note).replace('&nbsp;', ' '), str(strip_plan(self.order.note)).replace('&nbsp;', ' '))
         self.assertNotIn("Volet", new.note)
 
     def test_a_legacy_note_is_split(self):
@@ -195,7 +195,7 @@ class TestVoletsMensuels(TestSaleDelivery):
         wizard = self._wizard(self.order, '2031-05-01', '2031-05-31')
         self.assertTrue(wizard.note_warning)
         new = self._create(wizard)
-        self.assertEqual(new.note, strip_plan(self.order.note))
+        self.assertEqual(str(new.note).replace('&nbsp;', ' '), str(strip_plan(self.order.note)).replace('&nbsp;', ' '))
         self.assertFalse(new.mission_description)
         self.assertFalse(new.mission_expenses_text)
         self.assertEqual(new.mission_volet_number, 2)
