@@ -14,8 +14,10 @@
 import { onMounted, onWillUnmount } from "@odoo/owl";
 import { browser } from "@web/core/browser/browser";
 import { serializeDate } from "@web/core/l10n/dates";
+import { useBus } from "@web/core/utils/hooks";
 import { patch } from "@web/core/utils/patch";
 
+import { missionBus } from "./leave_edit_action";
 import { TimeOffReportCalendarController } from "@hr_holidays/views/calendar/calendar_controller";
 import { TimeOffCalendarModel } from "@hr_holidays/views/calendar/calendar_model";
 import { TimeOffCalendarYearRenderer } from "@hr_holidays/views/calendar/year/calendar_year_renderer";
@@ -30,6 +32,12 @@ const SWITCH_DELAY = 250;
 const CELL_EDGE = 3;
 
 patch(TimeOffReportCalendarController.prototype, {
+    setup() {
+        super.setup(...arguments);
+        // « Modifier » : la fiche s'ouvre à part, le calendrier se relit quand elle se ferme.
+        useBus(missionBus, "reload", () => this.model.load());
+    },
+
     /**
      * Clic sur une saisie : la fenêtre d'Odoo (ruban d'état, approuver, refuser). À sa fermeture,
      * le calendrier est relu : une approbation par ses boutons ne déclenche pas de rechargement.

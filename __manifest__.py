@@ -55,6 +55,7 @@
             'mission_report/static/src/scss/mission_report.scss',
             'mission_report/static/src/js/translation_overrides.js',
             'mission_report/static/src/js/presence_status.js',
+            'mission_report/static/src/js/leave_edit_action.js',
             'mission_report/static/src/js/overview_calendar.js',
             'mission_report/static/src/xml/calendar_year_button.xml',
             'mission_report/static/src/xml/avatar_card_resource_popover.xml',

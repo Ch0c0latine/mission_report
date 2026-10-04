@@ -10,6 +10,7 @@ from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 from odoo.tools import float_round, format_date
 from odoo.tools.intervals import Intervals
+from odoo.tools.safe_eval import safe_eval
 from odoo.tools.translate import code_translations
 
 from .work_time import hours_by_day, work_intervals
@@ -531,3 +532,20 @@ class HrLeave(models.Model):
             field.update_field_translations('field_description', {lang: description for lang in langs})
         # Les libellés de champs sont mis en cache par le registre.
         self.env.registry.clear_cache()
+
+    def action_mission_show_overview(self):
+        """Situe la saisie dans la vue d'ensemble : le mois de son début, tout le monde affiché.
+
+        L'approbateur la voit parmi les autres saisies et la valide, en contexte, avec la
+        fenêtre du calendrier.
+        """
+        self.ensure_one()
+        action = self.env['ir.actions.actions']._for_xml_id('hr_holidays.action_hr_holidays_dashboard')
+        context = safe_eval(action.get('context') or '{}', {'uid': self.env.uid})
+        context.pop('search_default_my_team', None)
+        context.update({
+            'initial_date': "%s 00:00:00" % self.request_date_from,
+            'mission_scale': 'month',
+        })
+        action['context'] = context
+        return action

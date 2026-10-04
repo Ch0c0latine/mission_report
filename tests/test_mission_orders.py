@@ -2,7 +2,7 @@
 # Copyright 2026 T.T.C. SAS
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 from odoo import Command
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 
 from ..models.activity_report import INTERNAL, INTERNAL_KEY
 from .test_sale_delivery import TestSaleDelivery
@@ -148,3 +148,34 @@ class TestMissionOrders(TestSaleDelivery):
     def test_the_overview_calendar_colour_field_is_readable_by_every_user(self):
         field = self.env['hr.leave.report.calendar']._fields['holiday_status_id']
         self.assertEqual(field.groups, 'base.group_user')
+
+    def _report_row(self, leave):
+        return self.env['hr.leave.report.calendar'].search([('leave_id', '=', leave.id)], limit=1)
+
+    def test_a_refused_entry_can_be_deleted_from_its_dialog(self):
+        leaves = self.env['hr.leave'].search([('project_id', '=', self.project_a.id)])
+        leave = leaves[0]
+        row = self._report_row(leave)
+        self.assertTrue(row)
+        with self.assertRaises(UserError):  # validated: not deletable from here
+            row.action_mission_delete()
+        leave.write({'state': 'refuse'})
+        row = self._report_row(leave)
+        leave_id = leave.id
+        row.action_mission_delete()
+        self.assertFalse(self.env['hr.leave'].browse(leave_id).exists())
+
+    def test_the_edit_button_opens_the_full_form_of_the_leave(self):
+        leave = self.env['hr.leave'].search([('project_id', '=', self.project_a.id)], limit=1)
+        action = self._report_row(leave).action_mission_edit()
+        self.assertEqual(action['tag'], 'mission_report.edit_leave')
+        self.assertEqual(action['params'], {'leave_id': leave.id})
+
+    def test_a_leave_can_be_located_in_the_overview(self):
+        leave = self.env['hr.leave'].search([('project_id', '=', self.project_a.id)], limit=1)
+        action = leave.action_mission_show_overview()
+        self.assertEqual(action['res_model'], 'hr.leave.report.calendar')
+        self.assertEqual(action['context']['mission_scale'], 'month')
+        self.assertTrue(action['context']['initial_date'].startswith(str(leave.request_date_from)))
+        self.assertNotIn('search_default_my_team', action['context'])
+

@@ -63,6 +63,14 @@
                 <widget name="web_ribbon" title="Soumis" bg_color="text-bg-warning"
                         invisible="state not in ('confirm', 'validate1')"/>
             </xpath>
+            <!-- Modifier (fiche complète) ; supprimer, seulement une saisie refusée ou annulée. -->
+            <xpath expr="//footer" position="inside">
+                <button name="action_mission_edit" string="Modifier" type="object" close="1"
+                        invisible="state == 'cancel'"/>
+                <button name="action_mission_delete" string="Supprimer" type="object" close="1"
+                        class="btn-danger ms-auto" invisible="state not in ('refuse', 'cancel')"
+                        confirm="Supprimer définitivement cette saisie ?"/>
+            </xpath>
             <!-- "Type de congés" : le type vaut "Activité" pour une mission. -->
             <xpath expr="//field[@name='holiday_status_id']" position="attributes">
                 <attribute name="string">Type de saisie</attribute>

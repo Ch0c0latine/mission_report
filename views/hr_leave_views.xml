@@ -105,6 +105,11 @@
                 <field name="project_id" string="Mission" optional="show"/>
                 <field name="partner_id" string="Client" optional="hide"/>
             </xpath>
+            <!-- Un lien par ligne vers la vue d'ensemble, sur le mois de la saisie. -->
+            <xpath expr="//field[@name='state']" position="after">
+                <button name="action_mission_show_overview" type="object" icon="fa-calendar"
+                        title="Voir dans la vue d'ensemble" string="Voir dans la vue d'ensemble"/>
+            </xpath>
             <!-- La colonne du type de saisie (Activité pour une mission) garde le
                  libellé du champ : "Type de saisie". -->
             <!-- Hide "Nouveaux congés de groupe" header button -->

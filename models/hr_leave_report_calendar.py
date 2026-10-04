@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # Copyright 2026 T.T.C. SAS
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
-from odoo import api, fields, models
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 
 class HrLeaveReportCalendar(models.Model):
@@ -23,3 +24,21 @@ class HrLeaveReportCalendar(models.Model):
                 continue
             what = leave.project_id.name if leave.project_id else leave.holiday_status_id.name
             entry.name = "%s · %s : %s" % (entry.employee_id.name, what or '', leave.duration_display or '')
+
+    def action_mission_edit(self):
+        """« Modifier » dans la fenêtre de la saisie : la fiche complète, dans une fenêtre
+        (voir leave_edit_action.js), puis le calendrier est relu."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'mission_report.edit_leave',
+            'params': {'leave_id': self.sudo().leave_id.id},
+        }
+
+    def action_mission_delete(self):
+        """Supprime une saisie refusée ou annulée, avec les droits de l'utilisateur."""
+        self.ensure_one()
+        leave = self.env['hr.leave'].browse(self.sudo().leave_id.id)
+        if leave.state not in ('refuse', 'cancel'):
+            raise UserError(_("Seule une saisie refusée ou annulée peut être supprimée."))
+        leave.unlink()
