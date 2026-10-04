@@ -30,6 +30,11 @@
                 <!-- Un jour ou une plage cliqués créent une saisie (voir overview_calendar.js). -->
                 <attribute name="create">1</attribute>
             </xpath>
+            <!-- Journée de travail du salarié : la barre d'une demi-journée ou d'heures s'y place. -->
+            <xpath expr="//calendar" position="inside">
+                <field name="mission_day_start" invisible="1"/>
+                <field name="mission_day_end" invisible="1"/>
+            </xpath>
         </field>
     </record>
 

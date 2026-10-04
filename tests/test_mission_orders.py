@@ -234,3 +234,13 @@ class TestMissionOrders(TestSaleDelivery):
         for day, hours in full.items():
             self.assertAlmostEqual(half[day], hours / 2, places=1)
 
+    def test_the_day_span_follows_the_employee_schedule(self):
+        leave = self.env['hr.leave'].search([('project_id', '=', self.project_a.id)], limit=1)
+        row = self._report_row(leave)
+        start, end = row.mission_day_start, row.mission_day_end
+        self.assertLess(start, end)
+        self.assertTrue(0 <= start < 24 and 0 < end <= 24)
+        leave.employee_id.resource_calendar_id = False
+        row.invalidate_recordset(['mission_day_start', 'mission_day_end'])
+        self.assertEqual((row.mission_day_start, row.mission_day_end), (8.0, 17.0))
+

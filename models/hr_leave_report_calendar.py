@@ -13,6 +13,26 @@ class HrLeaveReportCalendar(models.Model):
     # d'accès pour un simple responsable). Le nom du type figure déjà dans le titre de la saisie.
     holiday_status_id = fields.Many2one(groups='base.group_user')
 
+    mission_day_start = fields.Float(compute='_compute_mission_day_span')
+    mission_day_end = fields.Float(compute='_compute_mission_day_span')
+
+    @api.depends('employee_id', 'start_datetime')
+    def _compute_mission_day_span(self):
+        """Début et fin de la journée de travail du salarié, ce jour-là (8 h-17 h à défaut) : le
+        calendrier y place les barres d'une demi-journée ou d'heures."""
+        for row in self:
+            start, end = 8.0, 17.0
+            employee = row.sudo().employee_id
+            calendar = employee.resource_calendar_id
+            if calendar and row.start_datetime:
+                day = fields.Datetime.context_timestamp(row.sudo(), row.start_datetime).weekday()
+                attendances = calendar.attendance_ids.filtered(
+                    lambda a: a.dayofweek == str(day) and not a.display_type)
+                if attendances:
+                    start = min(attendances.mapped('hour_from'))
+                    end = max(attendances.mapped('hour_to'))
+            row.mission_day_start, row.mission_day_end = start, end
+
     @api.depends('employee_id.name', 'leave_id')
     def _compute_name(self):
         """« Camille Exemple · Mission Exemple : 22 jours » pour une mission,

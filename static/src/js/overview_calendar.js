@@ -29,8 +29,9 @@ const LEAVE_DELAY = 300;
 // Passer d'un jour à son voisin, bulle ouverte : un peu plus de patience, pour ne pas alterner
 // entre deux bulles quand la souris longe la limite des cases.
 const SWITCH_DELAY = 250;
-// Journée représentée par une case : les barres d'une demi-journée ou d'heures s'y placent
-// selon l'heure (matin = de la gauche jusqu'au milieu, fin d'après-midi = à droite).
+// Journée représentée par une case, à défaut d'horaire connu : les barres d'une demi-journée ou
+// d'heures s'y placent selon l'heure (matin = de la gauche jusqu'au milieu, fin d'après-midi = à
+// droite). L'horaire du salarié (mission_day_start / mission_day_end) l'emporte.
 const DAY_START = 8;
 const DAY_END = 17;
 // Bande, au bord de chaque case, où la souris ne survole aucun jour.
@@ -343,13 +344,18 @@ patch(TimeOffCalendarCommonRenderer.prototype, {
             return;
         }
         const hour = (date) => date.hour + date.minute / 60;
-        const span = DAY_END - DAY_START;
-        const left = Math.min(Math.max((hour(record.start) - DAY_START) / span, 0), 0.94);
-        const right = Math.min(Math.max((hour(record.end) - DAY_START) / span, left + 0.06), 1);
+        const raw = record.rawRecord || {};
+        const dayStart = raw.mission_day_start || DAY_START;
+        const dayEnd = raw.mission_day_end > dayStart ? raw.mission_day_end : DAY_END;
+        const span = dayEnd - dayStart;
+        const left = Math.min(Math.max((hour(record.start) - dayStart) / span, 0), 0.94);
+        const right = Math.min(Math.max((hour(record.end) - dayStart) / span, left + 0.06), 1);
         el.style.marginLeft = `${(left * 100).toFixed(1)}%`;
         el.style.width = `${((right - left) * 100).toFixed(1)}%`;
         el.dataset.missionEmployee = record.rawRecord?.employee_id?.[0] || "";
         el.querySelector(".fc-time")?.remove();
+        // Barre étroite : le titre est coupé, il s'affiche en entier au survol.
+        el.title = event.title;
         browser.setTimeout(() => this.shareDayRows(el), 0);
     },
 
