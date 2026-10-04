@@ -92,6 +92,9 @@
          libellé du menu. -->
     <record id="hr_holidays.action_hr_holidays_dashboard" model="ir.actions.act_window">
         <field name="name">Vue d'ensemble</field>
+        <!-- Ni « Approuvé » ni « En attente de validation » d'office : tout s'affiche, l'équipe
+             et l'année restent choisies. -->
+        <field name="context">{'hide_employee_name': 1, 'search_default_my_team': 1, 'search_default_current_year': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Personne ici ? Tout le monde est au travail sur cette période.
