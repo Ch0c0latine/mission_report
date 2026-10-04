@@ -5,8 +5,25 @@
  */
 import { EventBus } from "@odoo/owl";
 import { registry } from "@web/core/registry";
+import { patch } from "@web/core/utils/patch";
 
-import { TimeOffFormViewDialog } from "@hr_holidays/views/view_dialog/form_view_dialog";
+import {
+    TimeOffDialogFormController,
+    TimeOffFormViewDialog,
+} from "@hr_holidays/views/view_dialog/form_view_dialog";
+
+patch(TimeOffDialogFormController.prototype, {
+    /**
+     * Le pied de la fenêtre d'une saisie n'offrait « Enregistrer » qu'au propriétaire d'une
+     * saisie en attente. Une saisie modifiée, ni refusée ni annulée, s'enregistre aussi : les
+     * droits d'écriture restent ceux d'hr_holidays, le serveur refuse ce qui n'est pas permis.
+     */
+    get canSave() {
+        const record = this.record;
+        const editable = !record.isNew && !["cancel", "refuse"].includes(record.data.state);
+        return super.canSave || (this.hasNoWarning && editable && record.dirty);
+    },
+});
 
 export const missionBus = new EventBus();
 
