@@ -3,7 +3,7 @@
      License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0). -->
 <odoo>
     <!-- « Pointages » : un onglet de la barre d'un projet (page des tâches et tableau de bord),
-         à la suite des autres, pour ceux qui voient les saisies d'activité. -->
+         à la suite des autres, pour les responsables des congés, qui voient les saisies de leur équipe. -->
     <record id="embedded_action_project_entries_tasks" model="ir.embedded.actions">
         <field name="name">Pointages</field>
         <field name="sequence">60</field>
@@ -11,7 +11,7 @@
         <field name="parent_res_model">project.project</field>
         <field name="python_method">action_mission_entries</field>
         <field name="context">{'from_embedded_action': true}</field>
-        <field name="groups_ids" eval="[(4, ref('hr_holidays.group_hr_holidays_user'))]"/>
+        <field name="groups_ids" eval="[(4, ref('hr_holidays.group_hr_holidays_responsible'))]"/>
     </record>
     <record id="embedded_action_project_entries_dashboard" model="ir.embedded.actions">
         <field name="name">Pointages</field>
@@ -20,6 +20,6 @@
         <field name="parent_res_model">project.project</field>
         <field name="python_method">action_mission_entries</field>
         <field name="context">{'from_embedded_action': true}</field>
-        <field name="groups_ids" eval="[(4, ref('hr_holidays.group_hr_holidays_user'))]"/>
+        <field name="groups_ids" eval="[(4, ref('hr_holidays.group_hr_holidays_responsible'))]"/>
     </record>
 </odoo>
