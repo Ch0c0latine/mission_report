@@ -126,10 +126,10 @@ class TestMissionOrders(TestSaleDelivery):
         self.assertEqual(len(tabs), 2)
         plain = self._plain_user('plain_mission_report')
         responsible = self._plain_user('resp_mission_report', ['hr_holidays.group_hr_holidays_responsible'])
-        self.assertFalse(tabs.with_user(plain).filtered(lambda t: t.id in tabs.ids and t._is_visible_for_user()
-                                                        if hasattr(t, '_is_visible_for_user') else
-                                                        not t.groups_ids or (t.groups_ids & plain.group_ids)))
-        self.assertTrue(tabs.filtered(lambda t: t.groups_ids & responsible.group_ids))
+        group = self.env.ref('hr_holidays.group_hr_holidays_responsible')
+        self.assertEqual(tabs.groups_ids, group)
+        self.assertNotIn(group, plain.group_ids)
+        self.assertIn(group, responsible.group_ids)
         # Whatever the rights, reading the entries never fails: a plain user sees only his own.
         action = self.project_a.action_mission_entries()
         for user in (plain, responsible):
