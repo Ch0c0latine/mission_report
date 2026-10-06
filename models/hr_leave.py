@@ -166,8 +166,9 @@ class HrLeave(models.Model):
         # sudo : voir _compute_available_project_ids ; seuls les projets sont gardés.
         tasks = self.env['project.task'].sudo().search([('user_ids', 'in', user.id)])
         projects = self.env['project.project'].browse(tasks.project_id.ids)
-        date_from = date_from or fields.Date.context_today(self)
-        date_to = date_to or date_from
+        # Le calendrier (créneau tiré à la souris) peut fournir des datetime ou du texte.
+        date_from = fields.Date.to_date(date_from) or fields.Date.context_today(self)
+        date_to = fields.Date.to_date(date_to) or date_from
 
         def active(project):
             project = project.sudo()

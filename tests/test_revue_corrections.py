@@ -292,6 +292,20 @@ class TestRevueCorrections(TransactionCase):
         available = Leave.new({'employee_id': employee.id}).available_project_ids
         self.assertIn(project.id, available.ids)
 
+    def test_calendar_slot_dates_may_be_datetimes(self):
+        # Un créneau tiré dans le calendrier fournit des datetime ou du texte, pas des dates.
+        project = self.env['project.project'].create({'name': 'Revue Slot', 'partner_id': self.client.id})
+        self.env['project.task'].create({
+            'name': 'Slot task', 'project_id': project.id, 'user_ids': [Command.set(self.user.ids)]})
+        self.env['sale.order'].create({
+            'partner_id': self.client.id, 'project_id': project.id,
+            'mission_date_start': date(YEAR, 8, 1), 'mission_date_end': date(YEAR, 8, 31)})
+        Leave = self.env['hr.leave']
+        for start, end in ((datetime(YEAR, 8, 5, 8, 0), datetime(YEAR, 8, 5, 17, 0)),
+                           ('%s-08-05 08:00:00' % YEAR, '%s-08-05 17:00:00' % YEAR)):
+            projects = Leave._mission_projects_for_period(self.employee, start, end)
+            self.assertIn(project.id, projects.ids)
+
     def test_manager_can_enter_a_mission_for_another_employee(self):
         project = self.env['project.project'].create({
             'name': 'Revue Private 2', 'partner_id': self.client.id, 'privacy_visibility': 'followers'})
