@@ -75,12 +75,64 @@ class ProjectProject(models.Model):
     igd_start = fields.Date(
         string="IGD à partir du", groups=IGD_GROUP,
         help="Premier mois pris en compte pour le rattrapage. Vide : depuis le début.")
+    igd_lodging_basis = fields.Selection(
+        [('worked', "Jours travaillés"), ('calendar', "Jours calendaires")],
+        string="IGD logement sur", default='worked', required=True, groups=IGD_GROUP,
+        help="Jours travaillés : une IGD logement par journée saisie sur la mission.\n"
+             "Jours calendaires : tous les jours du mois entre la première et la dernière "
+             "journée saisie, week-ends, jours fériés et congés compris — le logement se "
+             "paie aussi les jours non travaillés.\n\n"
+             "Les IGD repas restent toujours sur les journées saisies. Le réglage est propre "
+             "à la mission : une autre mission du même salarié, ou un autre intervenant sur "
+             "une autre mission, peut être payé sur une autre base.")
     igd_currency_id = fields.Many2one(
         'res.currency', compute='_compute_igd_currency_id', groups=IGD_GROUP)
+    igd_adjustment_ids = fields.One2many(
+        'mission.igd.adjustment', 'project_id', string="Ajustements du quota", groups=IGD_GROUP,
+        help="Mois où le quota d'IGD d'un salarié diffère du montant prévu.")
 
     def _compute_igd_currency_id(self):
         for project in self:
             project.igd_currency_id = project.company_id.currency_id or self.env.company.currency_id
+
+
+class MissionIgdAdjustment(models.Model):
+    _name = 'mission.igd.adjustment'
+    _description = "Ajustement du quota d'IGD d'un mois"
+    _order = 'month desc, id'
+    _rec_name = 'month'
+
+    project_id = fields.Many2one(
+        'project.project', string="Mission", required=True, ondelete='cascade', index=True)
+    employee_id = fields.Many2one(
+        'hr.employee', string="Salarié", required=True, ondelete='cascade', index=True)
+    month = fields.Date(
+        string="Mois", required=True, default=lambda self: fields.Date.context_today(self),
+        help="N'importe quel jour du mois : seul le mois compte.")
+    amount = fields.Monetary(
+        string="Ajustement", required=True, currency_field='currency_id',
+        help="Montant ajouté au quota du mois, négatif pour le réduire. Il tient compte des "
+             "IGD déjà saisies à la main : ce qui est versé en plus grâce à lui n'est pas "
+             "repris les mois suivants comme une avance.")
+    currency_id = fields.Many2one('res.currency', compute='_compute_currency_id')
+    reason = fields.Char(string="Motif")
+
+    def _compute_currency_id(self):
+        for adjustment in self:
+            company = adjustment.project_id.company_id or self.env.company
+            adjustment.currency_id = company.currency_id
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('month'):
+                vals['month'] = fields.Date.to_date(vals['month']).replace(day=1)
+        return super().create(vals_list)
+
+    def write(self, vals):
+        if vals.get('month'):
+            vals['month'] = fields.Date.to_date(vals['month']).replace(day=1)
+        return super().write(vals)
 
 
 class HrExpense(models.Model):
@@ -229,6 +281,8 @@ class MissionIgdWizard(models.TransientModel):
             text += " " + _("Rattrapage de %s des mois précédents.", money(item['catchup']))
         if not float_is_zero(item['surplus'], precision_digits=2):
             text += " " + _("Excédent de %s des mois précédents déduit.", money(item['surplus']))
+        if not float_is_zero(item.get('adjust') or 0.0, precision_digits=2):
+            text += " " + _("Ajustement du quota de %s.", money(item['adjust']))
         if not float_is_zero(item['left'], precision_digits=2):
             text += " " + _("Reste %s d'IGD à répartir sur les saisies suivantes.", money(item['left']))
         return escape(text)
@@ -288,6 +342,31 @@ class MissionActivityReport(models.Model):
                 if value:
                     days.append(fields.Date.to_date(day['date']))
         return sorted(set(days))
+
+    def _igd_lodging_days(self, data, project, days):
+        """Jours du mois recevant l'IGD logement.
+
+        Les journées saisies sur la mission, ou, quand la mission paie le
+        logement en calendaire, tous les jours du mois entre la première et la
+        dernière d'entre elles : le logement court aussi les week-ends, les
+        jours fériés et les congés pris au milieu de la mission.
+        """
+        if project.igd_lodging_basis != 'calendar' or not days:
+            return days
+        return [day for day in (fields.Date.to_date(item['date']) for item in data.get('days', []))
+                if days[0] <= day <= days[-1]]
+
+    def _igd_adjustment(self, project):
+        """Cumul des ajustements de quota du salarié sur cette mission, jusqu'à ce mois inclus.
+
+        Cumulé et non pris mois par mois : ajouté au seul mois visé, ce qu'il fait
+        verser en plus serait repris le mois suivant comme une avance de frais.
+        """
+        domain = [('project_id', '=', project.id), ('employee_id', '=', self.employee_id.id),
+                  ('month', '<=', self.date_from)]
+        if project.igd_start:
+            domain.append(('month', '>=', project.igd_start.replace(day=1)))
+        return sum(self.env['mission.igd.adjustment'].sudo().search(domain).mapped('amount'))
 
     def _igd_months_with_presence(self, project):
         """Mois à compter jusqu'à celui du rapport : celui-ci, et les mois précédents où il y
@@ -349,7 +428,8 @@ class MissionActivityReport(models.Model):
             before = sum(Expense.search(base + since + [('date', '<', self.date_from)]).mapped('total_amount'))
             month = Expense.search(base + [('date', '>=', self.date_from), ('date', '<=', self.date_to)])
             months = self._igd_months_with_presence(project)
-            target = project.igd_monthly_budget * months - before
+            adjust = self._igd_adjustment(project)
+            target = project.igd_monthly_budget * months - before + adjust
             left = target - sum(month.mapped('total_amount'))
             if float_compare(left, 0.0, precision_digits=2) <= 0:
                 notes.append(('info', _("le montant prévu pour « %s » est déjà atteint.", project.name)))
@@ -361,13 +441,17 @@ class MissionActivityReport(models.Model):
                 ('state', '!=', 'refused')]).mapped('date')) if company.igd_real_meal_product_ids else set()
 
             made = Expense
-            for product, allowed in ((lodging, lambda d: True), (meal, lambda d: d not in real_meals)):
+            # Le logement suit la base de la mission ; les repas, les seules journées saisies.
+            lodging_days = self._igd_lodging_days(data, project, days)
+            for product, product_days, allowed in (
+                    (lodging, lodging_days, lambda d: True),
+                    (meal, days, lambda d: d not in real_meals)):
                 if not product:
                     continue
                 amount = product.standard_price
                 if not amount:
                     continue
-                for day in days:
+                for day in product_days:
                     # Approcher au mieux : une IGD de plus tant qu'il reste au moins la moitié de son montant.
                     if float_compare(left, amount / 2, precision_digits=2) < 0:
                         break
@@ -399,6 +483,7 @@ class MissionActivityReport(models.Model):
                 summary.append({
                     'project': project,
                     'currency': project.igd_currency_id,
+                    'adjust': adjust,
                     'lodging': len(made.filtered(lambda e: e.product_id == lodging)),
                     'meals': len(made.filtered(lambda e: e.product_id == meal)),
                     'total': total,

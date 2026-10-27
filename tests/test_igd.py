@@ -128,3 +128,38 @@ class TestIgd(TestSaleDelivery):
         wizard.action_generate()
         self.assertLess(sum(wizard.created_expense_ids.mapped('total_amount')), 500.0)
         self.assertIn("Excédent de", wizard.result)
+
+    def test_lodging_on_calendar_days_when_the_mission_says_so(self):
+        """Mission du 5 au 16 mai 2031 : le logement couvre aussi les week-ends,
+        le 8 mai férié et les congés ; les repas restent sur les journées saisies."""
+        self.project_a.write({'igd_lodging_basis': 'calendar', 'igd_monthly_budget': 1000.0})
+        expenses = self._generated()
+        lodging = expenses.filtered(lambda e: e.product_id == self.lodging)
+        meals = expenses.filtered(lambda e: e.product_id == self.meal)
+        self.assertEqual(lodging.mapped('date'), [date(2031, 5, day) for day in range(5, 17)])
+        self.assertEqual(len(meals), 9, "les repas ne suivent que les journées saisies")
+        self.assertFalse({date(2031, 5, 8), date(2031, 5, 10), date(2031, 5, 11)}
+                         & set(meals.mapped('date')))
+
+    def test_lodging_stays_on_worked_days_by_default(self):
+        self.project_a.igd_monthly_budget = 1000.0
+        lodging = self._generated().filtered(lambda e: e.product_id == self.lodging)
+        self.assertEqual(len(lodging), 9)
+        self.assertNotIn(date(2031, 5, 10), lodging.mapped('date'))
+
+    def test_a_quota_adjustment_raises_the_month_and_is_not_taken_back(self):
+        """500 € forcés sur mai : ils ne sont pas repris en juin comme une avance."""
+        self.env['mission.igd.adjustment'].create({
+            'project_id': self.project_a.id, 'employee_id': self.employee.id,
+            'month': date(2031, 5, 31), 'amount': 500.0, 'reason': "Rattrapage"})
+        may = self._generated()
+        self.assertGreater(sum(may.mapped('total_amount')), 500.0,
+                           "le quota du mois passe de 500 à 1000")
+        self._entry(self.project_a, '2031-06-02', '2031-06-13')
+        self.env['mission.igd.wizard'].create({
+            'employee_ids': [(6, 0, self.employee.ids)],
+            'report_month': '6', 'report_year': '2031'}).action_generate()
+        june = self.env['hr.expense'].search([
+            ('employee_id', '=', self.employee.id), ('igd_generated', '=', True),
+            ('date', '>=', date(2031, 6, 1))])
+        self.assertTrue(june, "juin garde son quota malgré le mois précédent renforcé")

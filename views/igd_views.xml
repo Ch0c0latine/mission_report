@@ -76,8 +76,22 @@
                     <field name="igd_currency_id" invisible="1"/>
                     <field name="igd_monthly_budget"/>
                     <field name="igd_start" invisible="not igd_monthly_budget"/>
+                    <field name="igd_lodging_basis" widget="radio" options="{'horizontal': true}"
+                           invisible="not igd_monthly_budget"/>
+                    <field name="igd_adjustment_ids" colspan="2" nolabel="1"
+                           invisible="not igd_monthly_budget"
+                           context="{'default_project_id': id}">
+                        <list editable="bottom">
+                            <field name="employee_id"/>
+                            <field name="month" widget="date" options="{'format': 'MM/yyyy'}"/>
+                            <field name="amount"/>
+                            <field name="currency_id" column_invisible="1"/>
+                            <field name="reason"/>
+                        </list>
+                    </field>
                     <div class="text-muted" colspan="2">
                         « Générer les IGD » (application Notes de frais) s'en sert pour créer les IGD du mois.
+                        Un ajustement ajoute (ou retire) son montant au quota du mois visé, sans être repris les mois suivants.
                     </div>
                 </group>
             </xpath>
