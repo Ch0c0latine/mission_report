@@ -78,6 +78,8 @@
                     <field name="igd_start" invisible="not igd_monthly_budget"/>
                     <field name="igd_lodging_basis" widget="radio" options="{'horizontal': true}"
                            invisible="not igd_monthly_budget"/>
+                    <field name="igd_meal_basis" widget="radio" options="{'horizontal': true}"
+                           invisible="not igd_monthly_budget"/>
                     <field name="igd_adjustment_ids" colspan="2" nolabel="1"
                            invisible="not igd_monthly_budget"
                            context="{'default_project_id': id}">

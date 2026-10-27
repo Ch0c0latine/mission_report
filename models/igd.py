@@ -29,6 +29,15 @@ from odoo.tools.safe_eval import safe_eval
 
 IGD_GROUP = 'base.group_system'
 
+#: Jours d'un mois qui reçoivent une IGD, au choix de la mission.
+BASIS = [('worked', "Jours travaillés"), ('calendar', "Jours calendaires")]
+BASIS_HELP = (
+    "Jours travaillés : une indemnité par journée saisie sur la mission.\n"
+    "Jours calendaires : tous les jours du mois entre la première et la dernière journée "
+    "saisie, week-ends, jours fériés et congés compris.\n\n"
+    "Le réglage est propre à la mission : une autre mission du même salarié, ou un autre "
+    "intervenant sur une autre mission, peut être payé sur une autre base.")
+
 
 class ResCompany(models.Model):
     _inherit = 'res.company'
@@ -76,15 +85,11 @@ class ProjectProject(models.Model):
         string="IGD à partir du", groups=IGD_GROUP,
         help="Premier mois pris en compte pour le rattrapage. Vide : depuis le début.")
     igd_lodging_basis = fields.Selection(
-        [('worked', "Jours travaillés"), ('calendar', "Jours calendaires")],
-        string="IGD logement sur", default='worked', required=True, groups=IGD_GROUP,
-        help="Jours travaillés : une IGD logement par journée saisie sur la mission.\n"
-             "Jours calendaires : tous les jours du mois entre la première et la dernière "
-             "journée saisie, week-ends, jours fériés et congés compris — le logement se "
-             "paie aussi les jours non travaillés.\n\n"
-             "Les IGD repas restent toujours sur les journées saisies. Le réglage est propre "
-             "à la mission : une autre mission du même salarié, ou un autre intervenant sur "
-             "une autre mission, peut être payé sur une autre base.")
+        BASIS, string="IGD logement sur", default='worked', required=True, groups=IGD_GROUP,
+        help=BASIS_HELP)
+    igd_meal_basis = fields.Selection(
+        BASIS, string="IGD repas sur", default='worked', required=True, groups=IGD_GROUP,
+        help=BASIS_HELP)
     igd_currency_id = fields.Many2one(
         'res.currency', compute='_compute_igd_currency_id', groups=IGD_GROUP)
     igd_adjustment_ids = fields.One2many(
@@ -343,15 +348,15 @@ class MissionActivityReport(models.Model):
                     days.append(fields.Date.to_date(day['date']))
         return sorted(set(days))
 
-    def _igd_lodging_days(self, data, project, days):
-        """Jours du mois recevant l'IGD logement.
+    def _igd_basis_days(self, data, days, basis):
+        """Jours du mois recevant une IGD, selon la base choisie sur la mission.
 
-        Les journées saisies sur la mission, ou, quand la mission paie le
-        logement en calendaire, tous les jours du mois entre la première et la
-        dernière d'entre elles : le logement court aussi les week-ends, les
-        jours fériés et les congés pris au milieu de la mission.
+        Les journées saisies sur la mission, ou, en calendaire, tous les jours
+        du mois entre la première et la dernière d'entre elles : l'indemnité
+        court aussi les week-ends, les jours fériés et les congés pris au
+        milieu de la mission.
         """
-        if project.igd_lodging_basis != 'calendar' or not days:
+        if basis != 'calendar' or not days:
             return days
         return [day for day in (fields.Date.to_date(item['date']) for item in data.get('days', []))
                 if days[0] <= day <= days[-1]]
@@ -441,11 +446,12 @@ class MissionActivityReport(models.Model):
                 ('state', '!=', 'refused')]).mapped('date')) if company.igd_real_meal_product_ids else set()
 
             made = Expense
-            # Le logement suit la base de la mission ; les repas, les seules journées saisies.
-            lodging_days = self._igd_lodging_days(data, project, days)
+            # Chaque indemnité suit la base choisie sur la mission.
             for product, product_days, allowed in (
-                    (lodging, lodging_days, lambda d: True),
-                    (meal, days, lambda d: d not in real_meals)):
+                    (lodging, self._igd_basis_days(data, days, project.igd_lodging_basis),
+                     lambda d: True),
+                    (meal, self._igd_basis_days(data, days, project.igd_meal_basis),
+                     lambda d: d not in real_meals)):
                 if not product:
                     continue
                 amount = product.standard_price

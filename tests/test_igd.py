@@ -163,3 +163,12 @@ class TestIgd(TestSaleDelivery):
             ('employee_id', '=', self.employee.id), ('igd_generated', '=', True),
             ('date', '>=', date(2031, 6, 1))])
         self.assertTrue(june, "juin garde son quota malgré le mois précédent renforcé")
+
+    def test_meals_on_calendar_days_when_the_mission_says_so(self):
+        """Les repas suivent leur propre base : calendaire ici, logement laissé aux journées saisies."""
+        self.project_a.write({'igd_meal_basis': 'calendar', 'igd_monthly_budget': 1000.0})
+        expenses = self._generated()
+        lodging = expenses.filtered(lambda e: e.product_id == self.lodging)
+        meals = expenses.filtered(lambda e: e.product_id == self.meal)
+        self.assertEqual(len(lodging), 9, "le logement reste sur les journées saisies")
+        self.assertEqual(meals.mapped('date'), [date(2031, 5, day) for day in range(5, 17)])
