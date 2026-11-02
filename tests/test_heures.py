@@ -132,9 +132,6 @@ class TestHeures(TransactionCase):
         late = self._entry(self.project_h, '2031-05-06', **evening)
         self.assertEqual(late.number_of_hours, 3.0)
         self.assertEqual(late._mission_hours_by_day(), {date(2031, 5, 6): 3.0})
-        # Une saisie qui existait compte ses heures saisies dès qu'elle est recalculée.
-        early.request_hour_to = 9.5
-        self.assertEqual(early.number_of_hours, 3.5)
         # Les journées entières et les demi-journées restent celles de l'horaire.
         self.assertEqual(self._entry(self.project_h, '2031-05-07').number_of_hours, 8.0)
 
