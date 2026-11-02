@@ -225,3 +225,17 @@ class TestActivityReport(TransactionCase):
         with self.assertRaises(ValidationError):
             self.report.write({
                 'note_ids': [(0, 0, {'date': date(YEAR, 6, 2), 'note': "Hors mois"})]})
+
+    def test_excel_carries_the_notes_and_the_comment(self):
+        import openpyxl
+        self.report.write({
+            'comment': "Semaine décalée à la demande du client.",
+            'note_ids': [(0, 0, {'date': date(YEAR, 5, 6), 'note': "Audit"})],
+        })
+        template = self.env.ref('mission_report.activity_report_template_internal')
+        template.action_generate_file()
+        sheet = openpyxl.load_workbook(io.BytesIO(template._export(self.report))).worksheets[0]
+        texts = [cell.value for row in sheet.iter_rows() for cell in row if isinstance(cell.value, str)]
+        self.assertIn("Audit", texts)
+        self.assertTrue(any("Semaine décalée" in text for text in texts), texts)
+        self.assertIn("Informations", texts)

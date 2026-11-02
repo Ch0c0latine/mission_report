@@ -53,6 +53,7 @@ HEADER_VALUES = [
     ('total', "Total days"),
     ('potential_hours', "Heures ouvrées"),
     ('mission_hours_total', "Heures de mission"),
+    ('comment', "Commentaire"),
 ]
 VALUES = LINE_VALUES + [item for item in HEADER_VALUES
                         if item[0] not in {key for key, _label in LINE_VALUES}]
@@ -115,6 +116,11 @@ class MissionActivityReportTemplate(models.Model):
     absence_first_row = fields.Integer(
         string="First time off row", help="0: no time off block (client reports).")
     absence_last_row = fields.Integer(string="Last time off row")
+    show_texts = fields.Boolean(
+        string="Informations et commentaire", default=True,
+        help="Reprend sous le tableau les informations saisies jour par jour, sur une ligne, "
+             "et le commentaire du compte rendu. Les lignes sont ajoutées à l'export : rien "
+             "à prévoir dans le classeur.")
     color_days = fields.Boolean(
         string="Colour the days", default=True,
         help="Fills the day columns of weekends, public holidays and time off.")
@@ -198,6 +204,7 @@ class MissionActivityReportTemplate(models.Model):
             'total': _("Total days"),
             'potential_hours': _("Heures ouvrées"),
             'mission_hours_total': _("Heures de mission"),
+            'comment': _("Commentaire"),
         }
         line = {
             'label': _("Client"),
@@ -456,6 +463,8 @@ class MissionActivityReportTemplate(models.Model):
             filled_rows.append((first, first + count - 1))
         if hour_lines:
             filled_rows.append(self._export_hours(sheet, data, hour_lines, filled_rows, first_day))
+        if self.show_texts:
+            filled_rows.extend(self._export_texts(sheet, data, filled_rows, first_day))
 
         for cell_map in self.cell_ids.filtered(lambda c: c.kind == 'header' and c.value):
             _set_text(sheet[cell_map.cell.strip().upper()], self._header_value(report, data, cell_map.value))
@@ -542,6 +551,47 @@ class MissionActivityReportTemplate(models.Model):
             sheet.cell(row=total, column=column).value = "=SUM(%s%s:%s%s)" % (letter, first, letter, last)
         return first, last
 
+    def _export_texts(self, sheet, data, filled_rows, first_day):
+        """Les textes du compte rendu, sous le tableau : les informations jour par jour
+        sur une ligne de la grille, puis le commentaire sur toute la largeur.
+
+        Les lignes sont insérées sous la dernière ligne de total ; ce qui se trouve
+        plus bas, les cadres de signature compris, descend d'autant. Renvoie la liste
+        des (première, dernière) ligne ajoutées, pour la coloration des jours.
+        """
+        from openpyxl.styles import Alignment  # noqa: PLC0415
+        notes = data.get('notes') or []
+        comment = data.get('comment')
+        wanted = (1 if data.get('has_notes') else 0) + (1 if comment else 0)
+        if not wanted:
+            return []
+        total_row = filled_rows[-1][1] + 1
+        model_row = filled_rows[0][0]
+        self._resize_block(sheet, total_row, total_row, wanted + 1)
+        added = []
+        row = total_row
+        if data.get('has_notes'):
+            row += 1
+            sheet.row_dimensions[row].height = sheet.row_dimensions[model_row].height
+            for cell in sheet[model_row]:
+                if cell.has_style:
+                    sheet.cell(row=row, column=cell.column)._style = copy(cell._style)
+            _set_text(sheet.cell(row=row, column=1), _("Informations"))
+            for offset, text in enumerate(notes):
+                _set_text(sheet.cell(row=row, column=first_day + offset), text or None)
+            added.append((row, row))
+        if comment:
+            row += 1
+            last_column = first_day + MAX_DAYS - 1
+            sheet.merge_cells(start_row=row, start_column=1, end_row=row, end_column=last_column)
+            cell = sheet.cell(row=row, column=1)
+            _set_text(cell, "%s : %s" % (_("Commentaire"), comment))
+            cell.alignment = Alignment(horizontal='left', vertical='top', wrap_text=True)
+            # Une ligne de commentaire fusionnée ne doit pas garder la hauteur d'une
+            # ligne de tableau : le texte y serait coupé.
+            sheet.row_dimensions[row].height = None
+        return added
+
     def _day_color(self, day):
         if day['weekend']:
             return self.weekend_color
@@ -583,6 +633,7 @@ class MissionActivityReportTemplate(models.Model):
             'total': data['mission_total'] + (data['absence_total'] if self.kind == 'internal' else 0),
             'potential_hours': data.get('potential_hours'),
             'mission_hours_total': data.get('mission_hours_total'),
+            'comment': data.get('comment') or None,
         }.get(value)
 
     @api.model

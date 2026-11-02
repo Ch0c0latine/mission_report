@@ -196,6 +196,7 @@
                             <field name="absence_last_row" invisible="kind == 'client' or not absence_first_row"/>
                         </group>
                         <group string="Colours">
+                            <field name="show_texts"/>
                             <field name="color_days"/>
                             <field name="weekend_color" invisible="not color_days"/>
                             <field name="holiday_color" invisible="not color_days"/>

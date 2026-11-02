@@ -83,7 +83,9 @@ class MissionActivityReport(models.Model):
     report_year = fields.Selection(
         selection='_selection_report_year', string="Year",
         compute='_compute_report_month', inverse='_inverse_report_month')
-    month_label = fields.Char(string="Month", compute='_compute_report_month')
+    # Libellé distinct de celui de date_from : deux champs d'un même modèle qui
+    # portent le même libellé, et Odoo le signale à chaque mise à jour.
+    month_label = fields.Char(string="Month in letters", compute='_compute_report_month')
     state = fields.Selection([
         ('draft', "Draft"),
         ('submitted', "Submitted"),
