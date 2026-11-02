@@ -42,6 +42,7 @@
         'data/activity_report_template_data.xml',
         'data/wording_data.xml',
         'data/cron_sale_delivered.xml',
+        'data/cron_reminders.xml',
         'views/sale_order_views.xml',
         'views/project_entries.xml',
         'views/invoice_mission_views.xml',

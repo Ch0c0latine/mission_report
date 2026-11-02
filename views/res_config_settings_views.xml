@@ -25,6 +25,19 @@
                         </setting>
                     </block>
 
+                    <block title="Relances" name="mission_reminder_block">
+                        <setting id="mission_reminder_day" company_dependent="1"
+                                 string="Relance des comptes rendus"
+                                 help="Le jour du mois où chaque salarié qui a saisi une mission reçoit la tâche « Soumettre votre compte rendu », puis son responsable « Valider le compte rendu ». 0 : aucune relance.">
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="mission_reminder_day" class="col-lg-4 o_light_label"/>
+                                    <field name="mission_reminder_day"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+
                     <block title="Indemnités de grand déplacement (IGD)" name="mission_igd_block">
                         <setting id="mission_igd_categories" class="col-lg-12" string="Catégories de dépenses des IGD"
                                  help="Les catégories de Notes de frais que « Générer les IGD » utilise. Le montant mensuel prévu se règle sur la fiche de chaque mission.">

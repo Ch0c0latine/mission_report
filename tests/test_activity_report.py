@@ -239,3 +239,28 @@ class TestActivityReport(TransactionCase):
         self.assertIn("Audit", texts)
         self.assertTrue(any("Semaine décalée" in text for text in texts), texts)
         self.assertIn("Informations", texts)
+
+    def test_reminders_of_the_monthly_report(self):
+        """The employee is asked for the report of the month gone, then the manager to validate it."""
+        Report = self.env['mission.activity.report']
+        kind = self.env.ref('mission_report.mail_activity_type_report')
+
+        def tasks(user):
+            return self.report.sudo().activity_ids.filtered(lambda a: a.activity_type_id == kind and a.user_id == user)
+        self.company.mission_reminder_day = 0
+        Report._cron_remind(date(YEAR, 6, 4))
+        self.assertFalse(tasks(self.user), "no reminder day: no reminder")
+        self.company.mission_reminder_day = 3
+        Report._cron_remind(date(YEAR, 6, 2))
+        self.assertFalse(tasks(self.user), "before the reminder day")
+        Report._cron_remind(date(YEAR, 6, 4))
+        Report._cron_remind(date(YEAR, 6, 5))
+        self.assertEqual(len(tasks(self.user)), 1, "once, however many runs")
+        self.assertIn("mai", tasks(self.user).summary.lower())
+        self.report.with_user(self.user).action_submit()
+        self.assertFalse(tasks(self.user), "submitting ends the reminder")
+        Report._cron_remind(date(YEAR, 6, 6))
+        self.assertFalse(tasks(self.user), "a submitted report is not asked for again")
+        self.assertEqual(len(tasks(self.manager)), 1, "the manager is asked to validate it")
+        self.report.with_user(self.manager).action_validate()
+        self.assertFalse(tasks(self.manager))
