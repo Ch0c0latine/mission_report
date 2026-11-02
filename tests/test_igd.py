@@ -190,7 +190,7 @@ class TestIgd(TestSaleDelivery):
             'employee_ids': [(6, 0, self.employee.ids)], 'report_month': '5', 'report_year': '2031'})
         wizard.action_generate()
         self.assertNotIn("Excédent", wizard.result, wizard.result)
-        self.assertIn("Rattrapage", wizard.result, wizard.result)
+        self.assertIn("de rattrapage", wizard.result, wizard.result)
         # Mai couvre son propre quota et ce qu'avril a laissé, au lieu d'être amputé.
         created = self.env['hr.expense'].search([
             ('employee_id', '=', self.employee.id), ('igd_generated', '=', True)])
