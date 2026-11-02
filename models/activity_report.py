@@ -20,7 +20,7 @@ import pytz
 from babel.dates import format_date as babel_format_date
 
 from odoo import _, api, fields, models
-from odoo.exceptions import AccessError, UserError
+from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tools import format_date
 from odoo.tools.misc import formatLang, get_lang
 
@@ -36,6 +36,26 @@ INTERNAL_KEY = 'mission_report_internal'
 #: Champs du circuit de validation : seuls les boutons les modifient.
 WORKFLOW_FIELDS = ('state', 'snapshot', 'submit_date', 'submitted_by_id',
                    'validate_date', 'validated_by_id')
+
+
+class MissionActivityReportNote(models.Model):
+    _name = 'mission.activity.report.note'
+    _description = "Information portée sur un jour d'un compte rendu"
+    _order = 'date, id'
+
+    report_id = fields.Many2one(
+        'mission.activity.report', required=True, ondelete='cascade', index=True)
+    date = fields.Date(string="Jour", required=True)
+    note = fields.Char(string="Information", required=True, translate=False)
+
+    @api.constrains('date', 'report_id')
+    def _check_date_in_month(self):
+        for note in self:
+            report = note.report_id
+            if report.date_from and not (report.date_from <= note.date <= report.date_to):
+                raise ValidationError(_(
+                    "Le %(date)s ne fait pas partie du mois du compte rendu (%(month)s).",
+                    date=format_date(self.env, note.date), month=report.month_label))
 
 
 class MissionActivityReport(models.Model):
@@ -84,6 +104,11 @@ class MissionActivityReport(models.Model):
     mission_hours = fields.Float(string="Heures de mission", compute='_compute_totals')
     absence_days = fields.Float(string="Time off days", compute='_compute_totals')
     preview_html = fields.Html(compute='_compute_preview_html', sanitize=False)
+    note_ids = fields.One2many(
+        'mission.activity.report.note', 'report_id', string="Informations par jour",
+        help="Texte libre porté sur un jour du mois, affiché sous le tableau, jour par jour.")
+    comment = fields.Text(
+        string="Commentaire", help="Texte libre imprimé sous le tableau du compte rendu.")
 
     _employee_month_unique = models.Constraint(
         'UNIQUE(employee_id, date_from)',
@@ -133,6 +158,10 @@ class MissionActivityReport(models.Model):
             else:
                 report.date_to = False
 
+    # Les dépendances font recalculer l'aperçu et les totaux dans le formulaire,
+    # avant d'enregistrer : sans elles, le salarié et le mois choisis ne
+    # changeaient rien à l'écran tant que le compte rendu n'était pas sauvegardé.
+    @api.depends('employee_id', 'date_from', 'state', 'snapshot')
     def _compute_totals(self):
         for report in self:
             if not (report.employee_id and report.date_from):
@@ -146,6 +175,9 @@ class MissionActivityReport(models.Model):
             report.potential_hours = data['potential_hours'] or 0.0
             report.mission_hours = data['mission_hours_total']
 
+    @api.depends('employee_id', 'date_from', 'state', 'snapshot', 'comment',
+                 'note_ids.date', 'note_ids.note')
+    @api.depends_context('lang')
     def _compute_preview_html(self):
         for report in self:
             if not (report.employee_id and report.date_from):
@@ -501,6 +533,15 @@ class MissionActivityReport(models.Model):
             data['mission_total'] = sum(line['total'] for line in day_lines)
             data['mission_hours_total'] = round(sum(line['total'] for line in hour_lines), 2)
         data['has_hours'] = any(line['unit'] == 'hour' for line in data['missions'])
+        # Informations et commentaire : du texte saisi, jamais figé par la
+        # validation, qui ne gèle que les chiffres.
+        notes = {}
+        for note in self.note_ids.filtered(lambda n: n.date and n.note):
+            notes.setdefault(note.date, []).append(note.note.strip())
+        data['notes'] = [' '.join(notes.get(fields.Date.to_date(day['date']), []))
+                         for day in data['days']]
+        data['has_notes'] = any(data['notes'])
+        data['comment'] = (self.comment or '').strip()
         return data
 
     def _get_status_label(self):

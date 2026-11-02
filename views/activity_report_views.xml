@@ -82,6 +82,21 @@
                         take later changes to the entries into account.
                     </div>
                     <field name="preview_html" nolabel="1" readonly="1"/>
+                    <group>
+                        <group string="Informations par jour">
+                            <field name="note_ids" nolabel="1" colspan="2"
+                                   context="{'default_date': date_from}">
+                                <list editable="bottom">
+                                    <field name="date"/>
+                                    <field name="note"/>
+                                </list>
+                            </field>
+                        </group>
+                        <group string="Commentaire">
+                            <field name="comment" nolabel="1" colspan="2"
+                                   placeholder="Texte libre imprimé sous le tableau…"/>
+                        </group>
+                    </group>
                 </sheet>
                 <chatter/>
             </form>

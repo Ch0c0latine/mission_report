@@ -61,6 +61,9 @@
             .o_activity_grid .o_section { font-weight: 600; }
             .o_activity_grid .o_total td { font-weight: 600; }
             .o_activity_legend span { display: inline-block; width: 28px; height: 10px; border: 1px solid #808080; vertical-align: middle; margin: 0 4px 0 12px; }
+            .o_activity_grid .o_note { font-size: 8px; white-space: normal; word-break: break-word; line-height: 1.1; }
+            .o_activity_comment { margin-top: 6px; font-size: 10.5px; white-space: pre-wrap; }
+            .o_activity_preview .o_activity_comment { font-size: 12px; }
         </style>
         <t t-set="show_absences" t-value="lines == 'all'"/>
         <t t-set="days" t-value="data['days']"/>
@@ -143,7 +146,16 @@
                     t-attf-class="#{'o_weekend' if day['weekend'] else ('o_holiday' if day['holiday'] else ('o_absence' if day['absence'] and show_absences else ''))}"
                     t-out="format_days(data['mission_hour_totals'][day_index])"/>
             </tr>
+            <!-- Informations portées jour par jour, sous les chiffres. -->
+            <tr t-if="data.get('has_notes')">
+                <td t-att-colspan="label_span" class="o_label o_section">Informations</td>
+                <td t-foreach="days" t-as="day"
+                    t-attf-class="o_note #{'o_weekend' if day['weekend'] else ('o_holiday' if day['holiday'] else ('o_absence' if day['absence'] and show_absences else ''))}"
+                    t-att-title="data['notes'][day_index] or None"
+                    t-out="data['notes'][day_index]"/>
+            </tr>
         </table>
+        <div t-if="data.get('comment')" class="o_activity_comment" t-out="data['comment']"/>
         </div>
     </template>
 

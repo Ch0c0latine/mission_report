@@ -4,7 +4,7 @@
 import io
 from datetime import date
 
-from odoo.exceptions import AccessError, UserError
+from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tests.common import TransactionCase
 
 from odoo.addons.mission_report.models.public_holiday_wizard import easter_sunday
@@ -199,3 +199,29 @@ class TestActivityReport(TransactionCase):
         # A workbook uploaded by the user is not remade by module updates.
         template.write({'file': template.file})
         self.assertFalse(template.file_generated)
+
+    def test_preview_follows_the_form_before_saving(self):
+        """L'aperçu suit le salarié et le mois choisis sans attendre l'enregistrement."""
+        draft = self.env['mission.activity.report'].new({
+            'employee_id': self.employee.id, 'date_from': date(YEAR, 5, 1)})
+        self.assertIn('Project A', draft.preview_html)
+        self.assertEqual(draft.potential_days, 19)
+        draft.date_from = date(YEAR, 4, 1)
+        self.assertNotIn('Project A', draft.preview_html or '')
+
+    def test_day_notes_and_comment_reach_the_report(self):
+        self.report.write({
+            'comment': "Déplacement avancé d'une semaine.",
+            'note_ids': [(0, 0, {'date': date(YEAR, 5, 6), 'note': "Audit client"})],
+        })
+        self.assertIn("Audit client", self.report.preview_html)
+        self.assertIn("Déplacement avancé", self.report.preview_html)
+        html, _kind = self.env['ir.actions.report']._render_qweb_html(
+            'mission_report.action_report_activity_internal', self.report.ids)
+        self.assertIn("Audit client".encode(), html)
+        self.assertIn("Déplacement avancé".encode(), html)
+
+    def test_a_note_outside_the_month_is_refused(self):
+        with self.assertRaises(ValidationError):
+            self.report.write({
+                'note_ids': [(0, 0, {'date': date(YEAR, 6, 2), 'note': "Hors mois"})]})
