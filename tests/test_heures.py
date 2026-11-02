@@ -123,6 +123,21 @@ class TestHeures(TransactionCase):
         self.assertEqual(entry.duration_display, "2:30 heures")
         self.assertEqual(entry._mission_hours_by_day(), {date(2031, 5, 5): 2.5})
 
+    def test_heures_hors_horaires_de_travail(self):
+        """Par défaut seules comptent les heures de l'horaire ; la société peut les compter toutes."""
+        evening = dict(mission_duration='hours', request_hour_from=18.0, request_hour_to=21.0)
+        early = self._entry(self.project_h, '2031-05-05', **dict(evening, request_hour_from=6.0, request_hour_to=9.0))
+        self.assertEqual(early.number_of_hours, 1.0, "de 8 h à 9 h seulement, l'horaire commence à 8 h")
+        self.company.mission_hours_outside_schedule = True
+        late = self._entry(self.project_h, '2031-05-06', **evening)
+        self.assertEqual(late.number_of_hours, 3.0)
+        self.assertEqual(late._mission_hours_by_day(), {date(2031, 5, 6): 3.0})
+        # Une saisie qui existait compte ses heures saisies dès qu'elle est recalculée.
+        early.request_hour_to = 9.5
+        self.assertEqual(early.number_of_hours, 3.5)
+        # Les journées entières et les demi-journées restent celles de l'horaire.
+        self.assertEqual(self._entry(self.project_h, '2031-05-07').number_of_hours, 8.0)
+
     def test_deux_missions_le_meme_jour(self):
         self._entry(self.project_h, '2031-05-05', mission_duration='hours', request_hour_from=8.0, request_hour_to=12.0)
         self._entry(self.project_h2, '2031-05-05', mission_duration='hours', request_hour_from=13.0, request_hour_to=17.0)

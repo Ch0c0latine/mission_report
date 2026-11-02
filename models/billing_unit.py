@@ -21,6 +21,11 @@ class ResCompany(models.Model):
     mission_billing_unit_default = fields.Selection(
         BILLING_UNITS, string="Facturation par défaut", default='day', required=True,
         help="Unité de facturation proposée pour les nouvelles affaires.")
+    mission_hours_outside_schedule = fields.Boolean(
+        string="Compter les heures hors horaires de travail",
+        help="Une saisie en heures compte les heures saisies, même en dehors de l'horaire de travail du "
+             "salarié (de 7 h à 20 h pour un horaire de 9 h à 17 h). Sinon, seules comptent les heures "
+             "comprises dans son horaire.")
 
 
 class ResConfigSettings(models.TransientModel):
@@ -28,6 +33,8 @@ class ResConfigSettings(models.TransientModel):
 
     mission_billing_unit_default = fields.Selection(
         related='company_id.mission_billing_unit_default', readonly=False)
+    mission_hours_outside_schedule = fields.Boolean(
+        related='company_id.mission_hours_outside_schedule', readonly=False)
 
 
 class SaleOrder(models.Model):

@@ -74,6 +74,16 @@
                 <attribute name="invisible">not request_unit_half or entry_type == 'mission'</attribute>
             </xpath>
 
+            <!-- Un congé en demi-journées sur plusieurs jours : deux sélecteurs, celui du premier jour
+                 et celui du dernier, que le libellé d'Odoo (« Période de la journée ») ne distingue pas. -->
+            <xpath expr="//label[@for='request_date_from_period']" position="attributes">
+                <attribute name="invisible">not request_unit_half or (entry_type == 'leave' and request_date_from != request_date_to)</attribute>
+            </xpath>
+            <xpath expr="//label[@for='request_date_from_period']" position="after">
+                <label for="request_date_from_period" string="Premier et dernier jour"
+                       invisible="not request_unit_half or entry_type == 'mission' or request_date_from == request_date_to"/>
+            </xpath>
+
             <!-- Pas de <footer> ici : on laisse le pied de page natif d'hr_holidays (dont le bouton
                  Supprimer fonctionne, contrairement à celui qu'on avait reconstruit). Ses libellés
                  sont renommés via i18n/fr.po. -->

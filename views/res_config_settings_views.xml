@@ -18,6 +18,11 @@
                             <field name="mission_billing_unit_default" widget="radio"
                                    options="{'horizontal': true}"/>
                         </setting>
+                        <setting id="mission_hours_outside_schedule" company_dependent="1"
+                                 string="Heures hors horaires de travail"
+                                 help="Une saisie en heures compte toutes les heures saisies. Décoché, seules comptent celles de l'horaire de travail du salarié.">
+                            <field name="mission_hours_outside_schedule"/>
+                        </setting>
                     </block>
 
                     <block title="Indemnités de grand déplacement (IGD)" name="mission_igd_block">

@@ -2,6 +2,7 @@
 # Copyright 2026 T.T.C. SAS
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 import re
+from datetime import datetime, time, timedelta
 
 import pytz
 from markupsafe import Markup
@@ -104,11 +105,21 @@ class HrLeave(models.Model):
         # Une demi-journée de mission compte la moitié des heures du jour, quelle que soit la
         # coupure du calendrier entre le matin et l'après-midi.
         result = super()._get_durations(check_leave_type=check_leave_type, resource_calendar=resource_calendar)
+        # Des heures saisies, comptées telles quelles quand la société le demande (heures hors horaire).
+        for leave in self.filtered(lambda l: l.project_id and l._mission_counts_all_hours() and l.date_from and l.date_to):
+            days, _hours = result[leave.id]
+            result[leave.id] = (days, sum(leave._mission_hours_by_day().values()))
         for leave in self.filtered(lambda l: l.project_id and l.mission_duration == 'half'
                                    and l.employee_id and l.date_from and l.date_to):
             days, _hours = result[leave.id]
             result[leave.id] = (days, sum(leave._mission_hours_by_day().values()))
         return result
+
+    def _mission_counts_all_hours(self):
+        """Une saisie en heures dont toutes les heures comptent, horaire de travail ou non."""
+        self.ensure_one()
+        company = (self.employee_id.company_id or self.company_id).sudo()
+        return self.mission_duration == 'hours' and company.mission_hours_outside_schedule
 
     def _mission_hours_by_day(self):
         """{date: heures} de la saisie, jour par jour, selon le calendrier du salarié.
@@ -122,6 +133,20 @@ class HrLeave(models.Model):
         employee = self.employee_id.sudo()
         if not (employee and self.request_date_from and self.request_date_to):
             return {}
+        if self._mission_counts_all_hours() and self.date_from and self.date_to:
+            # Les heures saisies, découpées par jour (fuseau du salarié), sans regarder l'horaire.
+            tz = pytz.timezone(employee.tz or self.tz or 'UTC')
+            first = pytz.utc.localize(self.date_from).astimezone(tz)
+            last = pytz.utc.localize(self.date_to).astimezone(tz)
+            result, day = {}, first.date()
+            while day <= last.date():
+                start = max(first, tz.localize(datetime.combine(day, time.min)))
+                stop = min(last, tz.localize(datetime.combine(day + timedelta(days=1), time.min)))
+                hours = (stop - start).total_seconds() / 3600
+                if hours > 0:
+                    result[day] = round(hours, 2)
+                day += timedelta(days=1)
+            return result
         if self.mission_duration == 'hours' and self.request_date_from == self.request_date_to:
             # Un seul jour : les heures calculées par Odoo, celles qu'affiche la saisie.
             return {self.request_date_from: round(self.number_of_hours, 2)} if self.number_of_hours else {}
