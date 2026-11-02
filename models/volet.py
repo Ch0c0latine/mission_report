@@ -444,23 +444,38 @@ class MissionVoletWizard(models.TransientModel):
         by_month = count(self.env, self.employee_ids, self.date_start, self.date_end)
         return [(fields.Date.to_date("%d-%02d-01" % key), value) for key, value in sorted(by_month.items())]
 
-    def _holidays_warning(self):
-        """Une année sans aucun jour férié saisi : ils compteraient comme des jours travaillés."""
+    def _missing_holiday_years(self):
+        """Les années du volet sans aucun jour férié saisi."""
         self.ensure_one()
         if not self.date_start or not self.date_end or self.date_end < self.date_start:
-            return False
+            return []
         Leaves = self.env['resource.calendar.leaves'].sudo()
-        missing = [
-            str(year) for year in range(self.date_start.year, self.date_end.year + 1)
+        return [
+            year for year in range(self.date_start.year, self.date_end.year + 1)
             if not Leaves.search_count([
                 ('resource_id', '=', False), ('holiday_id', '=', False),
                 ('date_from', '>=', '%s-01-01 00:00:00' % year),
                 ('date_from', '<=', '%s-12-31 23:59:59' % year)])]
+
+    def _holidays_warning(self):
+        """Une année sans aucun jour férié saisi : ils compteraient comme des jours travaillés."""
+        missing = self._missing_holiday_years()
         if not missing:
             return False
-        return _("Aucun jour férié n'est saisi pour %s : ils compteraient comme des jours travaillés. "
-                 "Générez-les d'abord (Activité › Configuration › Générer les jours fériés français).",
-                 ", ".join(missing))
+        return _("Aucun jour férié n'est saisi pour %s : ils compteraient comme des jours travaillés.",
+                 ", ".join(map(str, missing)))
+
+    def action_generate_holidays(self):
+        """Les jours fériés français des années du volet qui n'en ont pas, sans quitter l'assistant."""
+        self.ensure_one()
+        company = self.order_id.company_id or self.env.company
+        for year in self._missing_holiday_years():
+            self.env['mission.public.holiday.wizard'].create({'year': year, 'company_id': company.id})._generate()
+        self._compute_plan()
+        return {
+            'type': 'ir.actions.act_window', 'res_model': self._name, 'res_id': self.id,
+            'view_mode': 'form', 'views': [(False, 'form')], 'target': 'new',
+        }
 
     @api.depends('employee_ids', 'date_start', 'date_end', 'order_id', 'mission_billing_unit')
     def _compute_plan(self):

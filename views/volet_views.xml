@@ -66,6 +66,8 @@
                 </group>
                 <div class="alert alert-warning" role="alert" invisible="not warning">
                     <field name="warning"/>
+                    <button name="action_generate_holidays" type="object" class="btn btn-link p-0 ms-2"
+                            string="Générer les jours fériés français"/>
                 </div>
                 <div class="alert alert-warning" role="alert" invisible="not unit_warning">
                     <field name="unit_warning"/>

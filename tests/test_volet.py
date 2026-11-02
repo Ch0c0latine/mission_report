@@ -37,6 +37,16 @@ class TestVolet(TestSaleDelivery):
         self.order.write({'project_id': self.project_a.id, 'note': NOTE})
         return self.env['mission.volet.wizard'].with_context(default_order_id=self.order.id).create({})
 
+    def test_the_missing_holidays_are_generated_from_the_wizard(self):
+        wizard = self._wizard()
+        wizard.write({'date_start': '2033-01-03', 'date_end': '2033-01-31'})
+        self.assertIn("2033", wizard.warning)
+        wizard.action_generate_holidays()
+        self.assertFalse(wizard.warning)
+
+        self.assertTrue(self.env['resource.calendar.leaves'].search_count([
+            ('resource_id', '=', False), ('date_from', '>=', '2033-01-01'), ('date_from', '<=', '2033-12-31 23:59')]))
+
     def test_the_wizard_starts_after_the_last_order(self):
         wizard = self._wizard()
         self.assertEqual(str(wizard.date_start), '2031-05-01')
