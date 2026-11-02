@@ -116,9 +116,11 @@ class MissionIgdAdjustment(models.Model):
         help="N'importe quel jour du mois : seul le mois compte.")
     amount = fields.Monetary(
         string="Ajustement", required=True, currency_field='currency_id',
-        help="Montant ajouté au quota du mois, négatif pour le réduire. Il tient compte des "
-             "IGD déjà saisies à la main : ce qui est versé en plus grâce à lui n'est pas "
-             "repris les mois suivants comme une avance.")
+        help="Montant ajouté au quota du mois, négatif pour le réduire. Ce qu'il fait verser "
+             "en plus n'est pas repris les mois suivants comme une avance.\n\n"
+             "Un mois sans aucune journée saisie ne compte pour aucun quota : portez-y le "
+             "montant total auquel il donne droit - le quota mensuel si le logement court "
+             "pendant les congés - et non le seul solde restant à verser.")
     currency_id = fields.Many2one('res.currency', compute='_compute_currency_id')
     reason = fields.Char(string="Motif")
 
@@ -361,14 +363,17 @@ class MissionActivityReport(models.Model):
         return [day for day in (fields.Date.to_date(item['date']) for item in data.get('days', []))
                 if days[0] <= day <= days[-1]]
 
-    def _igd_adjustment(self, project):
+    def _igd_adjustment(self, project, previous_only=False):
         """Cumul des ajustements de quota du salarié sur cette mission, jusqu'à ce mois inclus.
+
+        ``previous_only`` s'arrête au mois précédent : ce que les mois passés
+        donnaient droit, pour distinguer un rattrapage d'un excédent.
 
         Cumulé et non pris mois par mois : ajouté au seul mois visé, ce qu'il fait
         verser en plus serait repris le mois suivant comme une avance de frais.
         """
         domain = [('project_id', '=', project.id), ('employee_id', '=', self.employee_id.id),
-                  ('month', '<=', self.date_from)]
+                  ('month', '<' if previous_only else '<=', self.date_from)]
         if project.igd_start:
             domain.append(('month', '>=', project.igd_start.replace(day=1)))
         return sum(self.env['mission.igd.adjustment'].sudo().search(domain).mapped('amount'))
@@ -481,11 +486,16 @@ class MissionActivityReport(models.Model):
                 total = sum(made.mapped('total_amount'))
                 month_total = total + sum(month.mapped('total_amount'))
                 budget = project.igd_monthly_budget
+                # Ce à quoi les mois précédents donnaient droit : leur quota et les
+                # ajustements qui les visent. Sans eux, une IGD versée un mois qui ne
+                # compte pour aucun quota - un mois sans journée saisie - passait pour
+                # une avance, alors que l'ajustement vient justement d'y donner droit.
+                earned = budget * (months - 1) + self._igd_adjustment(project, previous_only=True)
                 # Rattrapage : ce qui dépasse le mois, dans la limite de ce qui manquait avant lui.
-                gap = max(budget * (months - 1) - before, 0.0)
+                gap = max(earned - before, 0.0)
                 catchup = min(max(month_total - budget, 0.0), gap)
                 # Excédent : ce qui a été versé en trop avant ce mois, retranché de celui-ci.
-                surplus = max(before - budget * (months - 1), 0.0)
+                surplus = max(before - earned, 0.0)
                 summary.append({
                     'project': project,
                     'currency': project.igd_currency_id,

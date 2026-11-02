@@ -172,3 +172,26 @@ class TestIgd(TestSaleDelivery):
         meals = expenses.filtered(lambda e: e.product_id == self.meal)
         self.assertEqual(len(lodging), 9, "le logement reste sur les journées saisies")
         self.assertEqual(meals.mapped('date'), [date(2031, 5, day) for day in range(5, 17)])
+
+    def test_an_adjusted_month_without_entries_is_not_an_advance(self):
+        """Un mois sans journée saisie mais doté d'un ajustement donne droit à son montant :
+        ce qui y a été versé n'est pas repris le mois suivant comme un excédent."""
+        self.project_a.igd_monthly_budget = 500.0
+        # Avril 2031 : aucune journée saisie, 6 IGD logement versées à la main
+        # (289,80 €) alors que le mois donne droit à 500 €.
+        self.env['hr.expense'].create({
+            'name': 'IGD logement avril', 'employee_id': self.employee.id,
+            'product_id': self.lodging.id, 'date': date(2031, 4, 15), 'quantity': 6,
+            'project_id': self.project_a.id})
+        self.env['mission.igd.adjustment'].create({
+            'project_id': self.project_a.id, 'employee_id': self.employee.id,
+            'month': date(2031, 4, 1), 'amount': 500.0, 'reason': "Congés, logement dû"})
+        wizard = self.env['mission.igd.wizard'].create({
+            'employee_ids': [(6, 0, self.employee.ids)], 'report_month': '5', 'report_year': '2031'})
+        wizard.action_generate()
+        self.assertNotIn("Excédent", wizard.result, wizard.result)
+        self.assertIn("Rattrapage", wizard.result, wizard.result)
+        # Mai couvre son propre quota et ce qu'avril a laissé, au lieu d'être amputé.
+        created = self.env['hr.expense'].search([
+            ('employee_id', '=', self.employee.id), ('igd_generated', '=', True)])
+        self.assertGreater(sum(created.mapped('total_amount')), 500.0)
