@@ -33,7 +33,7 @@ class ResConfigSettings(models.TransientModel):
 
 
 class MissionActivityReport(models.Model):
-    _inherit = 'mission.activity.report'
+    _inherit = ['mission.activity.report', 'mail.activity.mixin']
 
     def _reminder_type(self):
         return self.env.ref('mission_report.mail_activity_type_report', raise_if_not_found=False)
