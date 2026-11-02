@@ -115,6 +115,12 @@ class HrLeave(models.Model):
             result[leave.id] = (days, sum(leave._mission_hours_by_day().values()))
         return result
 
+    def _get_leaves_on_public_holiday(self):
+        # Odoo refuse une saisie sans jour de travail : des heures saisies hors horaire, que la société
+        # compte, ne sont pas un jour férié.
+        return super()._get_leaves_on_public_holiday().filtered(
+            lambda l: not (l.project_id and l._mission_counts_all_hours() and l.number_of_hours))
+
     def _mission_counts_all_hours(self):
         """Une saisie en heures dont toutes les heures comptent, horaire de travail ou non."""
         self.ensure_one()
