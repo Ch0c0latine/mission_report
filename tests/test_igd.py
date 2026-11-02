@@ -80,7 +80,7 @@ class TestIgd(TestSaleDelivery):
         wizard.action_generate()
         self.assertEqual(len(wizard.created_expense_ids), 11)
         self.assertIn("9 IGD logement et 2 IGD repas", wizard.result)
-        self.assertIn("pour ce mois", wizard.result)
+        self.assertIn("au titre du mois", wizard.result)
         self.assertEqual(wizard.action_open_expenses()['domain'], [('id', 'in', wizard.created_expense_ids.ids)])
 
     def test_the_expat_category_counts_as_igd(self):
@@ -127,7 +127,7 @@ class TestIgd(TestSaleDelivery):
             'employee_ids': [(6, 0, self.employee.ids)], 'report_month': '5', 'report_year': '2031'})
         wizard.action_generate()
         self.assertLess(sum(wizard.created_expense_ids.mapped('total_amount')), 500.0)
-        self.assertIn("Excédent de", wizard.result)
+        self.assertIn("excédent des mois précédents", wizard.result)
 
     def test_lodging_on_calendar_days_when_the_mission_says_so(self):
         """Mission du 5 au 16 mai 2031 : le logement couvre aussi les week-ends,

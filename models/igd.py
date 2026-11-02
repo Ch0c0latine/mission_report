@@ -278,20 +278,23 @@ class MissionIgdWizard(models.TransientModel):
         n'est donné qu'aux administrateurs."""
         money = lambda amount: format_amount(self.env, amount, item['currency'])  # noqa: E731
         text = _("%(employee)s, %(project)s : %(lodging)s IGD logement et %(meals)s IGD repas "
-                 "créés pour un total de %(total)s d'IGD dans le mois",
+                 "créées, soit %(total)s.",
                  employee=employee.name, project=item['project'].name, lodging=item['lodging'],
                  meals=item['meals'], total=money(item['total']))
         if not self.env.user.has_group(IGD_GROUP):
-            return escape(text + ".")
-        text += _(" : %s pour ce mois.", money(item['month']))
+            return escape(text)
+        # Le détail d'une seule phrase : la somme créée se décompose en la part du
+        # mois et ce qui vient des mois précédents.
+        details = [_("%s au titre du mois", money(item['month']))]
         if not float_is_zero(item['catchup'], precision_digits=2):
-            text += " " + _("Rattrapage de %s des mois précédents.", money(item['catchup']))
+            details.append(_("%s de rattrapage des mois précédents", money(item['catchup'])))
         if not float_is_zero(item['surplus'], precision_digits=2):
-            text += " " + _("Excédent de %s des mois précédents déduit.", money(item['surplus']))
+            details.append(_("%s d'excédent des mois précédents déduit", money(item['surplus'])))
         if not float_is_zero(item.get('adjust') or 0.0, precision_digits=2):
-            text += " " + _("Ajustement du quota de %s.", money(item['adjust']))
+            details.append(_("%s d'ajustement du quota", money(item['adjust'])))
+        text += " " + _("Dans le détail : %s.", ", ".join(details))
         if not float_is_zero(item['left'], precision_digits=2):
-            text += " " + _("Reste %s d'IGD à répartir sur les saisies suivantes.", money(item['left']))
+            text += " " + _("Reste %s à répartir sur les saisies suivantes.", money(item['left']))
         return escape(text)
 
     def action_open_expenses(self):
