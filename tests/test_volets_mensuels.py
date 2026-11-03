@@ -27,6 +27,13 @@ LEGACY_NOTE = (
 
 
 class TestVoletsMensuels(TestSaleDelivery):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # These tests read the French texts of the module.
+        cls.env['res.lang']._activate_lang('fr_FR')
+        cls.env = cls.env(context=dict(cls.env.context, lang='fr_FR'))
     """Une ligne de journées par mois, jours livrés ventilés, textes de la prestation."""
 
     def _second(self, start, end, lines, confirm=True, **vals):
@@ -284,13 +291,13 @@ class TestVoletsMensuels(TestSaleDelivery):
             Command.create({'product_id': expenses.id, 'product_uom_qty': 300.0, 'price_unit': 1.0}),
             Command.create({'display_type': 'line_note', 'name': "Objet"})]
         day, expense, note = self.order.order_line.sorted('id')
-        self.assertEqual(self.line.mission_quantity_label(), "40 jours")
+        self.assertEqual(self.line.with_context(lang="fr_FR").mission_quantity_label(), "40 jours")
         day.product_uom_qty = 1.0
-        self.assertEqual(day.mission_quantity_label(), "1 jour")
+        self.assertEqual(day.with_context(lang="fr_FR").mission_quantity_label(), "1 jour")
         day.product_uom_qty = 10.5
-        self.assertEqual(day.mission_quantity_label(), "10,5 jours")
+        self.assertEqual(day.with_context(lang="fr_FR").mission_quantity_label(), "10,5 jours")
         self.order.order_line = [Command.create({'product_id': self.service.id, 'product_uom_qty': 12.0})]
-        self.assertEqual(self.order._volet_day_lines().mission_quantity_label(), "22,5 jours")
+        self.assertEqual(self.order._volet_day_lines().with_context(lang="fr_FR").mission_quantity_label(), "22,5 jours")
         self.assertEqual((day.mission_day_line, expense.mission_day_line, note.mission_day_line),
                          (True, False, False))
         self.assertFalse(day.mission_period_label())

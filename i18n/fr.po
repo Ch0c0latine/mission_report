@@ -1372,7 +1372,7 @@ msgstr "Dans le détail : %s."
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_note__note
 #: model_terms:ir.ui.view,arch_db:mission_report.activity_report_grid
 msgid "Information"
-msgstr "Information"
+msgstr "Informations"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__show_texts

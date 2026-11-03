@@ -38,8 +38,11 @@ class TestInvoiceMission(TestSaleDelivery):
 
     def test_mail_helpers(self):
         invoice = self._invoice()
-        self.assertEqual(invoice.mission_mail_days_text(),
+        self.assertEqual(invoice.with_context(lang='en_US').mission_mail_days_text(),
                          ["9 days out of 19 worked by Sale Employee."])
+        self.env['res.lang']._activate_lang('fr_FR')
+        self.assertEqual(invoice.with_context(lang='fr_FR').mission_mail_days_text(),
+                         ["9 jours sur 19 réalisés par Sale Employee."])
         self.assertEqual(invoice.mission_mail_partner_ids(), str(invoice.partner_id.id))
         recipient = self.env['res.partner'].create({'name': 'Comptabilité A', 'email': 'compta@a.example'})
         self.order.mission_invoice_partner_ids = recipient

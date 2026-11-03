@@ -12,6 +12,9 @@ class TestIgd(TestSaleDelivery):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        # These tests read the French texts of the module.
+        cls.env['res.lang']._activate_lang('fr_FR')
+        cls.env = cls.env(context=dict(cls.env.context, lang='fr_FR'))
         Product = cls.env['product.product']
         cls.lodging = Product.create({'name': 'IGD logement test', 'can_be_expensed': True,
                                       'standard_price': 48.30})

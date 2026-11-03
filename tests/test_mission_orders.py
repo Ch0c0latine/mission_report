@@ -14,6 +14,9 @@ class TestMissionOrders(TestSaleDelivery):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        # These tests read the French texts of the module.
+        cls.env['res.lang']._activate_lang('fr_FR')
+        cls.env = cls.env(context=dict(cls.env.context, lang='fr_FR'))
         cls.line.product_uom_qty = 5.0
         cls.order.write({'mission_date_start': '2031-01-01', 'mission_date_end': '2031-05-12'})
         cls.second = cls.env['sale.order'].create({

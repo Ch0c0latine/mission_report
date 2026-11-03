@@ -14,6 +14,9 @@ class TestHrLeaveMissionReport(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        # These tests read the French texts of the module.
+        cls.env['res.lang']._activate_lang('fr_FR')
+        cls.env = cls.env(context=dict(cls.env.context, lang='fr_FR'))
         cls.company = cls.env.user.company_id
         cls.user = cls.env['res.users'].create({
             'name': 'Test User',
@@ -52,7 +55,7 @@ class TestHrLeaveMissionReport(TransactionCase):
         })
         self.assertTrue(leave.id)
         self.assertTrue(leave.holiday_status_id)
-        self.assertEqual(leave.holiday_status_id.name, 'Activity')
+        self.assertEqual(leave.holiday_status_id.name, 'Activité')
 
     def test_partner_id_follows_project(self):
         leave = self.env['hr.leave'].create({
