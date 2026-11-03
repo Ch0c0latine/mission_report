@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 T.T.C. SAS
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0). -->
+<odoo>
+    <record id="mission_margin_view_list" model="ir.ui.view">
+        <field name="name">mission.margin.list</field>
+        <field name="model">mission.margin</field>
+        <field name="arch" type="xml">
+            <list string="Margin calculations">
+                <field name="name"/>
+                <field name="partner_id" optional="show"/>
+                <field name="consultant" optional="show"/>
+                <field name="project_id" optional="show"/>
+                <field name="order_id" optional="show"/>
+                <field name="daily_rate" optional="show"/>
+                <field name="margin_month" optional="show"/>
+                <field name="margin_rate" widget="percentage" optional="show"/>
+                <field name="margin_duration" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="mission_margin_view_search" model="ir.ui.view">
+        <field name="name">mission.margin.search</field>
+        <field name="model">mission.margin</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="consultant"/>
+                <field name="partner_id"/>
+                <field name="project_id"/>
+                <field name="order_id"/>
+                <filter name="without_order" string="Without order" domain="[('order_id', '=', False)]"/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group string="Group By">
+                    <filter name="group_partner" string="Customer" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_project" string="Project" context="{'group_by': 'project_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="mission_margin_view_form" model="ir.ui.view">
+        <field name="name">mission.margin.form</field>
+        <field name="model">mission.margin</field>
+        <field name="arch" type="xml">
+            <form string="Margin calculation">
+                <field name="currency_id" invisible="1"/>
+                <field name="active" invisible="1"/>
+                <header>
+                    <button name="action_create_project" type="object" string="Create the project"
+                            class="oe_highlight" invisible="project_id"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_project" type="object" class="oe_stat_button"
+                                icon="fa-puzzle-piece" invisible="not project_id">
+                            <div class="o_stat_info"><span class="o_stat_text">Project</span></div>
+                        </button>
+                        <button name="action_open_order" type="object" class="oe_stat_button"
+                                icon="fa-dollar" invisible="not order_id">
+                            <div class="o_stat_info"><span class="o_stat_text">Order</span></div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Customer - Consultant"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="consultant"/>
+                            <field name="project_id"/>
+                            <field name="order_id"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="start_date"/>
+                            <field name="duration_months"/>
+                        </group>
+                    </group>
+
+                    <div class="o_horizontal_separator fw-bold fs-4 mt-3">Margin</div>
+                    <group>
+                        <group string="Result">
+                            <field name="margin_rate" widget="percentage"/>
+                            <field name="margin_day" string="Margin per worked day"/>
+                            <field name="margin_month"/>
+                            <field name="margin"/>
+                            <field name="margin_duration"/>
+                        </group>
+                        <group string="Per year">
+                            <field name="days_per_year"/>
+                            <field name="total_cost"/>
+                            <field name="revenue"/>
+                            <field name="cost_per_day"/>
+                            <field name="price_per_day"/>
+                        </group>
+                    </group>
+                    <group string="Daily rate (TJM) to reach a target margin">
+                        <group>
+                            <field name="target_amount_1"/>
+                            <field name="rate_target_1" string="Daily rate"/>
+                            <field name="target_amount_2"/>
+                            <field name="rate_target_2" string="Daily rate"/>
+                        </group>
+                        <group>
+                            <field name="target_rate_1" widget="percentage"/>
+                            <field name="rate_target_rate_1" string="Daily rate"/>
+                            <field name="target_rate_2" widget="percentage"/>
+                            <field name="rate_target_rate_2" string="Daily rate"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Cost and price" name="cost">
+                            <group>
+                                <group string="Cost of the person">
+                                    <field name="cost_origin" widget="radio"/>
+                                    <field name="gross_salary" invisible="cost_origin != 'employee'"/>
+                                    <field name="employer_charge_rate" widget="percentage"
+                                           invisible="cost_origin != 'employee'"/>
+                                    <field name="payslip_monthly_cost" invisible="cost_origin != 'employee'"/>
+                                    <field name="freelance_daily_rate" invisible="cost_origin != 'freelance'"/>
+                                    <field name="overhead_rate" widget="percentage"/>
+                                    <field name="base_cost"/>
+                                    <field name="overhead_cost"/>
+                                    <field name="loaded_cost"/>
+                                </group>
+                                <group string="Days worked">
+                                    <field name="weekend_days"/>
+                                    <field name="public_holidays"/>
+                                    <field name="paid_leave_days"/>
+                                    <field name="rtt_days"/>
+                                    <field name="days_per_year"/>
+                                    <field name="days_per_month"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="Other costs">
+                                    <field name="daily_cost_calendar"/>
+                                    <field name="daily_cost_worked"/>
+                                    <field name="mileage_monthly"/>
+                                    <field name="expenses_monthly"/>
+                                    <field name="training_yearly"/>
+                                    <field name="ppe_yearly"/>
+                                    <field name="equipment_yearly"/>
+                                    <field name="other_yearly"/>
+                                    <field name="other_costs"/>
+                                    <field name="total_cost"/>
+                                    <field name="total_cost_month"/>
+                                    <field name="cost_per_day"/>
+                                </group>
+                                <group string="Price">
+                                    <field name="daily_rate"/>
+                                    <field name="rebilled_daily"/>
+                                    <field name="price_per_day"/>
+                                    <field name="revenue"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Net income" name="net">
+                            <group>
+                                <group string="Consultant">
+                                    <field name="gross_salary" readonly="1"/>
+                                    <field name="employee_charge_rate" widget="percentage"/>
+                                    <field name="net_salary_month"/>
+                                    <field name="net_salary_day"/>
+                                    <field name="daily_fees_month"/>
+                                    <field name="daily_fees_day"/>
+                                    <field name="net_income_month"/>
+                                    <field name="net_income_day"/>
+                                    <field name="net_income_year"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Commissions" name="commissions">
+                            <group>
+                                <group string="Conditions">
+                                    <field name="commission_threshold_rate" widget="percentage"/>
+                                    <field name="commission_threshold_amount"/>
+                                    <field name="commission_eligible"/>
+                                </group>
+                                <group string="Gross commission a month">
+                                    <field name="commission_rate_full" widget="percentage"/>
+                                    <field name="commission_full"/>
+                                    <field name="commission_rate_management" widget="percentage"/>
+                                    <field name="commission_management"/>
+                                    <field name="commission_rate_referral" widget="percentage"/>
+                                    <field name="commission_referral"/>
+                                </group>
+                            </group>
+                            <p class="text-muted" invisible="commission_eligible">
+                                The margin is under the thresholds: no commission is due. It would be
+                                <field name="commission_full_potential" class="oe_inline"/> with full management,
+                                <field name="commission_management_potential" class="oe_inline"/> with management and
+                                <field name="commission_referral_potential" class="oe_inline"/> with a referral.
+                            </p>
+                        </page>
+                        <page string="Long-distance allowances" name="igd">
+                            <field name="igd_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="label"/>
+                                    <field name="month_from"/>
+                                    <field name="month_to"/>
+                                    <field name="meal"/>
+                                    <field name="lodging"/>
+                                    <field name="total"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Billing forecast" name="forecast">
+                            <button name="action_generate_months" type="object" string="Generate the months"
+                                    class="btn-secondary"/>
+                            <field name="month_ids">
+                                <list editable="bottom">
+                                    <field name="date"/>
+                                    <field name="leave_days"/>
+                                    <field name="working_days"/>
+                                    <field name="revenue" sum="Total"/>
+                                    <field name="margin" sum="Total"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="mission_margin_action" model="ir.actions.act_window">
+        <field name="name">Margin calculations</field>
+        <field name="res_model">mission.margin</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a margin calculation</p>
+            <p>Work out the margin of a mission before the order: cost of the consultant, daily rate,
+               commissions and billing forecast. Attach it to a project now and to the order later.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_mission_margin_sale" name="Margin calculations"
+              parent="sale.sale_order_menu" action="mission_margin_action" sequence="25"
+              groups="sales_team.group_sale_salesman,project.group_project_manager,hr.group_hr_manager"/>
+    <menuitem id="menu_mission_margin_project" name="Margin calculations"
+              parent="project.menu_main_pm" action="mission_margin_action" sequence="25"
+              groups="sales_team.group_sale_salesman,project.group_project_manager,hr.group_hr_manager"/>
+
+    <!-- The sheet from the project and from the order. -->
+    <record id="project_form_margin" model="ir.ui.view">
+        <field name="name">project.project.form.margin</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_open_margins" type="object" class="oe_stat_button" icon="fa-calculator"
+                        groups="sales_team.group_sale_salesman,project.group_project_manager,hr.group_hr_manager">
+                    <field name="margin_count" widget="statinfo" string="Margin"/>
+                </button>
+            </div>
+        </field>
+    </record>
+
+    <record id="sale_order_form_margin" model="ir.ui.view">
+        <field name="name">sale.order.form.margin</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_open_margins" type="object" class="oe_stat_button" icon="fa-calculator"
+                        groups="sales_team.group_sale_salesman,project.group_project_manager,hr.group_hr_manager"
+                        invisible="margin_count == 0">
+                    <field name="margin_count" widget="statinfo" string="Margin"/>
+                </button>
+            </div>
+        </field>
+    </record>
+</odoo>

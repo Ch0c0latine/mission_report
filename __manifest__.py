@@ -3,7 +3,7 @@
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 {
     'name': 'Activity',
-    'version': '19.0.2.10.2',
+    'version': '19.0.2.11.0',
     'summary': 'Activity and mission reports by project based on leaves logic',
     'description': """
         Module mission_report adapting hr_holidays logic for activity and mission reporting by project.
@@ -50,6 +50,7 @@
         'views/igd_views.xml',
         'views/volet_views.xml',
         'views/res_config_settings_views.xml',
+        'views/margin_views.xml',
     ],
     'assets': {
         'web.assets_backend': [

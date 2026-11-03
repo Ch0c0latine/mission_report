@@ -17,3 +17,4 @@ from . import volet
 from . import activity_report_template
 from . import billing_unit
 from . import project_profitability
+from . import margin
