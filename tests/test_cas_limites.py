@@ -58,4 +58,4 @@ class TestCasLimites(TestSaleDelivery):
         self.order.project_id = self.project_a
         self.line.project_id = self.project_b
         self._validate(self.report)
-        self.assertEqual(self.line.qty_delivered, 0.0)
+        self.assertEqual(self.line.qty_delivered, 2.0, "the two days of mission B, not the nine of A")
