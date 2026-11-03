@@ -50,14 +50,14 @@ function missionLabel(value, record) {
         // leave_date_to d'hr_holidays est le jour de reprise du travail.
         const dateTo = record.data.activity_date_to;
         if (!dateTo) {
-            return _t("En mission");
+            return _t("On a mission");
         }
-        return _t("En mission, jusqu'au %(date)s", {
+        return _t("On a mission, until %(date)s", {
             date: dateTo.toLocaleString({ day: "numeric", month: "short", year: "numeric" }),
         });
     }
     if (value === PRESENT) {
-        return _t("Présent, pas de mission");
+        return _t("Present, no mission");
     }
 }
 

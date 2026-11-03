@@ -25,7 +25,7 @@
             <!-- Couleur par type de saisie : les missions (type « Activité ») d'une
                  couleur, chaque type de congé d'une autre ; le nom dit qui. -->
             <xpath expr="//calendar" position="attributes">
-                <attribute name="string">Saisies</attribute>
+                <attribute name="string">Entries</attribute>
                 <attribute name="color">holiday_status_id</attribute>
                 <!-- Un jour ou une plage cliqués créent une saisie (voir overview_calendar.js). -->
                 <attribute name="create">1</attribute>
@@ -47,7 +47,7 @@
             <!-- Couleur par type de saisie : les missions (type « Activité ») d'une
                  couleur, chaque type de congé d'une autre ; le nom dit qui. -->
             <xpath expr="//calendar" position="attributes">
-                <attribute name="string">Saisies</attribute>
+                <attribute name="string">Entries</attribute>
                 <attribute name="color">holiday_status_id</attribute>
                 <attribute name="create">1</attribute>
             </xpath>
@@ -61,27 +61,27 @@
         <field name="inherit_id" ref="hr_holidays.hr_leave_report_calendar_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//form" position="attributes">
-                <attribute name="string">Saisie</attribute>
+                <attribute name="string">Entry</attribute>
             </xpath>
             <!-- Un ruban d'état aussi pour une saisie soumise, en attente d'approbation. -->
             <xpath expr="//widget[@name='web_ribbon']" position="before">
-                <widget name="web_ribbon" title="Soumis" bg_color="text-bg-warning"
+                <widget name="web_ribbon" title="Submitted" bg_color="text-bg-warning"
                         invisible="state not in ('confirm', 'validate1')"/>
             </xpath>
             <!-- Modifier (fiche complète) ; supprimer, seulement une saisie refusée ou annulée. -->
             <xpath expr="//footer" position="inside">
-                <button name="action_mission_edit" string="Modifier" type="object" close="1"
+                <button name="action_mission_edit" string="Edit" type="object" close="1"
                         invisible="state != 'confirm'"/>
-                <button name="action_mission_reopen" string="Rouvrir pour modifier" type="object" close="1"
+                <button name="action_mission_reopen" string="Reopen to edit" type="object" close="1"
                         invisible="state not in ('validate1', 'validate')"
-                        confirm="Cette saisie est approuvée. Pour la modifier, elle repasse en attente d'approbation ; une fois modifiée, vous pourrez l'approuver de nouveau. Continuer ?"/>
-                <button name="action_mission_delete" string="Supprimer" type="object" close="1"
+                        confirm="This entry is approved. To change it, it goes back to waiting for approval; once changed, you can approve it again. Continue?"/>
+                <button name="action_mission_delete" string="Delete" type="object" close="1"
                         class="btn-danger ms-auto" invisible="state not in ('refuse', 'cancel')"
-                        confirm="Supprimer définitivement cette saisie ?"/>
+                        confirm="Delete this entry permanently?"/>
             </xpath>
-            <!-- "Type de congés" : le type vaut "Activité" pour une mission. -->
+            <!-- "Type de congés" : le type vaut "Activity" pour une mission. -->
             <xpath expr="//field[@name='holiday_status_id']" position="attributes">
-                <attribute name="string">Type de saisie</attribute>
+                <attribute name="string">Type of entry</attribute>
             </xpath>
         </field>
     </record>
@@ -95,11 +95,11 @@
             <!-- Le filtre porte sur is_absent, vrai pour un congé comme pour une
                  activité : "Absent aujourd'hui" décrivait mal ce qu'il liste. -->
             <xpath expr="//filter[@name='off_today']" position="attributes">
-                <attribute name="string">Saisie en cours aujourd'hui</attribute>
-                <attribute name="help">Employés ayant une saisie en cours aujourd'hui</attribute>
+                <attribute name="string">Entry in progress today</attribute>
+                <attribute name="help">Employees with an entry in progress today</attribute>
             </xpath>
             <xpath expr="//filter[@name='groupby_time_off_type']" position="attributes">
-                <attribute name="string">Type de saisie</attribute>
+                <attribute name="string">Type of entry</attribute>
             </xpath>
         </field>
     </record>
@@ -113,7 +113,7 @@
         <field name="context">{'hide_employee_name': 1, 'search_default_my_team': 1, 'search_default_current_year': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Personne ici ? Tout le monde est au travail sur cette période.
+                Nobody here? Everybody is at work during this period.
             </p>
         </field>
     </record>

@@ -6,9 +6,9 @@
          (commande, CRA client, tableau des frais refacturés, justificatifs),
          ajoutées par account.move.send. -->
     <record id="mail_template_invoice_mission" model="mail.template">
-        <field name="name">Facture de mission</field>
+        <field name="name">Mission invoice</field>
         <field name="model_id" ref="account.model_account_move"/>
-        <field name="subject">Facture {{ object.mission_mail_object() }} - {{ object.mission_month_label() }}</field>
+        <field name="subject">Invoice {{ object.mission_mail_object() }} - {{ object.mission_month_label() }}</field>
         <field name="email_from">{{ (object.invoice_user_id.email_formatted or object.company_id.email_formatted or user.email_formatted) }}</field>
         <field name="partner_to">{{ object.mission_mail_partner_ids() }}</field>
         <field name="use_default_to" eval="False"/>
@@ -17,15 +17,15 @@
         <field name="auto_delete" eval="True"/>
         <field name="body_html" type="html">
 <div style="margin: 0px; padding: 0px;">
-    <p>Bonjour,</p>
+    <p>Hello,</p>
     <p>
-        Veuillez trouver en attachement la facture <t t-out="object.name or ''"/>
-        de la prestation <t t-out="object.mission_mail_object(short=True)"/>,
-        pour le mois de <t t-out="object.mission_month_label()"/> :
+        Please find attached the invoice <t t-out="object.name or ''"/>
+        for the service <t t-out="object.mission_mail_object(short=True)"/>,
+        for the month of <t t-out="object.mission_month_label()"/>:
     </p>
     <p t-foreach="object.mission_mail_days_text()" t-as="days_line"><t t-out="days_line"/></p>
-    <p>Ainsi que le compte rendu d’activité, le tableau des frais et les justificatifs.</p>
-    <p>Vous en souhaitant bonne réception,</p>
+    <p>Together with the activity report, the table of expenses and the receipts.</p>
+    <p>With our best regards,</p>
     <div t-if="not is_html_empty(user.signature)"><t t-out="user.signature"/></div>
 </div>
         </field>

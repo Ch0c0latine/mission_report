@@ -21,9 +21,9 @@ class ResCompany(models.Model):
     _inherit = 'res.company'
 
     mission_reminder_day = fields.Integer(
-        string="Jour de relance des comptes rendus", default=0,
-        help="Jour du mois où les comptes rendus du mois écoulé sont réclamés : 3 pour le 3. "
-             "0 : pas de relance.")
+        string="Day of the report reminders", default=0,
+        help="Day of the month on which the reports of the past month are asked for: 3 for "
+             "the 3rd. 0: no reminder.")
 
 
 class ResConfigSettings(models.TransientModel):
@@ -33,6 +33,7 @@ class ResConfigSettings(models.TransientModel):
 
 
 class MissionActivityReport(models.Model):
+    _name = 'mission.activity.report'
     _inherit = ['mission.activity.report', 'mail.activity.mixin']
 
     holidays_warning = fields.Char(compute='_compute_holidays_warning')
@@ -50,7 +51,7 @@ class MissionActivityReport(models.Model):
                     ('resource_id', '=', False), ('holiday_id', '=', False),
                     ('date_from', '>=', '%s-01-01 00:00:00' % year), ('date_from', '<=', '%s-12-31 23:59:59' % year)]):
                 report.holidays_warning = _(
-                    "Aucun jour férié n'est saisi pour %s : ils compteraient comme des jours travaillés.", year)
+                    "No public holiday is entered for %s: they would count as working days.", year)
 
     def action_generate_holidays(self):
         """Les jours fériés français de l'année du compte rendu."""
@@ -104,7 +105,7 @@ class MissionActivityReport(models.Model):
                 continue
             report = report or self.sudo().create({'employee_id': employee.id, 'date_from': month})
             report._remind(employee.user_id, _(
-                "Soumettre votre compte rendu d'activité de %s", report.month_label),
+                "Submit your activity report of %s", report.month_label),
                 deadline=today + timedelta(days=VALIDATION_DELAY_DAYS))
 
     @api.model
@@ -117,7 +118,7 @@ class MissionActivityReport(models.Model):
             approver = employee.leave_manager_id or employee.parent_id.user_id
             if approver:
                 report._remind(approver, _(
-                    "Valider le compte rendu d'activité de %(employee)s (%(month)s)",
+                    "Validate the activity report of %(employee)s (%(month)s)",
                     employee=employee.name, month=report.month_label),
                     deadline=today + timedelta(days=VALIDATION_DELAY_DAYS))
 

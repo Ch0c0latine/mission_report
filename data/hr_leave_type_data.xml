@@ -11,7 +11,7 @@
          de migrations/19.0.2.3.0. -->
     <data noupdate="1">
         <record id="hr_leave_type_activite" model="hr.leave.type">
-            <field name="name">Activité</field>
+            <field name="name">Activity</field>
             <field name="requires_allocation" eval="False"/>
             <field name="leave_validation_type">no_validation</field>
             <field name="request_unit">hour</field>

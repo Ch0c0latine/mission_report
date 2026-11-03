@@ -9,14 +9,14 @@
         <field name="name">mission.igd.wizard.form</field>
         <field name="model">mission.igd.wizard</field>
         <field name="arch" type="xml">
-            <form string="Générer les IGD">
+            <form string="Generate the IGD">
                 <field name="state" invisible="1"/>
                 <field name="created_expense_ids" invisible="1"/>
                 <field name="missing_employee_ids" invisible="1"/>
                 <group invisible="state != 'choose'">
                     <field name="employee_ids" widget="many2many_tags"
                            groups="hr_expense.group_hr_expense_team_approver"/>
-                    <label for="report_month" string="Mois"/>
+                    <label for="report_month" string="Month"/>
                     <div class="o_row">
                         <field name="report_month"/>
                         <field name="report_year"/>
@@ -24,27 +24,27 @@
                 </group>
                 <field name="result" nolabel="1" invisible="state != 'done'"/>
                 <footer>
-                    <button name="action_generate" type="object" string="Générer" class="btn-primary"
+                    <button name="action_generate" type="object" string="Generate" class="btn-primary"
                             invisible="state != 'choose'"/>
-                    <button name="action_open_expenses" type="object" string="Voir les IGD créées"
+                    <button name="action_open_expenses" type="object" string="See the IGD created"
                             class="btn-primary" invisible="state != 'done' or not created_expense_ids"/>
-                    <button name="action_open_entries" type="object" string="Ouvrir la saisie des temps"
+                    <button name="action_open_entries" type="object" string="Open the time entry"
                             class="btn-primary" invisible="state != 'done' or not missing_employee_ids"/>
-                    <button string="Annuler" special="cancel" invisible="state != 'choose'"/>
-                    <button string="Fermer" special="cancel" invisible="state != 'done'"/>
+                    <button string="Cancel" special="cancel" invisible="state != 'choose'"/>
+                    <button string="Close" special="cancel" invisible="state != 'done'"/>
                 </footer>
             </form>
         </field>
     </record>
 
     <record id="action_mission_igd_wizard" model="ir.actions.act_window">
-        <field name="name">Générer les IGD</field>
+        <field name="name">Generate the IGD</field>
         <field name="res_model">mission.igd.wizard</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
     </record>
 
-    <menuitem id="menu_mission_igd" name="Générer les IGD"
+    <menuitem id="menu_mission_igd" name="Generate the IGD"
               parent="hr_expense.menu_hr_expense_my_expenses"
               action="action_mission_igd_wizard" sequence="12"/>
 
@@ -59,7 +59,7 @@
             <xpath expr="//filter[@name='to_pay']" position="after">
                 <separator/>
                 <filter string="IGD" name="igd" domain="[('product_id.igd_category', '=', True)]"/>
-                <filter string="Sans IGD" name="no_igd" domain="[('product_id.igd_category', '=', False)]"/>
+                <filter string="No IGD" name="no_igd" domain="[('product_id.igd_category', '=', False)]"/>
                 <separator/>
             </xpath>
         </field>
@@ -72,7 +72,7 @@
         <field name="arch" type="xml">
             <!-- Sous les champs principaux de la fiche, pas dans l'onglet Paramètres. -->
             <xpath expr="//notebook" position="before">
-                <group name="igd" string="Indemnités de grand déplacement (IGD)" groups="base.group_system">
+                <group name="igd" string="Long-distance travel allowances (IGD)" groups="base.group_system">
                     <field name="igd_currency_id" invisible="1"/>
                     <field name="igd_monthly_budget"/>
                     <field name="igd_start" invisible="not igd_monthly_budget"/>
@@ -92,8 +92,8 @@
                         </list>
                     </field>
                     <div class="text-muted" colspan="2">
-                        « Générer les IGD » (application Notes de frais) s'en sert pour créer les IGD du mois.
-                        Un ajustement ajoute (ou retire) son montant au quota du mois visé, sans être repris les mois suivants.
+                        "Generate the IGD" (Expenses application) uses it to create the IGD of the month.
+                        An adjustment adds (or removes) its amount to the quota of the month it targets, without being carried over to the following months.
                     </div>
                 </group>
             </xpath>

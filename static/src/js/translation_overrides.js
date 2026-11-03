@@ -1,35 +1,46 @@
 /**
- * Renomme les libellés d'hr_holidays qui proviennent de son code JavaScript.
+ * Renames the labels of hr_holidays that come from its JavaScript code.
  *
- * Ces chaînes ne sont atteignables ni par l'héritage de vues, ni par un fichier
- * de traduction dans notre module (les traductions de code sont chargées par
- * module, depuis le .po du module lui-même - testé, sans effet), ni par
- * l'héritage de template quand elles sont passées en props depuis un .js.
+ * These strings cannot be reached by view inheritance, nor by a translation
+ * file of our module (the translations of code are loaded per module, from the
+ * module's own .po file - tested, no effect), nor by template inheritance when
+ * they are passed as props from a .js file.
  *
- * On écrit donc directement dans le catalogue de traductions déjà chargé.
- * Aucune logique d'Odoo n'est copiée : si l'API changeait, les libellés
- * resteraient simplement inchangés, sans casser l'interface.
+ * So we write directly into the translation catalogue already loaded. No
+ * logic of Odoo is copied: should the API change, the labels would simply stay
+ * unchanged, without breaking the interface.
  */
 import { translatedTerms, translatedTermsGlobal, translationIsReady } from "@web/core/l10n/translation";
+import { user } from "@web/core/user";
 
-const OVERRIDES = {
-    // Titres du popup de saisie, passés par
-    // hr_holidays/static/src/views/calendar/calendar_controller.js : le premier
-    // à l'ouverture d'une saisie existante, le second à la création.
-    "Time Off Request": "Saisie",
-    "New Time Off": "Nouvelle saisie",
-    // Boutons du pied de page du popup, définis dans
-    // hr_holidays/static/src/views/view_dialog/form_view_dialog.xml
-    "Submit Request": "Enregistrer",
-    "Delete Time Off": "Supprimer",
-    // Affiché à la place de "Supprimer" quand la saisie est déjà validée : ne
-    // supprime pas l'enregistrement mais le passe en état annulé.
-    "Cancel Time Off": "Annuler la saisie",
+// Wording of the entry popup, in English and in French (the other languages read the English one).
+// - "Time Off Request" / "New Time Off": titles of the popup, passed by
+//   hr_holidays/static/src/views/calendar/calendar_controller.js (opening an entry, creating one).
+// - "Submit Request" / "Delete Time Off": buttons of the footer, defined in
+//   hr_holidays/static/src/views/view_dialog/form_view_dialog.xml.
+// - "Cancel Time Off": shown instead of "Delete" once the entry is validated: it does not delete
+//   the record, it sets it to cancelled.
+const WORDING = {
+    en: {
+        "Time Off Request": "Entry",
+        "New Time Off": "New entry",
+        "Submit Request": "Save",
+        "Delete Time Off": "Delete",
+        "Cancel Time Off": "Cancel the entry",
+    },
+    fr: {
+        "Time Off Request": "Saisie",
+        "New Time Off": "Nouvelle saisie",
+        "Submit Request": "Enregistrer",
+        "Delete Time Off": "Supprimer",
+        "Cancel Time Off": "Annuler la saisie",
+    },
 };
+const OVERRIDES = WORDING[(user.lang || "en").slice(0, 2)] || WORDING.en;
 
 translationIsReady.then(() => {
-    // Le catalogue est indexé par module ; on remplace le terme partout où il
-    // est déjà traduit, sans dépendre du nom exact de la clé de contexte.
+    // The catalogue is indexed by module; the term is replaced wherever it is already
+    // translated, without depending on the exact name of the context key.
     for (const context of Object.keys(translatedTerms)) {
         const terms = translatedTerms[context];
         if (!terms || typeof terms !== "object") {
@@ -41,6 +52,6 @@ translationIsReady.then(() => {
             }
         }
     }
-    // Repli pour les contextes où le terme n'est pas traduit (langue source).
+    // Fallback for the contexts where the term is not translated (source language).
     Object.assign(translatedTermsGlobal, OVERRIDES);
 });

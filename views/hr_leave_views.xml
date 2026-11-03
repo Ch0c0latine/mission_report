@@ -10,7 +10,7 @@
         <field name="arch" type="xml">
             <!-- Titre du formulaire -->
             <xpath expr="//form" position="attributes">
-                <attribute name="string">Saisie d'activité</attribute>
+                <attribute name="string">Activity entry</attribute>
             </xpath>
 
             <!-- Bascule rapide Mission / Congé, tout en haut du formulaire, avant tout le reste
@@ -38,14 +38,14 @@
                        readonly="state not in ('confirm', False)"/>
                 <div class="text-muted small" colspan="2"
                      invisible="entry_type != 'mission' or mission_hourly or not project_id">
-                    Mission facturée au jour : une saisie compte des journées entières. Les demi-journées et les
-                    heures sont réservées aux missions facturées à l'heure.
+                    Mission billed per day: an entry counts whole days. Half days and hours are reserved for
+                    missions billed per hour.
                 </div>
             </xpath>
 
             <!-- Congé : renommage + visible seulement en mode Congé -->
             <xpath expr="//field[@name='holiday_status_id']" position="attributes">
-                <attribute name="string">Congé</attribute>
+                <attribute name="string">Time off</attribute>
                 <attribute name="invisible">entry_type != 'leave'</attribute>
             </xpath>
 
@@ -85,7 +85,7 @@
                 <attribute name="invisible">not request_unit_half or (entry_type == 'leave' and request_date_from != request_date_to)</attribute>
             </xpath>
             <xpath expr="//label[@for='request_date_from_period']" position="after">
-                <label for="request_date_from_period" string="Premier et dernier jour"
+                <label for="request_date_from_period" string="First and last day"
                        invisible="not request_unit_half or entry_type == 'mission' or request_date_from == request_date_to"/>
             </xpath>
 
@@ -95,7 +95,7 @@
         </field>
     </record>
 
-    <!-- Assistant d'annulation (hr.holidays.cancel.leave), ouvert par le bouton "Annuler la saisie"
+    <!-- Assistant d'annulation (hr.holidays.cancel.leave), ouvert par le bouton "Cancel the entry"
          quand la saisie est déjà validée. Ses libellés viennent de la vue serveur, donc héritage ;
          le titre de la fenêtre, lui, vient du _t("Cancel Time Off") de hr_holidays/static/src/views/hooks.js
          et est déjà renommé par static/src/js/translation_overrides.js. -->
@@ -105,13 +105,13 @@
         <field name="inherit_id" ref="hr_holidays.hr_holidays_cancel_leave_form"/>
         <field name="arch" type="xml">
             <xpath expr="//form" position="attributes">
-                <attribute name="string">Annuler la saisie</attribute>
+                <attribute name="string">Cancel the entry</attribute>
             </xpath>
             <xpath expr="//field[@name='reason']" position="attributes">
-                <attribute name="placeholder">Pourquoi souhaitez-vous annuler cette saisie ?</attribute>
+                <attribute name="placeholder">Why do you want to cancel this entry?</attribute>
             </xpath>
             <xpath expr="//button[@name='action_cancel_leave']" position="attributes">
-                <attribute name="string">Annuler la saisie</attribute>
+                <attribute name="string">Cancel the entry</attribute>
             </xpath>
             <!-- "Ignorer" laissé tel quel (demandé). -->
         </field>
@@ -126,7 +126,7 @@
         <field name="arch" type="xml">
             <xpath expr="//div[hasclass('o_hr_holidays_name')]" position="inside">
                 <a type="object" name="action_mission_show_overview" class="small d-block mt-1">
-                    <i class="fa fa-calendar me-1" role="img" aria-label="Calendrier"/>Voir dans la vue d'ensemble
+                    <i class="fa fa-calendar me-1" role="img" aria-label="Calendar"/>See in the overview
                 </a>
             </xpath>
         </field>
@@ -145,10 +145,10 @@
             <!-- Un lien par ligne vers la vue d'ensemble, sur le mois de la saisie. -->
             <xpath expr="//field[@name='state']" position="after">
                 <button name="action_mission_show_overview" type="object" icon="fa-calendar"
-                        title="Voir dans la vue d'ensemble" string="Voir dans la vue d'ensemble"/>
+                        title="See in the overview" string="See in the overview"/>
             </xpath>
             <!-- La colonne du type de saisie (Activité pour une mission) garde le
-                 libellé du champ : "Type de saisie". -->
+                 libellé du champ : "Type of entry". -->
             <!-- Hide "Nouveaux congés de groupe" header button -->
             <xpath expr="//header/button" position="attributes">
                 <attribute name="invisible">1</attribute>
@@ -167,7 +167,7 @@
                  dédié utilisé (au lieu de la popup "dashboard" de hr_holidays qui masque l'en-tête et
                  duplique le champ Employé) -->
             <xpath expr="//calendar" position="attributes">
-                <attribute name="string">Saisie d'activité</attribute>
+                <attribute name="string">Activity entry</attribute>
                 <attribute name="form_view_id">%(hr_holidays.hr_leave_view_form)d</attribute>
             </xpath>
             <xpath expr="//calendar" position="inside">
@@ -184,10 +184,10 @@
         <field name="inherit_id" ref="hr_holidays.view_hr_holidays_filter"/>
         <field name="arch" type="xml">
             <xpath expr="//search" position="attributes">
-                <attribute name="string">Rechercher une saisie</attribute>
+                <attribute name="string">Search an entry</attribute>
             </xpath>
             <xpath expr="//filter[@name='my_leaves']" position="attributes">
-                <attribute name="string">Mes saisies</attribute>
+                <attribute name="string">My entries</attribute>
             </xpath>
         </field>
     </record>
@@ -196,23 +196,23 @@
          reprennent, et non le libellé du menu : renommer les menuitems dans
          menu_views.xml ne suffisait donc pas. -->
     <record id="hr_holidays.hr_leave_action_my" model="ir.actions.act_window">
-        <field name="name">Mes saisies</field>
+        <field name="name">My entries</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Aucune saisie pour l'instant.
+                No entry yet.
             </p><p>
-                Enregistrez ici vos journées d'activité par mission, ainsi que vos congés.
+                Record your days of activity per mission here, as well as your time off.
             </p>
         </field>
     </record>
 
     <record id="hr_holidays.hr_leave_action_action_approve_department" model="ir.actions.act_window">
-        <field name="name">Saisies</field>
+        <field name="name">Entries</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Aucune saisie à afficher.
+                No entry to show.
             </p><p>
-                Suivez ici les activités et les congés saisis par vos collaborateurs.
+                Follow the activities and the time off entered by your team here.
             </p>
         </field>
     </record>

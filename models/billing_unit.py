@@ -12,20 +12,20 @@ de sa date.
 """
 from odoo import _, api, fields, models
 
-BILLING_UNITS = [('day', "Au jour"), ('hour', "À l'heure")]
+BILLING_UNITS = [('day', "Per day"), ('hour', "Per hour")]
 
 
 class ResCompany(models.Model):
     _inherit = 'res.company'
 
     mission_billing_unit_default = fields.Selection(
-        BILLING_UNITS, string="Facturation par défaut", default='day', required=True,
-        help="Unité de facturation proposée pour les nouvelles affaires.")
+        BILLING_UNITS, string="Default billing", default='day', required=True,
+        help="Billing unit proposed for new orders.")
     mission_hours_outside_schedule = fields.Boolean(
-        string="Compter les heures hors horaires de travail",
-        help="Une saisie en heures compte les heures saisies, même en dehors de l'horaire de travail du "
-             "salarié (de 7 h à 20 h pour un horaire de 9 h à 17 h). Sinon, seules comptent les heures "
-             "comprises dans son horaire.")
+        string="Count hours outside working hours",
+        help="An entry in hours counts the hours entered, even outside the working schedule "
+             "of the employee (from 7 am to 8 pm for a 9 am to 5 pm schedule). Otherwise only "
+             "the hours within the schedule count.")
 
 
 class ResConfigSettings(models.TransientModel):
@@ -41,12 +41,12 @@ class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
     mission_billing_unit = fields.Selection(
-        BILLING_UNITS, string="Facturation", required=True, tracking=True,
+        BILLING_UNITS, string="Billing", required=True, tracking=True,
         default=lambda self: self.env.company.mission_billing_unit_default or 'day',
-        help="Au jour : les journées validées des comptes rendus font la quantité livrée. "
-             "À l'heure : les heures validées, sur des lignes en heures à un prix horaire.")
+        help="Per day: the validated days of the reports make the delivered quantity. Per "
+             "hour: the validated hours, on lines in hours at an hourly price.")
     mission_unit_warning = fields.Char(
-        string="Avertissement sur l'unité", compute='_compute_mission_unit_warning')
+        string="Unit warning", compute='_compute_mission_unit_warning')
 
     @api.depends('mission_billing_unit', 'order_line.product_uom_id', 'order_line.mission_day_line')
     def _compute_mission_unit_warning(self):
@@ -55,22 +55,21 @@ class SaleOrder(models.Model):
             lines = order.order_line.filtered('mission_day_line')
             if order.mission_billing_unit == 'hour':
                 wrong = lines.filtered(lambda l: l.product_uom_id != hour)
-                text = _("Affaire facturée à l'heure : mettez ces lignes de prestation en heures, "
-                         "à un prix horaire : %s.")
+                text = _("Order billed per hour: put these service lines in hours, at an hourly price: %s.")
             else:
                 wrong = lines.filtered(lambda l: hour and l.product_uom_id == hour)
-                text = _("Affaire facturée au jour : ces lignes de prestation sont en heures : %s.")
+                text = _("Order billed per day: these service lines are in hours: %s.")
             order.mission_unit_warning = text % ", ".join(wrong.mapped('name')) if wrong else False
 
     def mission_unit_label(self, plural=False):
         """« jour » ou « jours », « heure » ou « heures », selon l'unité de l'affaire."""
         hourly = self[:1].mission_billing_unit == 'hour'
         if plural:
-            return _("heures") if hourly else _("jours")
-        return _("heure") if hourly else _("jour")
+            return _("hours") if hourly else _("days")
+        return _("hour") if hourly else _("day")
 
     def mission_unit_phrase(self):
         """« par jour travaillé » ou « par heure travaillée », pour le devis."""
         if self[:1].mission_billing_unit == 'hour':
-            return _("par heure travaillée")
-        return _("par jour travaillé")
+            return _("per hour worked")
+        return _("per day worked")

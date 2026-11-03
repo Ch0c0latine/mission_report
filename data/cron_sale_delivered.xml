@@ -6,7 +6,7 @@
     <!-- Filet de sécurité : les journées validées suivent la ligne de commande
          de leur mission. Elles la suivent déjà à chaque validation. -->
     <record id="ir_cron_sale_delivered" model="ir.cron">
-        <field name="name">Rapport d'activité : journées livrées des commandes</field>
+        <field name="name">Activity report: delivered days of the orders</field>
         <field name="model_id" ref="model_mission_activity_report"/>
         <field name="state">code</field>
         <field name="code">model._cron_sale_sync_delivered()</field>

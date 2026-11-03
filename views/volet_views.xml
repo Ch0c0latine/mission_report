@@ -10,7 +10,7 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//button[@name='action_cancel']" position="after">
-                <button name="action_mission_new_volet" type="object" string="Nouveau volet"
+                <button name="action_mission_new_volet" type="object" string="New phase"
                         invisible="not project_id or state == 'cancel'"
                         groups="sales_team.group_sale_salesman"/>
             </xpath>
@@ -19,21 +19,21 @@
                 <field name="mission_period_end" optional="hide"/>
             </xpath>
             <xpath expr="//page[@name='order_lines']" position="after">
-                <page string="Prestation" name="mission_prestation">
+                <page string="Service" name="mission_prestation">
                     <button name="action_mission_fill_from_note" type="object" class="btn-secondary"
-                            string="Reprendre depuis la note"
+                            string="Take over from the note"
                             invisible="mission_description or mission_expenses_text or not note"/>
                     <group>
                         <group>
                             <field name="mission_volet_number" invisible="not mission_volet_number and not project_id"/>
                         </group>
                     </group>
-                    <separator string="Description de la prestation"/>
+                    <separator string="Description of the service"/>
                     <field name="mission_description" nolabel="1"
-                           placeholder="Objet, lieu et déroulement de la prestation, imprimés sur le devis sous le titre du volet."/>
-                    <separator string="Frais"/>
+                           placeholder="Subject, place and course of the service, printed on the quote under the title of the phase."/>
+                    <separator string="Expenses"/>
                     <field name="mission_expenses_text" nolabel="1"
-                           placeholder="Les frais de déplacement seront facturés au réel sur présentation des justificatifs."/>
+                           placeholder="Travel expenses will be invoiced at cost on presentation of the receipts."/>
                 </page>
             </xpath>
         </field>
@@ -43,31 +43,31 @@
         <field name="name">mission.volet.wizard.form</field>
         <field name="model">mission.volet.wizard</field>
         <field name="arch" type="xml">
-            <form string="Nouveau volet">
+            <form string="New phase">
                 <field name="order_id" invisible="1"/>
                 <field name="needs_source_dates" invisible="1"/>
                 <group>
-                    <group string="Nouveau volet">
-                        <field name="date_start" string="Début"/>
-                        <field name="date_end" string="Fin"/>
+                    <group string="New phase">
+                        <field name="date_start" string="Start"/>
+                        <field name="date_end" string="End"/>
                         <field name="employee_ids" widget="many2many_tags" options="{'no_create': True}"/>
                         <field name="mission_billing_unit" widget="radio" options="{'horizontal': true}"/>
                     </group>
-                    <group string="Affaire d'origine">
-                        <field name="source_date_start" string="Début" readonly="1" force_save="1"/>
-                        <field name="source_date_end" string="Fin" readonly="1" force_save="1"/>
+                    <group string="Original order">
+                        <field name="source_date_start" string="Start" readonly="1" force_save="1"/>
+                        <field name="source_date_end" string="End" readonly="1" force_save="1"/>
                         <div class="text-muted" colspan="2" invisible="not needs_source_dates">
-                            Dates absentes de l'affaire : celles-ci y seront enregistrées.
+                            Dates missing from the order: these will be saved there.
                         </div>
                         <div class="text-muted" colspan="2" invisible="needs_source_dates">
-                            À modifier, si besoin, dans l'affaire elle-même.
+                            To be changed, if needed, in the order itself.
                         </div>
                     </group>
                 </group>
                 <div class="alert alert-warning" role="alert" invisible="not warning">
                     <field name="warning"/>
                     <button name="action_generate_holidays" type="object" class="btn btn-link p-0 ms-2"
-                            string="Générer les jours fériés français"/>
+                            string="Generate the French public holidays"/>
                 </div>
                 <div class="alert alert-warning" role="alert" invisible="not unit_warning">
                     <field name="unit_warning"/>
@@ -77,8 +77,8 @@
                 </div>
                 <field name="plan" nolabel="1" readonly="1"/>
                 <footer>
-                    <button name="action_create" type="object" string="Créer le volet" class="btn-primary"/>
-                    <button string="Annuler" special="cancel"/>
+                    <button name="action_create" type="object" string="Create the phase" class="btn-primary"/>
+                    <button string="Cancel" special="cancel"/>
                 </footer>
             </form>
         </field>

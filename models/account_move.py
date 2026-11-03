@@ -15,9 +15,10 @@ import re
 from datetime import timedelta
 
 from babel.dates import format_date as babel_format_date
+from babel.numbers import format_decimal
 
-from odoo import api, fields, models
-from odoo.tools.misc import get_lang
+from odoo import _, api, fields, models
+from odoo.tools.misc import babel_locale_parse, get_lang
 
 _logger = logging.getLogger(__name__)
 
@@ -29,12 +30,12 @@ class AccountMove(models.Model):
     _inherit = 'account.move'
 
     mission_month = fields.Date(
-        string="Mois concerné",
+        string="Month concerned",
         compute='_compute_mission_month', store=True, readonly=False, copy=False,
-        help="Premier jour du mois facturé. Par défaut : le mois de la date de livraison, "
-             "sinon celui de la date de facture, ou le mois précédent si la facture est "
-             "datée de la première quinzaine. Remplace « /mois » et « /mois_annee » dans "
-             "les libellés et sert au courriel d'envoi.")
+        help="First day of the billed month. By default: the month of the delivery date, "
+             "otherwise that of the invoice date, or the previous month if the invoice is "
+             "dated in the first half of the month. Replaces \"/month\" and \"/month_year\" in "
+             "the labels and is used by the sending e-mail.")
 
     @api.depends('invoice_date', 'delivery_date', 'date')
     def _compute_mission_month(self):
@@ -139,20 +140,23 @@ class AccountMove(models.Model):
         return result
 
     def mission_mail_days_text(self):
-        """« 22 jours sur 22 réalisés par Camille Exemple. », une ligne par intervenant ;
-        « 63 heures sur 154 réalisées par … » pour une mission facturée à l'heure."""
+        """"22 days out of 22 worked by Camille Exemple.", one line per person;
+        "63 hours out of 154 worked by ..." for a mission billed per hour."""
         lines = []
         for done, potential, name in self.mission_mail_days():
-            lines.append("%s jours sur %s réalisés par %s." % (
-                self._mission_format_days(done), self._mission_format_days(potential), name))
+            lines.append(_("%(done)s days out of %(potential)s worked by %(name)s.",
+                           done=self._mission_format_days(done),
+                           potential=self._mission_format_days(potential), name=name))
         for done, potential, name in self.mission_mail_days(unit='hour'):
-            lines.append("%s heures sur %s réalisées par %s." % (
-                self._mission_format_days(done), self._mission_format_days(potential), name))
+            lines.append(_("%(done)s hours out of %(potential)s worked by %(name)s.",
+                           done=self._mission_format_days(done),
+                           potential=self._mission_format_days(potential), name=name))
         return lines
 
     @api.model
     def _mission_format_days(self, value):
-        return ('%g' % value).replace('.', ',')
+        """A number of days or hours, without useless decimals, in the language of the recipient."""
+        return format_decimal(value, format='#,##0.##', locale=babel_locale_parse(get_lang(self.env).code))
 
     def mission_mail_partner_ids(self):
         """Destinataires : ceux de l'affaire, sinon le client de la facture."""

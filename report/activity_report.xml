@@ -96,7 +96,7 @@
             <tr>
                 <th>Client</th>
                 <th>Mission</th>
-                <th t-if="has_hours">Unité</th>
+                <th t-if="has_hours">Unit</th>
                 <th>Total</th>
                 <th t-foreach="days" t-as="day"
                     t-attf-class="#{'o_weekend' if day['weekend'] else ('o_holiday' if day['holiday'] else ('o_absence' if day['absence'] and show_absences else ''))}"
@@ -148,7 +148,7 @@
             </tr>
             <!-- Informations portées jour par jour, sous les chiffres. -->
             <tr t-if="data.get('has_notes')">
-                <td t-att-colspan="label_span" class="o_label o_section">Informations</td>
+                <td t-att-colspan="label_span" class="o_label o_section">Information</td>
                 <td t-foreach="days" t-as="day"
                     t-attf-class="o_note #{'o_weekend' if day['weekend'] else ('o_holiday' if day['holiday'] else ('o_absence' if day['absence'] and show_absences else ''))}"
                     t-att-title="data['notes'][day_index] or None"
@@ -171,7 +171,7 @@
                     <div class="col-4"><strong>Status: </strong><span t-out="data['status']"/></div>
                 </div>
                 <div t-if="data.get('has_hours')" class="row" style="font-size: 12px;">
-                    <div class="col-2 offset-6"><strong>Heures ouvrées : </strong><span t-out="format_days(data['potential_hours'])"/></div>
+                    <div class="col-2 offset-6"><strong>Working hours: </strong><span t-out="format_days(data['potential_hours'])"/></div>
                 </div>
                 <div t-if="lines == 'missions'" class="row" style="font-size: 12px;">
                     <div class="col-12"><strong>Client: </strong><span t-out="data.get('partner') or ''"/></div>

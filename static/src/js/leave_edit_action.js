@@ -75,7 +75,7 @@ registry.category("actions").add("mission_report.edit_leave", (env, action) => {
             {
                 resModel: "hr.leave",
                 resId: action.params.leave_id,
-                title: "Saisie",
+                title: "Entry",
                 context: {
                     form_view_ref: "hr_holidays.hr_leave_view_form",
                     mission_edit: true,
@@ -88,8 +88,8 @@ registry.category("actions").add("mission_report.edit_leave", (env, action) => {
                     // hr_holidays délègue la suppression au calendrier : ici, avec confirmation.
                     env.services.dialog.add(ConfirmationDialog, {
                         title: "Supprimer la saisie",
-                        body: "Supprimer définitivement cette saisie ?",
-                        confirmLabel: "Supprimer",
+                        body: "Delete this entry permanently?",
+                        confirmLabel: "Delete",
                         confirm: async () => {
                             await orm.unlink("hr.leave", [record.resId]);
                             close();

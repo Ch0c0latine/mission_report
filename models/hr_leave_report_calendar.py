@@ -65,7 +65,7 @@ class HrLeaveReportCalendar(models.Model):
         leave = self.env['hr.leave'].browse(self.sudo().leave_id.id)
         if leave.state in ('validate1', 'validate'):
             if not leave.can_back_to_approve:
-                raise UserError(_("Votre profil ne permet pas de remettre cette saisie en attente d'approbation."))
+                raise UserError(_("Your profile does not allow you to put this entry back to waiting for approval."))
             leave.action_back_to_approval()
         return self.action_mission_edit(reopened=True)
 
@@ -74,5 +74,5 @@ class HrLeaveReportCalendar(models.Model):
         self.ensure_one()
         leave = self.env['hr.leave'].browse(self.sudo().leave_id.id)
         if leave.state not in ('refuse', 'cancel'):
-            raise UserError(_("Seule une saisie refusée ou annulée peut être supprimée."))
+            raise UserError(_("Only a refused or cancelled entry can be deleted."))
         leave.unlink()

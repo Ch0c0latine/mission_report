@@ -3,14 +3,14 @@
      License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0). -->
 <odoo>
     <record id="mail_activity_type_report" model="mail.activity.type">
-        <field name="name">Compte rendu d'activité</field>
+        <field name="name">Activity report</field>
         <field name="icon">fa-calendar-check-o</field>
         <field name="res_model">mission.activity.report</field>
         <field name="delay_count">0</field>
     </record>
 
     <record id="ir_cron_report_reminders" model="ir.cron">
-        <field name="name">Rapport d'activité : relances des comptes rendus</field>
+        <field name="name">Activity report: reminders of the reports</field>
         <field name="model_id" ref="model_mission_activity_report"/>
         <field name="state">code</field>
         <field name="code">model._cron_remind()</field>

@@ -7,17 +7,17 @@
         <field name="name">hr.leave.view.search.mission.report</field>
         <field name="model">hr.leave</field>
         <field name="arch" type="xml">
-            <search string="Rapport d'activité">
+            <search string="Activity report">
                 <field name="employee_id"/>
                 <field name="project_id" string="Mission"/>
                 <field name="partner_id" string="Client"/>
-                <field name="holiday_status_id" string="Congé"/>
+                <field name="holiday_status_id" string="Time off"/>
                 <separator/>
-                <filter name="filter_missions" string="Missions uniquement" domain="[('project_id', '!=', False)]"/>
-                <filter name="filter_leaves" string="Congés uniquement" domain="[('project_id', '=', False)]"/>
+                <filter name="filter_missions" string="Missions only" domain="[('project_id', '!=', False)]"/>
+                <filter name="filter_leaves" string="Time off only" domain="[('project_id', '=', False)]"/>
                 <group>
-                    <filter name="groupby_employee" string="Employé" context="{'group_by': 'employee_id'}"/>
-                    <filter name="groupby_holiday_status" string="Congé" context="{'group_by': 'holiday_status_id'}"/>
+                    <filter name="groupby_employee" string="Employee" context="{'group_by': 'employee_id'}"/>
+                    <filter name="groupby_holiday_status" string="Time off" context="{'group_by': 'holiday_status_id'}"/>
                     <filter name="groupby_project" string="Mission" context="{'group_by': 'project_id'}"/>
                     <filter name="groupby_partner" string="Client" context="{'group_by': 'partner_id'}"/>
                 </group>
@@ -27,7 +27,7 @@
 
     <!-- Rapport d'activité globale : congés et missions de tout le monde. -->
     <record id="action_activity_report_internal" model="ir.actions.act_window">
-        <field name="name">Rapport d'activité globale</field>
+        <field name="name">Overall activity report</field>
         <field name="res_model">hr.leave</field>
         <field name="view_mode">pivot,graph,list</field>
         <field name="search_view_id" ref="hr_leave_view_search_mission_report"/>
@@ -36,7 +36,7 @@
 
     <!-- À la suite des comptes rendus de l'équipe. -->
     <menuitem id="menu_activity_report_internal"
-              name="Rapport d'activité globale"
+              name="Overall activity report"
               parent="hr_holidays.menu_hr_holidays_my_leaves"
               action="action_activity_report_internal"
               groups="hr_holidays.group_hr_holidays_user"

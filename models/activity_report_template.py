@@ -35,7 +35,7 @@ LINE_VALUES = [
     ('project', "Mission"),
     ('leave_type', "Time off type"),
     ('total', "Line total (days)"),
-    ('unit', "Unité (jours ou heures)"),
+    ('unit', "Unit (days or hours)"),
 ]
 #: Values a header cell can receive.
 HEADER_VALUES = [
@@ -51,9 +51,9 @@ HEADER_VALUES = [
     ('mission_total', "Mission days"),
     ('absence_total', "Time off days"),
     ('total', "Total days"),
-    ('potential_hours', "Heures ouvrées"),
-    ('mission_hours_total', "Heures de mission"),
-    ('comment', "Commentaire"),
+    ('potential_hours', "Working hours"),
+    ('mission_hours_total', "Mission hours"),
+    ('comment', "Comment"),
 ]
 VALUES = LINE_VALUES + [item for item in HEADER_VALUES
                         if item[0] not in {key for key, _label in LINE_VALUES}]
@@ -117,10 +117,10 @@ class MissionActivityReportTemplate(models.Model):
         string="First time off row", help="0: no time off block (client reports).")
     absence_last_row = fields.Integer(string="Last time off row")
     show_texts = fields.Boolean(
-        string="Informations et commentaire", default=True,
-        help="Reprend sous le tableau les informations saisies jour par jour, sur une ligne, "
-             "et le commentaire du compte rendu. Les lignes sont ajoutées à l'export : rien "
-             "à prévoir dans le classeur.")
+        string="Information and comment", default=True,
+        help="Adds under the table, on one line, the information entered day by day, and the "
+             "comment of the report. The lines are added to the export: nothing to prepare in "
+             "the workbook.")
     color_days = fields.Boolean(
         string="Colour the days", default=True,
         help="Fills the day columns of weekends, public holidays and time off.")
@@ -202,9 +202,9 @@ class MissionActivityReportTemplate(models.Model):
             'mission_total': _("Mission days"),
             'absence_total': _("Time off days"),
             'total': _("Total days"),
-            'potential_hours': _("Heures ouvrées"),
-            'mission_hours_total': _("Heures de mission"),
-            'comment': _("Commentaire"),
+            'potential_hours': _("Working hours"),
+            'mission_hours_total': _("Mission hours"),
+            'comment': _("Comment"),
         }
         line = {
             'label': _("Client"),
@@ -212,7 +212,7 @@ class MissionActivityReportTemplate(models.Model):
             'project': _("Mission"),
             'leave_type': _("Time off type"),
             'total': _("Total"),
-            'unit': _("Unité"),
+            'unit': _("Unit"),
         }
         return header, line
 
@@ -526,12 +526,12 @@ class MissionActivityReportTemplate(models.Model):
                 if cell.has_style:
                     sheet.cell(row=row, column=cell.column)._style = copy(cell._style)
         if sheet.cell(row=total_row, column=1).value == _("Total"):
-            sheet.cell(row=total_row, column=1).value = _("Total (jours)")
+            sheet.cell(row=total_row, column=1).value = _("Total (days)")
         hours = data.get('potential_hours')
         _set_text(sheet.cell(row=total_row + 1, column=1),
-                  _("Missions à l'heure, en heures (heures ouvrées du mois : %s)",
+                  _("Missions billed per hour, in hours (working hours of the month: %s)",
                     self.env['mission.activity.report']._format_days(hours))
-                  if hours is not None else _("Missions à l'heure, en heures"))
+                  if hours is not None else _("Missions billed per hour, in hours"))
         columns = {column_index_from_string(c.cell.strip().upper()): c.value
                    for c in self.cell_ids
                    if c.kind == 'line' and c.value and c.block in ('mission', 'both')}
@@ -543,7 +543,7 @@ class MissionActivityReportTemplate(models.Model):
                 sheet.cell(row=row, column=first_day + offset).value = \
                     line['values'][offset] if offset < len(data['days']) else None
         total = last + 1
-        _set_text(sheet.cell(row=total, column=1), _("Total (heures)"))
+        _set_text(sheet.cell(row=total, column=1), _("Total (hours)"))
         sums = [first_day + offset for offset in range(len(data['days']))]
         sums += [column for column, value in columns.items() if value == 'total']
         for column in sums:
@@ -576,7 +576,7 @@ class MissionActivityReportTemplate(models.Model):
             for cell in sheet[model_row]:
                 if cell.has_style:
                     sheet.cell(row=row, column=cell.column)._style = copy(cell._style)
-            _set_text(sheet.cell(row=row, column=1), _("Informations"))
+            _set_text(sheet.cell(row=row, column=1), _("Information"))
             for offset, text in enumerate(notes):
                 _set_text(sheet.cell(row=row, column=first_day + offset), text or None)
             added.append((row, row))
@@ -585,7 +585,7 @@ class MissionActivityReportTemplate(models.Model):
             last_column = first_day + MAX_DAYS - 1
             sheet.merge_cells(start_row=row, start_column=1, end_row=row, end_column=last_column)
             cell = sheet.cell(row=row, column=1)
-            _set_text(cell, "%s : %s" % (_("Commentaire"), comment))
+            _set_text(cell, "%s : %s" % (_("Comment"), comment))
             cell.alignment = Alignment(horizontal='left', vertical='top', wrap_text=True)
             # Une ligne de commentaire fusionnée ne doit pas garder la hauteur d'une
             # ligne de tableau : le texte y serait coupé.
@@ -614,7 +614,7 @@ class MissionActivityReportTemplate(models.Model):
         if value == 'total':
             return line.get('total')
         if value == 'unit':
-            return _("heures") if line.get('unit') == 'hour' else _("jours")
+            return _("hours") if line.get('unit') == 'hour' else _("days")
         return None
 
     def _header_value(self, report, data, value):

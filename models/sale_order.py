@@ -8,16 +8,16 @@ class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
     mission_employee_names = fields.Char(
-        string="Intervenants",
+        string="People involved",
         compute='_compute_mission_employee_names',
         compute_sudo=True,
-        help="Personnes qui ont des saisies sur les missions (projets) de cette commande.",
+        help="People who have entries on the missions (projects) of this order.",
     )
 
     mission_invoice_partner_ids = fields.Many2many(
         'res.partner', 'sale_order_mission_invoice_partner_rel', 'order_id', 'partner_id',
-        string="Destinataires des factures",
-        help="Contacts à qui envoyer les factures de cette affaire. Vide : le client de la facture.",
+        string="Invoice recipients",
+        help="Contacts to send the invoices of this order to. Empty: the customer of the invoice.",
     )
 
     @api.depends('order_line', 'project_id')

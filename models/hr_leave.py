@@ -21,11 +21,11 @@ from .work_time import hours_by_day, work_intervals
 class HrLeave(models.Model):
     _inherit = 'hr.leave'
 
-    # "Type de saisie" : le type vaut "Activité" pour une mission. Le formulaire,
-    # où le champ n'apparaît qu'en mode congé, affiche "Congé".
+    # "Type of entry" : le type vaut "Activity" pour une mission. Le formulaire,
+    # où le champ n'apparaît qu'en mode congé, affiche "Time off".
     holiday_status_id = fields.Many2one(
         'hr.leave.type',
-        string='Type de saisie',
+        string='Type of entry',
         required=False,
         default=False,
     )
@@ -34,7 +34,7 @@ class HrLeave(models.Model):
         string='Mission',
         required=False,
         ondelete='restrict',
-        help='Projet associé à la saisie de rapport de mission.'
+        help='Project associated with the mission report entry.'
     )
     partner_id = fields.Many2one(
         'res.partner',
@@ -42,31 +42,31 @@ class HrLeave(models.Model):
         related='project_id.partner_id',
         store=True,
         readonly=True,
-        help='Client associé à la mission, dérivé du projet.'
+        help='Customer associated with the mission, derived from the project.'
     )
     available_project_ids = fields.Many2many(
         'project.project',
         compute='_compute_available_project_ids',
-        help="Projets ayant au moins une tâche assignée à l'employé de cette saisie."
+        help="Projects with at least one task assigned to the employee of this entry."
     )
     entry_type = fields.Selection(
-        [('mission', 'Mission'), ('leave', 'Congé')],
-        string='Nature de la saisie',
+        [('mission', 'Mission'), ('leave', 'Time off')],
+        string='Nature of the entry',
         compute='_compute_entry_type',
         readonly=False,
-        help="Bascule entre une saisie de Mission (par défaut) et une saisie de Congé."
+        help="Switches between a Mission entry (default) and a Time off entry."
     )
     # Mission facturée à l'heure : la saisie compte des heures. Le type « Activité » est en
     # heures, mais une mission prend par défaut des journées entières ; la durée choisie ici
     # donne la demi-journée ou les heures personnalisées d'Odoo (request_unit_half/hours).
     mission_hourly = fields.Boolean(
-        string="Mission à l'heure", compute='_compute_mission_hourly',
-        help="La mission est facturée à l'heure à la date de la saisie.")
+        string="Mission billed per hour", compute='_compute_mission_hourly',
+        help="The mission is billed per hour at the date of the entry.")
     mission_duration = fields.Selection(
-        [('day', "Journée entière"), ('half', "Demi-journée"), ('hours', "Heures")],
-        string="Durée", default='day',
-        help="Mission facturée à l'heure : une journée entière compte les heures de travail du "
-             "jour, une demi-journée la moitié, des heures choisies exactement leurs heures.")
+        [('day', "Whole day"), ('half', "Half day"), ('hours', "Hours")],
+        string="Duration", default='day',
+        help="Mission billed per hour: a whole day counts the working hours of the day, a "
+             "half day half of them, chosen hours exactly their hours.")
 
     @api.depends('project_id', 'request_date_from')
     def _compute_mission_hourly(self):
@@ -96,10 +96,10 @@ class HrLeave(models.Model):
         for leave in self.filtered('project_id'):
             if leave.mission_hourly:
                 hours, minutes = divmod(round(abs(leave.number_of_hours) * 60), 60)
-                leave.duration_display = "%d:%02d %s" % (hours, minutes, _("heures"))
+                leave.duration_display = "%d:%02d %s" % (hours, minutes, _("hours"))
             else:
                 leave.duration_display = "%g %s" % (
-                    float_round(leave.number_of_days, precision_digits=2), _("jours"))
+                    float_round(leave.number_of_days, precision_digits=2), _("days"))
 
     def _get_durations(self, check_leave_type=True, resource_calendar=None):
         # Une demi-journée de mission compte la moitié des heures du jour, quelle que soit la
@@ -276,10 +276,10 @@ class HrLeave(models.Model):
         if leave_type and not leave_type.requires_allocation:
             return leave_type
         leave_type = self.env['hr.leave.type'].with_context(active_test=False).search(
-            [('name', '=', 'Activité'), ('requires_allocation', '=', False)], limit=1)
+            [('name', '=', 'Activity'), ('requires_allocation', '=', False)], limit=1)
         if not leave_type:
             leave_type = self.env['hr.leave.type'].create({
-                'name': 'Activité',
+                'name': 'Activity',
                 'requires_allocation': False,
                 'leave_validation_type': 'no_validation',
                 'request_unit': 'hour',
@@ -288,7 +288,7 @@ class HrLeave(models.Model):
         return leave_type
 
     def _is_activity_leave_type(self, leave_type):
-        return bool(leave_type) and leave_type.name == 'Activité'
+        return bool(leave_type) and leave_type.name == 'Activity'
 
     def _get_mission_only_employees(self):
         """Parmi ces saisies, les employés qui n'ont que des missions.
@@ -374,16 +374,15 @@ class HrLeave(models.Model):
             ('employee_id', '=', self.employee_id.id), ('state', 'in', ('submitted', 'validated')),
             ('date_from', '<=', end), ('date_to', '>=', start)], limit=1)
         if report:
-            return _("Cette saisie figure dans le compte rendu « %(report)s » (%(state)s) : ses journées "
-                     "ne peuvent plus être modifiées.", report=report.display_name,
+            return _("This entry is part of the report \"%(report)s\" (%(state)s): its days can no "
+                     "longer be changed.", report=report.display_name,
                      state=dict(report._fields['state'].selection)[report.state].lower())
         if self.project_id:
             first, last = start.replace(day=1), end.replace(day=1)
             invoices = self.project_id.sudo()._mission_all_orders().invoice_ids.filtered(
                 lambda m: m.state != 'cancel' and m.mission_month and first <= m.mission_month <= last)
             if invoices:
-                return _("Cette saisie a été facturée (%(invoices)s) : ses journées ne peuvent plus être "
-                         "modifiées.", invoices=", ".join(invoices.mapped('name')))
+                return _("This entry has been invoiced (%(invoices)s): its days can no longer be changed.", invoices=", ".join(invoices.mapped('name')))
         return False
 
     def _mission_check_unlocked(self):
@@ -422,8 +421,8 @@ class HrLeave(models.Model):
             # base que les comptes rendus (Odoo ne calcule pas de durée pour une saisie neuve).
             if float_is_zero(sum(leave._mission_hours_by_day().values()), precision_digits=2):
                 raise ValidationError(_(
-                    "Cette période ne compte aucun jour travaillé (week-end ou jour férié) : "
-                    "choisissez d'autres dates."))
+                    "This period holds no working day (weekend or public holiday): choose other "
+                    "dates."))
 
     def write(self, vals):
         # Self-heal records still pointing at a stale/misconfigured Activité type
@@ -473,9 +472,8 @@ class HrLeave(models.Model):
         for record in self:
             if record.project_id and record.mission_duration != 'day' and not record.mission_hourly:
                 raise ValidationError(_(
-                    "La mission %s est facturée au jour : une saisie y compte des journées entières. "
-                    "Les demi-journées et les heures sont réservées aux missions facturées à l'heure "
-                    "(champ « Facturation » de l'affaire).",
+                    "The mission %s is billed per day: an entry counts whole days. Half days and "
+                    "hours are reserved for missions billed per hour (\"Billing\" field of the order).",
                     record.project_id.display_name))
 
     @api.onchange('holiday_status_id')
@@ -490,7 +488,7 @@ class HrLeave(models.Model):
             is_leave = bool(record.holiday_status_id) and not self._is_activity_leave_type(record.holiday_status_id)
             if is_mission == is_leave:
                 raise ValidationError(
-                    _("Une saisie doit posséder soit une Mission soit un Congé, mais pas les deux ni aucun des deux.")
+                    _("An entry must have either a Mission or a Time off, not both nor neither.")
                 )
 
     @api.constrains('project_id', 'employee_id')
@@ -505,7 +503,7 @@ class HrLeave(models.Model):
             ])
             if not has_task:
                 raise ValidationError(
-                    _("%(employee)s n'est assigné(e) à aucune tâche du projet %(project)s.",
+                    _("%(employee)s is not assigned to any task of the project %(project)s.",
                       employee=record.employee_id.name, project=record.project_id.name)
                 )
 
@@ -538,7 +536,7 @@ class HrLeave(models.Model):
         # Chatter : le message natif est "<nom du modèle> créé", soit
         # "Congés créé" - mauvais vocabulaire et mauvais genre.
         self.ensure_one()
-        return _("Activité créée")
+        return _("Activity created")
 
     # Posté par _validate_leave_request() à la validation, immédiate pour une
     # mission. En français : "Votre Activité planifié le 2026-09-28 08:00:00 a
@@ -564,9 +562,9 @@ class HrLeave(models.Model):
         self.ensure_one()
         date_from = format_date(self.env, self.request_date_from)
         if self.request_date_to and self.request_date_to != self.request_date_from:
-            return _("Votre activité du %(date_from)s au %(date_to)s a été enregistrée",
+            return _("Your activity from %(date_from)s to %(date_to)s has been recorded",
                      date_from=date_from, date_to=format_date(self.env, self.request_date_to))
-        return _("Votre activité du %(date)s a été enregistrée", date=date_from)
+        return _("Your activity of %(date)s has been recorded", date=date_from)
 
     def message_post(self, **kwargs):
         body = kwargs.get('body')
@@ -601,7 +599,7 @@ class HrLeave(models.Model):
     def _get_activity_meeting_name(self):
         self.ensure_one()
         return _(
-            "%(employee)s en activité : %(duration)s",
+            "%(employee)s on assignment: %(duration)s",
             employee=self.employee_id.name,
             duration=self.duration_display,
         )
@@ -620,7 +618,7 @@ class HrLeave(models.Model):
     def _prepare_resource_leave_vals(self):
         values = super()._prepare_resource_leave_vals()
         if self.project_id:
-            values['name'] = _("%s : activité", self.employee_id.name)
+            values['name'] = _("%s: activity", self.employee_id.name)
         return values
 
     # --- Vocabulaire : menus, actions et champs d'hr_holidays renommés par ce module ---

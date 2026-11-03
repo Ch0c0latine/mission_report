@@ -30,34 +30,35 @@ from odoo.tools.safe_eval import safe_eval
 IGD_GROUP = 'base.group_system'
 
 #: Jours d'un mois qui reçoivent une IGD, au choix de la mission.
-BASIS = [('worked', "Jours travaillés"), ('calendar', "Jours calendaires")]
+BASIS = [('worked', "Days worked"), ('calendar', "Calendar days")]
 BASIS_HELP = (
-    "Jours travaillés : une indemnité par journée saisie sur la mission.\n"
-    "Jours calendaires : tous les jours du mois entre la première et la dernière journée "
-    "saisie, week-ends, jours fériés et congés compris.\n\n"
-    "Le réglage est propre à la mission : une autre mission du même salarié, ou un autre "
-    "intervenant sur une autre mission, peut être payé sur une autre base.")
+    "Days worked: one allowance per day entered on the mission.\n"
+    "Calendar days: every day of the month between the first and the last day "
+    "entered, weekends, public holidays and time off included.\n"
+    "\n"
+    "The setting belongs to the mission: another mission of the same employee, or "
+    "another person on another mission, can be paid on another basis.")
 
 
 class ResCompany(models.Model):
     _inherit = 'res.company'
 
     igd_lodging_product_id = fields.Many2one(
-        'product.product', string="Catégorie IGD logement", groups=IGD_GROUP,
+        'product.product', string="Lodging IGD category", groups=IGD_GROUP,
         domain="[('can_be_expensed', '=', True)]")
     igd_meal_product_id = fields.Many2one(
-        'product.product', string="Catégorie IGD repas", groups=IGD_GROUP,
+        'product.product', string="Meal IGD category", groups=IGD_GROUP,
         domain="[('can_be_expensed', '=', True)]")
     igd_expat_product_id = fields.Many2one(
-        'product.product', string="Catégorie forfait expatriation", groups=IGD_GROUP,
+        'product.product', string="Expatriation allowance category", groups=IGD_GROUP,
         domain="[('can_be_expensed', '=', True)]",
-        help="Indemnités de long déplacement à l'étranger (forfait expatriation). Comptée "
-             "parmi les IGD pour le filtre des dépenses.")
+        help="Allowances for long-term assignments abroad (expatriation allowance). Counted "
+             "among the IGD for the expense filter.")
     igd_real_meal_product_ids = fields.Many2many(
         'product.product', 'res_company_igd_real_meal_rel', 'company_id', 'product_id',
-        string="Catégories de repas au réel", groups=IGD_GROUP,
+        string="Actual meal categories", groups=IGD_GROUP,
         domain="[('can_be_expensed', '=', True)]",
-        help="Un jour qui porte un repas au réel ne reçoit pas d'IGD repas.")
+        help="A day that carries an actual meal gets no meal IGD.")
 
 
 class ResConfigSettings(models.TransientModel):
@@ -78,23 +79,23 @@ class ProjectProject(models.Model):
     _inherit = 'project.project'
 
     igd_monthly_budget = fields.Monetary(
-        string="IGD moyens prévus par mois", groups=IGD_GROUP,
+        string="Average monthly IGD planned", groups=IGD_GROUP,
         currency_field='igd_currency_id',
-        help="Montant moyen d'IGD à verser par mois de présence sur cette mission.")
+        help="Average IGD to pay per month of presence on this mission.")
     igd_start = fields.Date(
-        string="IGD à partir du", groups=IGD_GROUP,
-        help="Premier mois pris en compte pour le rattrapage. Vide : depuis le début.")
+        string="IGD from", groups=IGD_GROUP,
+        help="First month taken into account for the catch-up. Empty: from the start.")
     igd_lodging_basis = fields.Selection(
-        BASIS, string="IGD logement sur", default='worked', required=True, groups=IGD_GROUP,
+        BASIS, string="Lodging IGD on", default='worked', required=True, groups=IGD_GROUP,
         help=BASIS_HELP)
     igd_meal_basis = fields.Selection(
-        BASIS, string="IGD repas sur", default='worked', required=True, groups=IGD_GROUP,
+        BASIS, string="Meal IGD on", default='worked', required=True, groups=IGD_GROUP,
         help=BASIS_HELP)
     igd_currency_id = fields.Many2one(
         'res.currency', compute='_compute_igd_currency_id', groups=IGD_GROUP)
     igd_adjustment_ids = fields.One2many(
-        'mission.igd.adjustment', 'project_id', string="Ajustements du quota", groups=IGD_GROUP,
-        help="Mois où le quota d'IGD d'un salarié diffère du montant prévu.")
+        'mission.igd.adjustment', 'project_id', string="Quota adjustments", groups=IGD_GROUP,
+        help="Months in which the IGD quota of an employee differs from the planned amount.")
 
     def _compute_igd_currency_id(self):
         for project in self:
@@ -103,26 +104,27 @@ class ProjectProject(models.Model):
 
 class MissionIgdAdjustment(models.Model):
     _name = 'mission.igd.adjustment'
-    _description = "Ajustement du quota d'IGD d'un mois"
+    _description = "IGD quota adjustment of a month"
     _order = 'month desc, id'
     _rec_name = 'month'
 
     project_id = fields.Many2one(
         'project.project', string="Mission", required=True, ondelete='cascade', index=True)
     employee_id = fields.Many2one(
-        'hr.employee', string="Salarié", required=True, ondelete='cascade', index=True)
+        'hr.employee', string="Employee", required=True, ondelete='cascade', index=True)
     month = fields.Date(
-        string="Mois", required=True, default=lambda self: fields.Date.context_today(self),
-        help="N'importe quel jour du mois : seul le mois compte.")
+        string="Month", required=True, default=lambda self: fields.Date.context_today(self),
+        help="Any day of the month: only the month counts.")
     amount = fields.Monetary(
-        string="Ajustement", required=True, currency_field='currency_id',
-        help="Montant ajouté au quota du mois, négatif pour le réduire. Ce qu'il fait verser "
-             "en plus n'est pas repris les mois suivants comme une avance.\n\n"
-             "Un mois sans aucune journée saisie ne compte pour aucun quota : portez-y le "
-             "montant total auquel il donne droit - le quota mensuel si le logement court "
-             "pendant les congés - et non le seul solde restant à verser.")
+        string="Adjustment", required=True, currency_field='currency_id',
+        help="Amount added to the quota of the month, negative to reduce it. What it makes "
+             "get paid beyond is not taken back in the following months as an advance.\n"
+             "\n"
+             "A month with no day entered counts for no quota: enter the total amount it "
+             "entitles to - the monthly quota if the lodging runs during time off - and not "
+             "only the balance left to pay.")
     currency_id = fields.Many2one('res.currency', compute='_compute_currency_id')
-    reason = fields.Char(string="Motif")
+    reason = fields.Char(string="Reason")
 
     def _compute_currency_id(self):
         for adjustment in self:
@@ -156,7 +158,7 @@ class ProductProduct(models.Model):
     _inherit = 'product.product'
 
     igd_category = fields.Boolean(
-        string="Catégorie IGD", compute='_compute_igd_category', search='_search_igd_category')
+        string="IGD category", compute='_compute_igd_category', search='_search_igd_category')
 
     @api.model
     def _igd_product_ids(self):
@@ -187,19 +189,19 @@ class MissionIgdWizard(models.TransientModel):
     _name = 'mission.igd.wizard'
     # hr.mixin : sans lui, un salarié sans droit RH ne peut pas poser un many2many vers hr.employee.
     _inherit = ['hr.mixin']
-    _description = "Génération des IGD du mois"
+    _description = "Generation of the month's IGD"
 
-    state = fields.Selection([('choose', "Choix"), ('done', "Résultat")], default='choose')
+    state = fields.Selection([('choose', "Choice"), ('done', "Result")], default='choose')
     employee_ids = fields.Many2many(
-        'hr.employee', string="Salariés",
+        'hr.employee', string="Employees",
         default=lambda self: self.env.user.employee_id,
-        help="Un salarié génère les siennes ; un responsable des dépenses peut choisir son équipe.")
+        help="An employee generates their own; an expenses manager can choose their team.")
     report_month = fields.Selection(
         selection=lambda self: self.env['mission.activity.report']._selection_report_month(),
-        string="Mois", required=True, default=lambda self: str(fields.Date.context_today(self).month))
+        string="Month", required=True, default=lambda self: str(fields.Date.context_today(self).month))
     report_year = fields.Selection(
         selection=lambda self: self.env['mission.activity.report']._selection_report_year(),
-        string="Année", required=True, default=lambda self: str(fields.Date.context_today(self).year))
+        string="Year", required=True, default=lambda self: str(fields.Date.context_today(self).year))
     result = fields.Html(readonly=True, sanitize=False)
     created_expense_ids = fields.Many2many(
         'hr.expense', 'mission_igd_wizard_expense_rel', 'wizard_id', 'expense_id')
@@ -237,8 +239,8 @@ class MissionIgdWizard(models.TransientModel):
         refused = employees - self._igd_allowed_employees(employees)
         if refused:
             raise UserError(_(
-                "Vous ne pouvez générer des IGD que pour vous-même, vos subordonnés, les salariés "
-                "de vos départements ou ceux dont vous approuvez les dépenses. Non autorisé : %s.",
+                "You can only generate IGD for yourself, your subordinates, the employees of "
+                "your departments or those whose expenses you approve. Not allowed: %s.",
                 ", ".join(refused.sudo().mapped('name'))))
         day = date(int(self.report_year), int(self.report_month), 1)
         Report = self.env['mission.activity.report'].sudo()
@@ -256,12 +258,12 @@ class MissionIgdWizard(models.TransientModel):
                 if kind == 'entries':
                     missing |= employee
         if not lines:
-            lines.append(escape(_("Aucune mission n'a d'IGD moyens prévus par mois.")))
-        title = _("IGD créées") if created else _("Aucune IGD générée")
+            lines.append(escape(_("No mission has an average monthly IGD set.")))
+        title = _("IGD created") if created else _("No IGD generated")
         body = Markup("<h4>%s</h4>%s") % (title, Markup().join(Markup("<p>%s</p>") % line for line in lines))
         if missing:
             body += Markup("<p>%s</p>") % _(
-                "Saisissez des journées travaillées sur une mission pour laquelle les IGD sont prévues.")
+                "Enter days worked on a mission for which IGD are planned.")
         self.write({
             'state': 'done', 'result': body,
             'created_expense_ids': [(6, 0, created.ids)],
@@ -270,31 +272,31 @@ class MissionIgdWizard(models.TransientModel):
         return {
             'type': 'ir.actions.act_window', 'res_model': self._name, 'res_id': self.id,
             'view_mode': 'form', 'views': [(False, 'form')], 'target': 'new',
-            'name': _("Générer les IGD"),
+            'name': _("Generate the IGD"),
         }
 
     def _summary_line(self, employee, item):
         """Ce qui est créé pour un salarié sur une mission ; le détail du montant prévu
         n'est donné qu'aux administrateurs."""
         money = lambda amount: format_amount(self.env, amount, item['currency'])  # noqa: E731
-        text = _("%(employee)s, %(project)s : %(lodging)s IGD logement et %(meals)s IGD repas "
-                 "créées, soit %(total)s.",
+        text = _("%(employee)s, %(project)s: %(lodging)s lodging IGD and %(meals)s meal IGD "
+                 "created, %(total)s in all.",
                  employee=employee.name, project=item['project'].name, lodging=item['lodging'],
                  meals=item['meals'], total=money(item['total']))
         if not self.env.user.has_group(IGD_GROUP):
             return escape(text)
         # Le détail d'une seule phrase : la somme créée se décompose en la part du
         # mois et ce qui vient des mois précédents.
-        details = [_("%s au titre du mois", money(item['month']))]
+        details = [_("%s for the month", money(item['month']))]
         if not float_is_zero(item['catchup'], precision_digits=2):
-            details.append(_("%s de rattrapage des mois précédents", money(item['catchup'])))
+            details.append(_("%s of catch-up from the previous months", money(item['catchup'])))
         if not float_is_zero(item['surplus'], precision_digits=2):
-            details.append(_("%s d'excédent des mois précédents déduit", money(item['surplus'])))
+            details.append(_("%s of surplus from the previous months deducted", money(item['surplus'])))
         if not float_is_zero(item.get('adjust') or 0.0, precision_digits=2):
-            details.append(_("%s d'ajustement du quota", money(item['adjust'])))
-        text += " " + _("Dans le détail : %s.", ", ".join(details))
+            details.append(_("%s of quota adjustment", money(item['adjust'])))
+        text += " " + _("In detail: %s.", ", ".join(details))
         if not float_is_zero(item['left'], precision_digits=2):
-            text += " " + _("Reste %s à répartir sur les saisies suivantes.", money(item['left']))
+            text += " " + _("%s left to share among the following entries.", money(item['left']))
         return escape(text)
 
     def action_open_expenses(self):
@@ -302,7 +304,7 @@ class MissionIgdWizard(models.TransientModel):
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'hr.expense',
-            'name': _("IGD créées"),
+            'name': _("IGD created"),
             'view_mode': 'list,form',
             'views': [(False, 'list'), (False, 'form')],
             'domain': [('id', 'in', self.created_expense_ids.ids)],
@@ -338,8 +340,7 @@ class MissionActivityReport(models.Model):
         lodging, meal = company.igd_lodging_product_id, company.igd_meal_product_id
         if not lodging and not meal:
             raise UserError(_(
-                "Choisissez les catégories IGD logement et repas sur la société "
-                "(Paramètres › Activité)."))
+                "Choose the lodging and meal IGD categories on the company (Settings > Activity)."))
         return company, lodging, meal
 
     def _igd_presence_days(self, data, project):
@@ -423,13 +424,13 @@ class MissionActivityReport(models.Model):
         created = Expense
         project_ids = {line.get('project_id') for line in data.get('missions', []) if line.get('project_id')}
         if not project_ids:
-            notes.append(('entries', _("aucune journée de mission saisie ce mois-ci.")))
+            notes.append(('entries', _("no mission day entered this month.")))
         for project in self.env['project.project'].browse(sorted(project_ids)):
             if not project.igd_monthly_budget:
                 continue
             days = self._igd_presence_days(data, project)
             if not days:
-                notes.append(('entries', _("aucune journée de présence sur « %s » ce mois-ci.", project.name)))
+                notes.append(('entries', _("no day of presence on \"%s\" this month.", project.name)))
                 continue  # mois complet d'absence : pas d'IGD
             igd_products = (lodging | meal).ids
             base = [('employee_id', '=', self.employee_id.id), ('project_id', '=', project.id),
@@ -445,7 +446,7 @@ class MissionActivityReport(models.Model):
             target = project.igd_monthly_budget * months - before + adjust
             left = target - sum(month.mapped('total_amount'))
             if float_compare(left, 0.0, precision_digits=2) <= 0:
-                notes.append(('info', _("le montant prévu pour « %s » est déjà atteint.", project.name)))
+                notes.append(('info', _("the planned amount for \"%s\" is already reached.", project.name)))
             taken = {(e.product_id.id, e.date) for e in month}
             real_meals = set(Expense.search([
                 ('employee_id', '=', self.employee_id.id),

@@ -6,14 +6,21 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-21 21:17+0000\n"
-"PO-Revision-Date: 2026-09-21 21:17+0000\n"
+"POT-Creation-Date: 2026-11-03 11:04+0000\n"
+"PO-Revision-Date: 2026-11-03 11:04+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.project_project_view_form_igd
+msgid ""
+"\"Generate the IGD\" (Expenses application) uses it to create the IGD of the month.\n"
+"                        An adjustment adds (or removes) its amount to the quota of the month it targets, without being carried over to the following months."
+msgstr "« Générer les IGD » (application Notes de frais) s'en sert pour créer les IGD du mois.\n                        Un ajustement ajoute (ou retire) son montant au quota du mois visé, sans être repris les mois suivants."
 
 #. module: mission_report
 #. odoo-python
@@ -23,30 +30,95 @@ msgstr "%(count)s jour(s) férié(s) créé(s) pour %(year)s."
 
 #. module: mission_report
 #. odoo-python
-#: code:addons/mission_report/models/hr_leave.py:0
-msgid "%(employee)s en activité : %(duration)s"
-msgstr ""
+#: code:addons/mission_report/models/activity_report.py:0
+msgid "%(date)s is not part of the month of the report (%(month)s)."
+msgstr "Le %(date)s ne fait pas partie du mois du compte rendu (%(month)s)."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/account_move.py:0
+msgid "%(done)s days out of %(potential)s worked by %(name)s."
+msgstr "%(done)s jours sur %(potential)s réalisés par %(name)s."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/account_move.py:0
+msgid "%(done)s hours out of %(potential)s worked by %(name)s."
+msgstr "%(done)s heures sur %(potential)s réalisées par %(name)s."
 
 #. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/hr_leave.py:0
-msgid "%(employee)s n'est assigné(e) à aucune tâche du projet %(project)s."
-msgstr ""
+msgid "%(employee)s is not assigned to any task of the project %(project)s."
+msgstr "%(employee)s n'est assigné(e) à aucune tâche du projet %(project)s."
 
 #. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/hr_leave.py:0
-msgid "%s : activité"
-msgstr ""
+msgid "%(employee)s on assignment: %(duration)s"
+msgstr "%(employee)s en activité : %(duration)s"
 
 #. module: mission_report
-#: model:ir.actions.report,print_report_name:mission_report.action_report_activity_client
-msgid "'%s - client' % object.name"
-msgstr ""
+#. odoo-python
+#: code:addons/mission_report/models/igd.py:0
+msgid ""
+"%(employee)s, %(project)s: %(lodging)s lodging IGD and %(meals)s meal IGD "
+"created, %(total)s in all."
+msgstr "%(employee)s, %(project)s : %(lodging)s IGD logement et %(meals)s IGD repas créées, soit %(total)s."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/volet.py:0
+msgid ""
+"%(name)s\n"
+"Estimate based on the previous phases: %(rate)s per %(one)s worked (%(spent)s for %(worked)s %(unit)s), for %(days)s %(unit)s."
+msgstr "%(name)s\nProvision estimative d'après les volets précédents : %(rate)s par %(one)s travaillé (%(spent)s pour %(worked)s %(unit)s), pour %(days)s %(unit)s."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/igd.py:0
+msgid "%s for the month"
+msgstr "%s au titre du mois"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/igd.py:0
+msgid "%s left to share among the following entries."
+msgstr "Reste %s à répartir sur les saisies suivantes."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/igd.py:0
+msgid "%s of catch-up from the previous months"
+msgstr "%s de rattrapage des mois précédents"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/igd.py:0
+msgid "%s of quota adjustment"
+msgstr "%s d'ajustement du quota"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/igd.py:0
+msgid "%s of surplus from the previous months deducted"
+msgstr "%s d'excédent des mois précédents déduit"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/hr_leave.py:0
+msgid "%s: activity"
+msgstr "%s : activité"
 
 #. module: mission_report
 #: model:ir.actions.report,print_report_name:mission_report.action_report_activity_internal
 msgid "'%s' % object.name"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.actions.report,print_report_name:mission_report.action_report_activity_client
+msgid ""
+"'CRA_%s_%s' % (object.employee_id.name, object.date_from.strftime('%m-%Y'))"
 msgstr ""
 
 #. module: mission_report
@@ -62,6 +134,31 @@ msgid "0: none."
 msgstr "0 : aucune."
 
 #. module: mission_report
+#: model:mail.template,body_html:mission_report.mail_template_invoice_mission
+msgid ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"    <p>Hello,</p>\n"
+"    <p>\n"
+"        Please find attached the invoice <t t-out=\"object.name or ''\"/>\n"
+"        for the service <t t-out=\"object.mission_mail_object(short=True)\"/>,\n"
+"        for the month of <t t-out=\"object.mission_month_label()\"/>:\n"
+"    </p>\n"
+"    <p t-foreach=\"object.mission_mail_days_text()\" t-as=\"days_line\"><t t-out=\"days_line\"/></p>\n"
+"    <p>Together with the activity report, the table of expenses and the receipts.</p>\n"
+"    <p>With our best regards,</p>\n"
+"    <div t-if=\"not is_html_empty(user.signature)\"><t t-out=\"user.signature\"/></div>\n"
+"</div>\n"
+"        "
+msgstr "<div style=\"margin: 0px; padding: 0px;\">\n    <p>Bonjour,</p>\n    <p>\n        Veuillez trouver en attachement la facture <t t-out=\"object.name or ''\"/>\n        de la prestation <t t-out=\"object.mission_mail_object(short=True)\"/>,\n        pour le mois de <t t-out=\"object.mission_month_label()\"/> :\n    </p>\n    <p t-foreach=\"object.mission_mail_days_text()\" t-as=\"days_line\"><t t-out=\"days_line\"/></p>\n    <p>Ainsi que le compte rendu d’activité, le tableau des frais et les justificatifs.</p>\n    <p>Vous en souhaitant bonne réception,</p>\n    <div t-if=\"not is_html_empty(user.signature)\"><t t-out=\"user.signature\"/></div>\n</div>\n        "
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_kanban_inherit_mission_report
+msgid ""
+"<i class=\"fa fa-calendar me-1\" role=\"img\" aria-label=\"Calendar\"/>See "
+"in the overview"
+msgstr "<i class=\"fa fa-calendar me-1\" role=\"img\" aria-label=\"Calendrier\"/>Voir dans la vue d'ensemble"
+
+#. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.activity_report_grid
 msgid "<i>No mission this month.</i>"
 msgstr "<i>Aucune mission ce mois-ci.</i>"
@@ -73,8 +170,8 @@ msgstr "<span class=\"o_absence\" style=\"background-color: #C6EFCE;\"/>Congé"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.hr_employee_view_form_inherit_mission_report
-msgid "<span class=\"o_stat_text\">Activités</span>"
-msgstr ""
+msgid "<span class=\"o_stat_text\">Activities</span>"
+msgstr "<span class=\"o_stat_text\">Activités</span>"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.activity_report_page
@@ -100,11 +197,6 @@ msgstr "<strong>Nom et prénom : </strong>"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.activity_report_page
-msgid "<strong>Heures ouvrées : </strong>"
-msgstr ""
-
-#. module: mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.activity_report_page
 msgid "<strong>Manager signature</strong>"
 msgstr "<strong>Signature du responsable</strong>"
 
@@ -124,6 +216,11 @@ msgid "<strong>Working days: </strong>"
 msgstr "<strong>Jours potentiels : </strong>"
 
 #. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.activity_report_page
+msgid "<strong>Working hours: </strong>"
+msgstr "<strong>Heures ouvrées : </strong>"
+
+#. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_activity_report_template__kind
 msgid "A client report is exported once per client of the month."
 msgstr "Un CRA client est exporté une fois par client du mois."
@@ -136,9 +233,26 @@ msgid ""
 msgstr "Une lettre de colonne (« A ») : la valeur de chaque ligne du bloc. Une cellule (« B3 ») : une valeur d'en-tête, écrite une fois. Pour une cellule fusionnée, sa première cellule en haut à gauche."
 
 #. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_res_company__igd_real_meal_product_ids
+#: model:ir.model.fields,help:mission_report.field_res_config_settings__igd_real_meal_product_ids
+msgid "A day that carries an actual meal gets no meal IGD."
+msgstr "Un jour qui porte un repas au réel ne reçoit pas d'IGD repas."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report.py:0
+msgid "A report is created as a draft: use the Submit and Validate buttons."
+msgstr "Un compte rendu se crée en brouillon : utilisez les boutons Soumettre et Valider."
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__absence_color
 msgid "Absence Color"
 msgstr "Couleur des congés"
+
+#. module: mission_report
+#: model:ir.model,name:mission_report.model_account_move_send
+msgid "Account Move Send"
+msgstr ""
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__message_needaction
@@ -151,15 +265,56 @@ msgid "Active"
 msgstr "Actif"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__activity_ids
+msgid "Activities"
+msgstr "Activités"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_employee_view_form_inherit_mission_report
+msgid "Activities and time off entered by the employee"
+msgstr "Activités et congés saisis par l'employé"
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report_template.py:0
+#: model:ir.ui.menu,name:mission_report.menu_mission_report_root
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
 msgid "Activity"
 msgstr "Activité"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__activity_state
+msgid "Activity State"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__activity_type_icon
+msgid "Activity Type Icon"
+msgstr ""
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/hr_leave.py:0
+msgid "Activity created"
+msgstr "Activité créée"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_calendar_inherit_mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_form_inherit_mission_report
+msgid "Activity entry"
+msgstr "Saisie d'activité"
+
+#. module: mission_report
+#: model:mail.activity.type,name:mission_report.mail_activity_type_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
 msgid "Activity report"
-msgstr "Compte rendu d'activité"
+msgstr "Rapport d'activité"
 
 #. module: mission_report
 #: model:ir.actions.report,name:mission_report.action_report_activity_client
@@ -179,6 +334,12 @@ msgid "Activity report Excel template"
 msgstr "Modèle Excel de compte rendu d'activité"
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report.py:0
+msgid "Activity report created"
+msgstr "Compte rendu d'activité créé"
+
+#. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_template_view_form
 msgid "Activity report template"
 msgstr "Modèle de compte rendu d'activité"
@@ -196,6 +357,16 @@ msgid "Activity report templates"
 msgstr "Modèles de compte rendu"
 
 #. module: mission_report
+#: model:ir.actions.server,name:mission_report.ir_cron_sale_delivered_ir_actions_server
+msgid "Activity report: delivered days of the orders"
+msgstr "Rapport d'activité : journées livrées des commandes"
+
+#. module: mission_report
+#: model:ir.actions.server,name:mission_report.ir_cron_report_reminders_ir_actions_server
+msgid "Activity report: reminders of the reports"
+msgstr "Rapport d'activité : relances des comptes rendus"
+
+#. module: mission_report
 #: model:ir.actions.act_window,name:mission_report.action_mission_activity_report_all
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_list
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_search
@@ -210,20 +381,14 @@ msgstr "Comptes rendus d'activité.zip"
 
 #. module: mission_report
 #: model:hr.leave.type,name:mission_report.hr_leave_type_activite
-#: model:ir.ui.menu,name:mission_report.menu_mission_report_root
 msgid "Activité"
 msgstr ""
 
 #. module: mission_report
-#. odoo-python
-#: code:addons/mission_report/models/hr_leave.py:0
-msgid "Activité créée"
-msgstr ""
-
-#. module: mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.hr_employee_view_form_inherit_mission_report
-msgid "Activités et congés saisis par l'employé"
-msgstr ""
+#: model:ir.model.fields,field_description:mission_report.field_res_company__igd_real_meal_product_ids
+#: model:ir.model.fields,field_description:mission_report.field_res_config_settings__igd_real_meal_product_ids
+msgid "Actual meal categories"
+msgstr "Catégories de repas au réel"
 
 #. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_public_holiday_wizard__alsace_moselle
@@ -231,19 +396,17 @@ msgid "Adds Good Friday and St. Stephen's Day (26 December)."
 msgstr "Ajoute le Vendredi saint et la Saint-Étienne (26 décembre)."
 
 #. module: mission_report
-#. odoo-python
-#: code:addons/mission_report/models/billing_unit.py:0
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report_template__show_texts
 msgid ""
-"Affaire facturée au jour : ces lignes de prestation sont en heures : %s."
-msgstr ""
+"Adds under the table, on one line, the information entered day by day, and "
+"the comment of the report. The lines are added to the export: nothing to "
+"prepare in the workbook."
+msgstr "Reprend sous le tableau les informations saisies jour par jour, sur une ligne, et le commentaire du compte rendu. Les lignes sont ajoutées à l'export : rien à prévoir dans le classeur."
 
 #. module: mission_report
-#. odoo-python
-#: code:addons/mission_report/models/billing_unit.py:0
-msgid ""
-"Affaire facturée à l'heure : mettez ces lignes de prestation en heures, à un"
-" prix horaire : %s."
-msgstr ""
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__amount
+msgid "Adjustment"
+msgstr "Ajustement"
 
 #. module: mission_report
 #. odoo-python
@@ -252,9 +415,37 @@ msgid "All Saints' Day"
 msgstr "Toussaint"
 
 #. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_res_company__igd_expat_product_id
+#: model:ir.model.fields,help:mission_report.field_res_config_settings__igd_expat_product_id
+msgid ""
+"Allowances for long-term assignments abroad (expatriation allowance). "
+"Counted among the IGD for the expense filter."
+msgstr "Indemnités de long déplacement à l'étranger (forfait expatriation). Comptée parmi les IGD pour le filtre des dépenses."
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__alsace_moselle
 msgid "Alsace-Moselle"
 msgstr "Alsace-Moselle"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_igd_adjustment__amount
+msgid ""
+"Amount added to the quota of the month, negative to reduce it. What it makes get paid beyond is not taken back in the following months as an advance.\n"
+"\n"
+"A month with no day entered counts for no quota: enter the total amount it entitles to - the monthly quota if the lodging runs during time off - and not only the balance left to pay."
+msgstr "Montant ajouté au quota du mois, négatif pour le réduire. Ce qu'il fait verser en plus n'est pas repris les mois suivants comme une avance.\n\nUn mois sans aucune journée saisie ne compte pour aucun quota : portez-y le montant total auquel il donne droit - le quota mensuel si le logement court pendant les congés - et non le seul solde restant à verser."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/volet.py:0
+msgid "Amount excl. tax"
+msgstr "Montant HT"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_igd_wizard__employee_ids
+msgid ""
+"An employee generates their own; an expenses manager can choose their team."
+msgstr "Un salarié génère les siennes ; un responsable des dépenses peut choisir son équipe."
 
 #. module: mission_report
 #: model:ir.model.constraint,message:mission_report.constraint_mission_activity_report_employee_month_unique
@@ -262,9 +453,32 @@ msgid "An employee has a single activity report per month."
 msgstr "Un salarié n'a qu'un compte rendu d'activité par mois."
 
 #. module: mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.hr_holidays_cancel_leave_form_inherit_mission_report
-msgid "Annuler la saisie"
-msgstr ""
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid ""
+"An entry in hours counts all the hours entered. Unticked, only those of the "
+"working schedule of the employee count."
+msgstr "Une saisie en heures compte toutes les heures saisies. Décoché, seules comptent celles de l'horaire de travail du salarié."
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_res_company__mission_hours_outside_schedule
+#: model:ir.model.fields,help:mission_report.field_res_config_settings__mission_hours_outside_schedule
+msgid ""
+"An entry in hours counts the hours entered, even outside the working "
+"schedule of the employee (from 7 am to 8 pm for a 9 am to 5 pm schedule). "
+"Otherwise only the hours within the schedule count."
+msgstr "Une saisie en heures compte les heures saisies, même en dehors de l'horaire de travail du salarié (de 7 h à 20 h pour un horaire de 9 h à 17 h). Sinon, seules comptent les heures comprises dans son horaire."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/hr_leave.py:0
+msgid ""
+"An entry must have either a Mission or a Time off, not both nor neither."
+msgstr "Une saisie doit posséder soit une Mission soit un Congé, mais pas les deux ni aucun des deux."
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_igd_adjustment__month
+msgid "Any day of the month: only the month counts."
+msgstr "N'importe quel jour du mois : seul le mois compte."
 
 #. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_activity_report__date_from
@@ -300,29 +514,19 @@ msgid "Attachment Count"
 msgstr "Nombre de pièces jointes"
 
 #. module: mission_report
-#: model:ir.model.fields.selection,name:mission_report.selection__mission_volet_wizard__mission_billing_unit__day
-#: model:ir.model.fields.selection,name:mission_report.selection__res_company__mission_billing_unit_default__day
-#: model:ir.model.fields.selection,name:mission_report.selection__sale_order__mission_billing_unit__day
-msgid "Au jour"
-msgstr ""
-
-#. module: mission_report
-#: model:ir.model.fields,help:mission_report.field_sale_order__mission_billing_unit
-msgid ""
-"Au jour : les journées validées des comptes rendus font la quantité livrée. "
-"À l'heure : les heures validées, sur des lignes en heures à un prix horaire."
-msgstr ""
-
-#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_hr_leave__available_project_ids
 msgid "Available Project"
 msgstr "Projets disponibles"
 
 #. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__unit_warning
-#: model:ir.model.fields,field_description:mission_report.field_sale_order__mission_unit_warning
-msgid "Avertissement sur l'unité"
-msgstr ""
+#: model:ir.model.fields,help:mission_report.field_project_project__igd_monthly_budget
+msgid "Average IGD to pay per month of presence on this mission."
+msgstr "Montant moyen d'IGD à verser par mois de présence sur cette mission."
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_project_project__igd_monthly_budget
+msgid "Average monthly IGD planned"
+msgstr "IGD moyens prévus par mois"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
@@ -330,16 +534,23 @@ msgid "Back to draft"
 msgstr "Remettre en brouillon"
 
 #. module: mission_report
-#: model:ir.model.fields,help:mission_report.field_hr_leave__entry_type
-msgid ""
-"Bascule entre une saisie de Mission (par défaut) et une saisie de Congé."
-msgstr ""
-
-#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/public_holiday_wizard.py:0
 msgid "Bastille Day"
 msgstr "Fête nationale"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__mission_billing_unit
+#: model:ir.model.fields,field_description:mission_report.field_sale_order__mission_billing_unit
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid "Billing"
+msgstr "Facturation"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_res_company__mission_billing_unit_default
+#: model:ir.model.fields,help:mission_report.field_res_config_settings__mission_billing_unit_default
+msgid "Billing unit proposed for new orders."
+msgstr "Unité de facturation proposée pour les nouvelles affaires."
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_template_view_form
@@ -357,11 +568,48 @@ msgid "Both"
 msgstr "Les deux"
 
 #. module: mission_report
-#: model:ir.model.fields,help:mission_report.field_mission_volet_wizard__mission_billing_unit
+#: model:ir.model.fields.selection,name:mission_report.selection__project_project__igd_lodging_basis__calendar
+#: model:ir.model.fields.selection,name:mission_report.selection__project_project__igd_meal_basis__calendar
+msgid "Calendar days"
+msgstr "Jours calendaires"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_igd_wizard_view_form
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_volet_wizard_view_form
+msgid "Cancel"
+msgstr "Annuler"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_holidays_cancel_leave_form_inherit_mission_report
+msgid "Cancel the entry"
+msgstr "Annuler la saisie"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_igd_wizard__state__choose
+msgid "Choice"
+msgstr "Choix"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/volet.py:0
 msgid ""
-"Celle de l'affaire d'origine par défaut. À l'heure : chaque mois compte les "
-"heures ouvrées des intervenants."
-msgstr ""
+"Choose at least one person: their working days give the estimate of the "
+"phase."
+msgstr "Choisissez au moins un intervenant : ses jours ouvrés donnent le prévisionnel du volet."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/igd.py:0
+msgid ""
+"Choose the lodging and meal IGD categories on the company (Settings > "
+"Activity)."
+msgstr "Choisissez les catégories IGD logement et repas sur la société (Paramètres › Activité)."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/volet.py:0
+msgid "Choose the project of the order first (Other Information tab)."
+msgstr "Choisissez d'abord le projet de l'affaire (onglet Autres informations)."
 
 #. module: mission_report
 #. odoo-python
@@ -387,14 +635,14 @@ msgid "Client (missions of one client)"
 msgstr "Client (missions d'un seul client)"
 
 #. module: mission_report
-#: model:ir.model.fields,help:mission_report.field_hr_leave__partner_id
-msgid "Client associé à la mission, dérivé du projet."
-msgstr ""
-
-#. module: mission_report
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__label
 msgid "Client, or time off type"
 msgstr "Client, ou type de congé"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_igd_wizard_view_form
+msgid "Close"
+msgstr "Fermer"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__color_days
@@ -420,6 +668,20 @@ msgstr "Colonne ou cellule"
 #. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report_template.py:0
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__comment
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__comment
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
+msgid "Comment"
+msgstr "Commentaire"
+
+#. module: mission_report
+#: model:ir.model,name:mission_report.model_res_company
+msgid "Companies"
+msgstr ""
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__company_id
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__company_id
 #: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__company_id
@@ -428,16 +690,27 @@ msgid "Company"
 msgstr "Société"
 
 #. module: mission_report
-#: model:ir.model.fields.selection,name:mission_report.selection__hr_leave__entry_type__leave
-#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_form_inherit_mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_mission_report
-msgid "Congé"
+#: model:ir.model,name:mission_report.model_res_config_settings
+msgid "Config Settings"
 msgstr ""
 
 #. module: mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_mission_report
-msgid "Congés uniquement"
-msgstr ""
+#: model:ir.model.fields,help:mission_report.field_sale_order__mission_invoice_partner_ids
+msgid ""
+"Contacts to send the invoices of this order to. Empty: the customer of the "
+"invoice."
+msgstr "Contacts à qui envoyer les factures de cette affaire. Vide : le client de la facture."
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_res_company__mission_hours_outside_schedule
+#: model:ir.model.fields,field_description:mission_report.field_res_config_settings__mission_hours_outside_schedule
+msgid "Count hours outside working hours"
+msgstr "Compter les heures hors horaires de travail"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_volet_wizard_view_form
+msgid "Create the phase"
+msgstr "Créer le volet"
 
 #. module: mission_report
 #: model_terms:ir.actions.act_window,help:mission_report.action_mission_activity_report_my
@@ -447,22 +720,51 @@ msgid ""
 msgstr "Créez le compte rendu d'un mois : il reprend vos missions et vos congés jour par jour. Soumettez-le pour validation une fois le mois terminé."
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__created_expense_ids
+msgid "Created Expense"
+msgstr "Dépense créée"
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__create_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_export__create_uid
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_note__create_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__create_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__create_uid
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__create_uid
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__create_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__create_uid
+#: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__create_uid
 msgid "Created by"
 msgstr "Créé par"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__create_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_export__create_date
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_note__create_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__create_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__create_date
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__create_date
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__create_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__create_date
+#: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__create_date
 msgid "Created on"
 msgstr "Créé le"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__currency_id
+msgid "Currency"
+msgstr ""
+
+#. module: mission_report
+#. odoo-javascript
+#: code:addons/mission_report/static/src/xml/calendar_year_button.xml:0
+msgid "Current month"
+msgstr "Mois en cours"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_hr_leave__partner_id
+msgid "Customer associated with the mission, derived from the project."
+msgstr "Client associé à la mission, dérivé du projet."
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__date_to
@@ -470,8 +772,14 @@ msgid "Date To"
 msgstr "Date de fin"
 
 #. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_volet_wizard_view_form
+msgid "Dates missing from the order: these will be saved there."
+msgstr "Dates absentes de l'affaire : celles-ci y seront enregistrées."
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report_template.py:0
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_note__date
 #: model_terms:ir.ui.view,arch_db:mission_report.activity_report_grid
 msgid "Day"
 msgstr "Jour"
@@ -487,16 +795,74 @@ msgid "Day numbers row"
 msgstr "Ligne des numéros de jour"
 
 #. module: mission_report
-#: model:ir.model.fields.selection,name:mission_report.selection__hr_leave__mission_duration__half
-msgid "Demi-journée"
-msgstr ""
+#: model:ir.model.fields,help:mission_report.field_res_company__mission_reminder_day
+#: model:ir.model.fields,help:mission_report.field_res_config_settings__mission_reminder_day
+msgid ""
+"Day of the month on which the reports of the past month are asked for: 3 for"
+" the 3rd. 0: no reminder."
+msgstr "Jour du mois où les comptes rendus du mois écoulé sont réclamés : 3 pour le 3. 0 : pas de relance."
 
 #. module: mission_report
-#: model:ir.model.fields,help:mission_report.field_hr_employee__activity_date_to
+#: model:ir.model.fields,field_description:mission_report.field_res_company__mission_reminder_day
+#: model:ir.model.fields,field_description:mission_report.field_res_config_settings__mission_reminder_day
+msgid "Day of the report reminders"
+msgstr "Jour de relance des comptes rendus"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/volet.py:0
+msgid "Days"
+msgstr "Jours"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_sale_order_line__mission_day_line
+msgid "Days line"
+msgstr "Ligne de journées"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__project_project__igd_lodging_basis__worked
+#: model:ir.model.fields.selection,name:mission_report.selection__project_project__igd_meal_basis__worked
+msgid "Days worked"
+msgstr "Jours travaillés"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_project_project__igd_lodging_basis
+#: model:ir.model.fields,help:mission_report.field_project_project__igd_meal_basis
 msgid ""
-"Dernier jour de la saisie de mission en cours. Alimente le badge de "
-"présence, qui annonce une fin de mission et non un retour de congé."
-msgstr ""
+"Days worked: one allowance per day entered on the mission.\n"
+"Calendar days: every day of the month between the first and the last day entered, weekends, public holidays and time off included.\n"
+"\n"
+"The setting belongs to the mission: another mission of the same employee, or another person on another mission, can be paid on another basis."
+msgstr "Jours travaillés : une indemnité par journée saisie sur la mission.\nJours calendaires : tous les jours du mois entre la première et la dernière journée saisie, week-ends, jours fériés et congés compris.\n\nLe réglage est propre à la mission : une autre mission du même salarié, ou un autre intervenant sur une autre mission, peut être payé sur une autre base."
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_res_company__mission_billing_unit_default
+#: model:ir.model.fields,field_description:mission_report.field_res_config_settings__mission_billing_unit_default
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid "Default billing"
+msgstr "Facturation par défaut"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_view_form_inherit_mission_report
+msgid "Delete"
+msgstr "Supprimer"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_view_form_inherit_mission_report
+msgid "Delete this entry permanently?"
+msgstr "Supprimer définitivement cette saisie ?"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_sale_order__mission_delivery_date
+#: model_terms:ir.ui.view,arch_db:mission_report.sale_order_tree_mission_employees
+msgid "Delivery date"
+msgstr "Date de livraison"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_sale_order__mission_description
+#: model_terms:ir.ui.view,arch_db:mission_report.view_order_form_mission_volet
+msgid "Description of the service"
+msgstr "Description de la prestation"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_export_view_form
@@ -505,15 +871,29 @@ msgid "Discard"
 msgstr "Annuler"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_account_move__display_name
+#: model:ir.model.fields,field_description:mission_report.field_account_move_send__display_name
 #: model:ir.model.fields,field_description:mission_report.field_hr_employee__display_name
 #: model:ir.model.fields,field_description:mission_report.field_hr_employee_public__display_name
+#: model:ir.model.fields,field_description:mission_report.field_hr_expense__display_name
 #: model:ir.model.fields,field_description:mission_report.field_hr_leave__display_name
+#: model:ir.model.fields,field_description:mission_report.field_hr_leave_report_calendar__display_name
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__display_name
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_export__display_name
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_note__display_name
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__display_name
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__display_name
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__display_name
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__display_name
 #: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__display_name
+#: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__display_name
+#: model:ir.model.fields,field_description:mission_report.field_product_product__display_name
+#: model:ir.model.fields,field_description:mission_report.field_project_project__display_name
+#: model:ir.model.fields,field_description:mission_report.field_res_company__display_name
+#: model:ir.model.fields,field_description:mission_report.field_res_config_settings__display_name
 #: model:ir.model.fields,field_description:mission_report.field_res_users__display_name
+#: model:ir.model.fields,field_description:mission_report.field_sale_order__display_name
+#: model:ir.model.fields,field_description:mission_report.field_sale_order_line__display_name
 msgid "Display Name"
 msgstr "Nom d'affichage"
 
@@ -534,8 +914,8 @@ msgstr "Brouillon"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_hr_leave__mission_duration
-msgid "Durée"
-msgstr ""
+msgid "Duration"
+msgstr "Durée"
 
 #. module: mission_report
 #. odoo-python
@@ -544,24 +924,37 @@ msgid "Easter Monday"
 msgstr "Lundi de Pâques"
 
 #. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_view_form_inherit_mission_report
+msgid "Edit"
+msgstr "Modifier"
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report_template.py:0
 #: model:ir.model,name:mission_report.model_hr_employee
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__employee_id
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__employee_id
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__employee
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_search
 msgid "Employee"
-msgstr "Employé"
+msgstr "Salarié"
 
 #. module: mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_mission_report
-msgid "Employé"
-msgstr ""
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+msgid "Employee signature"
+msgstr "Signature du collaborateur"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__employee_ids
+msgid "Employees"
+msgstr "Salariés"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_view_search_inherit_mission_report
-msgid "Employés ayant une saisie en cours aujourd'hui"
-msgstr ""
+msgid "Employees with an entry in progress today"
+msgstr "Employés ayant une saisie en cours aujourd'hui"
 
 #. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_activity_report_template__sheet_name
@@ -569,18 +962,35 @@ msgid "Empty: the first sheet of the workbook."
 msgstr "Vide : la première feuille du classeur."
 
 #. module: mission_report
-#. odoo-javascript
-#: code:addons/mission_report/static/src/js/presence_status.js:0
-#: code:addons/mission_report/static/src/xml/avatar_card_resource_popover.xml:0
-#: model:ir.model.fields.selection,name:mission_report.selection__hr_employee__hr_icon_display__presence_holiday_activity
-msgid "En mission"
-msgstr ""
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_volet_wizard_view_form
+msgid "End"
+msgstr "Fin"
 
 #. module: mission_report
-#. odoo-javascript
-#: code:addons/mission_report/static/src/js/presence_status.js:0
-msgid "En mission, jusqu'au %(date)s"
-msgstr ""
+#: model:ir.model.fields,field_description:mission_report.field_sale_order_line__mission_period_end
+msgid "End of period"
+msgstr "Fin de période"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_hr_employee__activity_date_to
+#: model:ir.model.fields,field_description:mission_report.field_hr_employee_public__activity_date_to
+msgid "End of the current mission"
+msgstr "Fin de la mission en cours"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_sale_order__mission_date_end
+msgid "End of the order"
+msgstr "Fin de l'affaire"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__source_date_end
+msgid "End of the original order"
+msgstr "Fin de l'affaire d'origine"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__date_end
+msgid "End of the phase"
+msgstr "Fin du volet"
 
 #. module: mission_report
 #. odoo-python
@@ -589,9 +999,72 @@ msgid "Enter a year between 1900 and 2999."
 msgstr "Saisissez une année entre 1900 et 2999."
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/igd.py:0
+msgid "Enter days worked on a mission for which IGD are planned."
+msgstr "Saisissez des journées travaillées sur une mission pour laquelle les IGD sont prévues."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_view_inherit_mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_year_view_inherit_mission_report
+msgid "Entries"
+msgstr "Saisies"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_view_form_inherit_mission_report
+msgid "Entry"
+msgstr "Saisie"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_view_search_inherit_mission_report
+msgid "Entry in progress today"
+msgstr "Saisie en cours aujourd'hui"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__plan
+msgid "Estimate"
+msgstr "Prévisionnel"
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__file
 msgid "Excel file"
 msgstr "Fichier Excel"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid "Excel templates"
+msgstr "Modèles Excel"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid "Excel templates of the reports"
+msgstr "Modèles Excel des comptes rendus"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_res_company__igd_expat_product_id
+#: model:ir.model.fields,field_description:mission_report.field_res_config_settings__igd_expat_product_id
+msgid "Expatriation allowance category"
+msgstr "Catégorie forfait expatriation"
+
+#. module: mission_report
+#: model:ir.model,name:mission_report.model_hr_expense
+msgid "Expense"
+msgstr ""
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid "Expense categories of the IGD"
+msgstr "Catégories de dépenses des IGD"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.view_order_form_mission_volet
+msgid "Expenses"
+msgstr "Frais"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_sale_order__mission_expenses_text
+msgid "Expenses sentence"
+msgstr "Frais"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_export_view_form
@@ -599,9 +1072,19 @@ msgid "Export"
 msgstr "Exporter"
 
 #. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
+msgid "Export PDF"
+msgstr "Exporter pdf"
+
+#. module: mission_report
 #: model:ir.model,name:mission_report.model_mission_activity_report_export
 msgid "Export activity reports to Excel"
 msgstr "Exporter des comptes rendus d'activité vers Excel"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
+msgid "Export client PDF"
+msgstr "Exporter pdf client"
 
 #. module: mission_report
 #. odoo-python
@@ -613,17 +1096,9 @@ msgid "Export to Excel"
 msgstr "Exporter vers Excel"
 
 #. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__mission_billing_unit
-#: model:ir.model.fields,field_description:mission_report.field_sale_order__mission_billing_unit
-msgid "Facturation"
-msgstr ""
-
-#. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_res_company__mission_billing_unit_default
-#: model:ir.model.fields,field_description:mission_report.field_res_config_settings__mission_billing_unit_default
-#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_billing
-msgid "Facturation par défaut"
-msgstr ""
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__file_generated
+msgid "File Generated"
+msgstr "Classeur fabriqué par le module"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__filename
@@ -631,20 +1106,41 @@ msgid "Filename"
 msgstr "Nom du fichier"
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/volet.py:0
+msgid "Fill in the dates of the original order."
+msgstr "Renseignez les dates de l'affaire d'origine."
+
+#. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_activity_report_template__color_days
 msgid "Fills the day columns of weekends, public holidays and time off."
 msgstr "Colore les colonnes des week-ends, des jours fériés et des congés."
 
 #. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_hr_employee__activity_date_to
-#: model:ir.model.fields,field_description:mission_report.field_hr_employee_public__activity_date_to
-msgid "Fin de la mission en cours"
-msgstr ""
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_form_inherit_mission_report
+msgid "First and last day"
+msgstr "Premier et dernier jour"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_account_bank_statement_line__mission_month
+#: model:ir.model.fields,help:mission_report.field_account_move__mission_month
+msgid ""
+"First day of the billed month. By default: the month of the delivery date, "
+"otherwise that of the invoice date, or the previous month if the invoice is "
+"dated in the first half of the month. Replaces \"/month\" and "
+"\"/month_year\" in the labels and is used by the sending e-mail."
+msgstr "Premier jour du mois facturé. Par défaut : le mois de la date de livraison, sinon celui de la date de facture, ou le mois précédent si la facture est datée de la première quinzaine. Remplace « /mois » et « /mois_annee » dans les libellés et sert au courriel d'envoi."
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__mission_first_row
 msgid "First mission row"
 msgstr "Première ligne de mission"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_project_project__igd_start
+msgid ""
+"First month taken into account for the catch-up. Empty: from the start."
+msgstr "Premier mois pris en compte pour le rattrapage. Vide : depuis le début."
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__absence_first_row
@@ -662,11 +1158,38 @@ msgid "Followers (Partners)"
 msgstr "Abonnés (Partenaires)"
 
 #. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report__activity_type_icon
+msgid "Font awesome icon e.g. fa-tasks"
+msgstr ""
+
+#. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_activity_report_template_cell__block
 msgid "For a column: the block(s) of lines it applies to."
 msgstr "Pour une colonne : le ou les blocs de lignes concernés."
 
 #. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report__note_ids
+msgid ""
+"Free text carried on a day of the month, shown under the table, day by day."
+msgstr "Texte libre porté sur un jour du mois, affiché sous le tableau, jour par jour."
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report__comment
+msgid "Free text printed under the table of the report."
+msgstr "Texte libre imprimé sous le tableau du compte rendu."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
+msgid "Free text printed under the table…"
+msgstr "Texte libre imprimé sous le tableau…"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid "French public holidays"
+msgstr "Jours fériés français"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_igd_wizard_view_form
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_public_holiday_wizard_view_form
 msgid "Generate"
 msgstr "Générer"
@@ -680,10 +1203,40 @@ msgid "Generate French public holidays"
 msgstr "Générer les jours fériés français"
 
 #. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid "Generate public holidays"
+msgstr "Générer les jours fériés"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_volet_wizard_view_form
+msgid "Generate the French public holidays"
+msgstr "Générer les jours fériés français"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/igd.py:0
+#: model:ir.actions.act_window,name:mission_report.action_mission_igd_wizard
+#: model:ir.ui.menu,name:mission_report.menu_mission_igd
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_igd_wizard_view_form
+msgid "Generate the IGD"
+msgstr "Générer les IGD"
+
+#. module: mission_report
+#: model:ir.model,name:mission_report.model_mission_igd_wizard
+msgid "Generation of the month's IGD"
+msgstr "Génération des IGD du mois"
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/public_holiday_wizard.py:0
 msgid "Good Friday"
 msgstr "Vendredi saint"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__hr_leave__mission_duration__half
+msgid "Half day"
+msgstr "Demi-journée"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__has_message
@@ -696,32 +1249,26 @@ msgid "Header"
 msgstr "En-tête"
 
 #. module: mission_report
-#. odoo-python
-#: code:addons/mission_report/models/volet.py:0
-#: model:ir.model.fields.selection,name:mission_report.selection__hr_leave__mission_duration__hours
-msgid "Heures"
-msgstr ""
-
-#. module: mission_report
-#. odoo-python
-#: code:addons/mission_report/models/activity_report_template.py:0
-#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__mission_hours
-#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__mission_hours_total
-msgid "Heures de mission"
-msgstr ""
-
-#. module: mission_report
-#. odoo-python
-#: code:addons/mission_report/models/activity_report_template.py:0
-#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__potential_hours
-#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__potential_hours
-msgid "Heures ouvrées"
-msgstr ""
-
-#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__holiday_color
 msgid "Holiday Color"
 msgstr "Couleur des jours fériés"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__holidays_warning
+msgid "Holidays Warning"
+msgstr "Avertissement jours fériés"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/volet.py:0
+#: model:ir.model.fields.selection,name:mission_report.selection__hr_leave__mission_duration__hours
+msgid "Hours"
+msgstr "Heures"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid "Hours outside working hours"
+msgstr "Heures hors horaires de travail"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_template_view_form
@@ -734,17 +1281,67 @@ msgid "Hr Icon Display"
 msgstr "Affichage de l'icône RH"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_account_move__id
+#: model:ir.model.fields,field_description:mission_report.field_account_move_send__id
 #: model:ir.model.fields,field_description:mission_report.field_hr_employee__id
 #: model:ir.model.fields,field_description:mission_report.field_hr_employee_public__id
+#: model:ir.model.fields,field_description:mission_report.field_hr_expense__id
 #: model:ir.model.fields,field_description:mission_report.field_hr_leave__id
+#: model:ir.model.fields,field_description:mission_report.field_hr_leave_report_calendar__id
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__id
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_export__id
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_note__id
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__id
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__id
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__id
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__id
 #: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__id
+#: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__id
+#: model:ir.model.fields,field_description:mission_report.field_product_product__id
+#: model:ir.model.fields,field_description:mission_report.field_project_project__id
+#: model:ir.model.fields,field_description:mission_report.field_res_company__id
+#: model:ir.model.fields,field_description:mission_report.field_res_config_settings__id
 #: model:ir.model.fields,field_description:mission_report.field_res_users__id
+#: model:ir.model.fields,field_description:mission_report.field_sale_order__id
+#: model:ir.model.fields,field_description:mission_report.field_sale_order_line__id
 msgid "ID"
 msgstr "ID"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_expense_view_search_igd
+msgid "IGD"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_product_product__igd_category
+msgid "IGD category"
+msgstr "Catégorie IGD"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/igd.py:0
+msgid "IGD created"
+msgstr "IGD créées"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_project_project__igd_start
+msgid "IGD from"
+msgstr "IGD à partir du"
+
+#. module: mission_report
+#: model:ir.model,name:mission_report.model_mission_igd_adjustment
+msgid "IGD quota adjustment of a month"
+msgstr "Ajustement du quota d'IGD d'un mois"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__activity_exception_icon
+msgid "Icon"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr ""
 
 #. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_activity_report__message_needaction
@@ -758,9 +1355,61 @@ msgid "If checked, some messages have a delivery error."
 msgstr "Si coché, certains messages ont une erreur d'envoi."
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_project_project__igd_currency_id
+msgid "Igd Currency"
+msgstr "Devise des IGD"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_hr_expense__igd_generated
+msgid "Igd Generated"
+msgstr "IGD générée"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/igd.py:0
+msgid "In detail: %s."
+msgstr "Dans le détail : %s."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_note__note
+#: model_terms:ir.ui.view,arch_db:mission_report.activity_report_grid
+msgid "Information"
+msgstr "Informations"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__show_texts
+msgid "Information and comment"
+msgstr "Informations et commentaire"
+
+#. module: mission_report
+#: model:ir.model,name:mission_report.model_mission_activity_report_note
+msgid "Information carried on a day of a report"
+msgstr "Information portée sur un jour d'un compte rendu"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__note_ids
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
+msgid "Information per day"
+msgstr "Informations par jour"
+
+#. module: mission_report
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template__kind__internal
 msgid "Internal (missions and time off)"
 msgstr "Interne (missions et congés)"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_sale_order__mission_invoice_partner_ids
+msgid "Invoice recipients"
+msgstr "Destinataires des factures"
+
+#. module: mission_report
+#: model:mail.template,subject:mission_report.mail_template_invoice_mission
+msgid ""
+"Invoice {{ object.mission_mail_object() }} - {{ object.mission_month_label()"
+" }}"
+msgstr "Facture {{ object.mission_mail_object() }} - {{ object.mission_month_label() }}"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__message_is_follower
@@ -768,13 +1417,8 @@ msgid "Is Follower"
 msgstr "Est un abonné"
 
 #. module: mission_report
-#: model:ir.model.fields.selection,name:mission_report.selection__hr_leave__mission_duration__day
-msgid "Journée entière"
-msgstr ""
-
-#. module: mission_report
-#: model:ir.model.fields,help:mission_report.field_mission_volet_wizard__days
-msgid "Jours ouvrés, ou heures ouvrées pour un volet facturé à l'heure."
+#: model:ir.model,name:mission_report.model_account_move
+msgid "Journal Entry"
 msgstr ""
 
 #. module: mission_report
@@ -785,17 +1429,6 @@ msgstr "Type"
 
 #. module: mission_report
 #. odoo-python
-#: code:addons/mission_report/models/hr_leave.py:0
-msgid "La mission %s est facturée au jour : saisissez des journées entières."
-msgstr ""
-
-#. module: mission_report
-#: model:ir.model.fields,help:mission_report.field_hr_leave__mission_hourly
-msgid "La mission est facturée à l'heure à la date de la saisie."
-msgstr ""
-
-#. module: mission_report
-#. odoo-python
 #: code:addons/mission_report/models/public_holiday_wizard.py:0
 msgid "Labour Day"
 msgstr "Fête du Travail"
@@ -803,20 +1436,35 @@ msgstr "Fête du Travail"
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__write_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_export__write_uid
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_note__write_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__write_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__write_uid
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__write_uid
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__write_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__write_uid
+#: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__write_uid
 msgid "Last Updated by"
 msgstr "Dernière mise à jour par"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__write_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_export__write_date
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_note__write_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__write_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__write_date
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__write_date
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__write_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__write_date
+#: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__write_date
 msgid "Last Updated on"
 msgstr "Dernière mise à jour le"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_hr_employee__activity_date_to
+msgid ""
+"Last day of the current mission entry. Feeds the presence badge, which "
+"announces the end of a mission and not a return from time off."
+msgstr "Dernier jour de la saisie de mission en cours. Alimente le badge de présence, qui annonce une fin de mission et non un retour de congé."
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__mission_last_row
@@ -829,12 +1477,10 @@ msgid "Last time off row"
 msgstr "Dernière ligne de congé"
 
 #. module: mission_report
-#. odoo-python
-#: code:addons/mission_report/models/volet.py:0
+#: model:ir.model.fields,help:mission_report.field_sale_order_line__mission_period_start
 msgid ""
-"Les lignes du volet reprennent l'unité et le prix de l'affaire d'origine : "
-"passez-les %s, à un prix %s, dans le nouveau volet."
-msgstr ""
+"Line of one month of the phase: the validated days of this period go to it."
+msgstr "Ligne d'un mois du volet : les journées validées de cette période vont sur elle."
 
 #. module: mission_report
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__total
@@ -847,15 +1493,44 @@ msgid "Lines"
 msgstr "Lignes"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_res_company__igd_lodging_product_id
+#: model:ir.model.fields,field_description:mission_report.field_res_config_settings__igd_lodging_product_id
+msgid "Lodging IGD category"
+msgstr "Catégorie IGD logement"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_project_project__igd_lodging_basis
+msgid "Lodging IGD on"
+msgstr "IGD logement sur"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.project_project_view_form_igd
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid "Long-distance travel allowances (IGD)"
+msgstr "Indemnités de grand déplacement (IGD)"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+msgid "Manager signature"
+msgstr "Signature du responsable"
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__cell_ids
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_template_view_form
 msgid "Mappings"
 msgstr "Correspondances"
 
 #. module: mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_inherit_mission_report
-msgid "Mes saisies"
-msgstr ""
+#: model:ir.model.fields,field_description:mission_report.field_res_company__igd_meal_product_id
+#: model:ir.model.fields,field_description:mission_report.field_res_config_settings__igd_meal_product_id
+msgid "Meal IGD category"
+msgstr "Catégorie IGD repas"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_project_project__igd_meal_basis
+msgid "Meal IGD on"
+msgstr "IGD repas sur"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__message_has_error
@@ -868,9 +1543,15 @@ msgid "Messages"
 msgstr "Messages"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__missing_employee_ids
+msgid "Missing Employee"
+msgstr "Salarié manquant"
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report_template.py:0
 #: model:ir.model.fields,field_description:mission_report.field_hr_leave__project_id
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__project_id
 #: model:ir.model.fields.selection,name:mission_report.selection__hr_leave__entry_type__mission
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__project
 #: model_terms:ir.ui.view,arch_db:mission_report.activity_report_grid
@@ -881,6 +1562,35 @@ msgid "Mission"
 msgstr "Mission"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_hr_leave_report_calendar__mission_day_end
+msgid "Mission Day End"
+msgstr "Fin de la journée de mission"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_hr_leave_report_calendar__mission_day_start
+msgid "Mission Day Start"
+msgstr "Début de la journée de mission"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_form_inherit_mission_report
+msgid ""
+"Mission billed per day: an entry counts whole days. Half days and hours are reserved for\n"
+"                    missions billed per hour."
+msgstr "Mission facturée au jour : une saisie compte des journées entières. Les demi-journées et les\n                    heures sont réservées aux missions facturées à l'heure."
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_hr_leave__mission_hourly
+msgid "Mission billed per hour"
+msgstr "Mission à l'heure"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_hr_leave__mission_duration
+msgid ""
+"Mission billed per hour: a whole day counts the working hours of the day, a "
+"half day half of them, chosen hours exactly their hours."
+msgstr "Mission facturée à l'heure : une journée entière compte les heures de travail du jour, une demi-journée la moitié, des heures choisies exactement leurs heures."
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report_template.py:0
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__mission_days
@@ -889,17 +1599,17 @@ msgid "Mission days"
 msgstr "Jours de mission"
 
 #. module: mission_report
-#: model:ir.model.fields,help:mission_report.field_hr_leave__mission_duration
-msgid ""
-"Mission facturée à l'heure : une journée entière compte les heures de "
-"travail du jour, une demi-journée la moitié, des heures choisies exactement "
-"leurs heures."
-msgstr ""
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__mission_hours
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__mission_hours_total
+msgid "Mission hours"
+msgstr "Heures de mission"
 
 #. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_hr_leave__mission_hourly
-msgid "Mission à l'heure"
-msgstr ""
+#: model:mail.template,name:mission_report.mail_template_invoice_mission
+msgid "Mission invoice"
+msgstr "Facture de mission"
 
 #. module: mission_report
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__block__mission
@@ -907,27 +1617,32 @@ msgid "Missions"
 msgstr "Missions"
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+msgid "Missions billed per hour, in hours"
+msgstr "Missions à l'heure, en heures"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+msgid "Missions billed per hour, in hours (working hours of the month: %s)"
+msgstr "Missions à l'heure, en heures (heures ouvrées du mois : %s)"
+
+#. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_mission_report
-msgid "Missions uniquement"
-msgstr ""
+msgid "Missions only"
+msgstr "Missions uniquement"
 
 #. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report_template.py:0
-msgid "Missions à l'heure, en heures"
-msgstr ""
-
-#. module: mission_report
-#. odoo-python
-#: code:addons/mission_report/models/activity_report_template.py:0
-msgid "Missions à l'heure, en heures (heures ouvrées du mois : %s)"
-msgstr ""
-
-#. module: mission_report
-#. odoo-python
-#: code:addons/mission_report/models/activity_report_template.py:0
+#: code:addons/mission_report/models/volet.py:0
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__date_from
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__month
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__report_month
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_search
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_igd_wizard_view_form
 msgid "Month"
 msgstr "Mois"
 
@@ -942,9 +1657,25 @@ msgid "Month (text)"
 msgstr "Mois (texte)"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_account_bank_statement_line__mission_month
+#: model:ir.model.fields,field_description:mission_report.field_account_move__mission_month
+msgid "Month concerned"
+msgstr "Mois concerné"
+
+#. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_template_view_form
 msgid "Month grid"
 msgstr "Grille du mois"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__month_label
+msgid "Month in letters"
+msgstr "Mois en lettres"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__report_month
+msgid "Month of the report"
+msgstr "Mois du compte rendu"
 
 #. module: mission_report
 #. odoo-python
@@ -955,10 +1686,33 @@ msgid "Monthly activity report"
 msgstr "Compte rendu d'activité mensuel"
 
 #. module: mission_report
+#. odoo-javascript
+#: code:addons/mission_report/static/src/xml/calendar_year_button.xml:0
+msgid "Monthly view"
+msgstr "Vue mensuelle"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_project_project__igd_adjustment_ids
+msgid ""
+"Months in which the IGD quota of an employee differs from the planned "
+"amount."
+msgstr "Mois où le quota d'IGD d'un salarié diffère du montant prévu."
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr ""
+
+#. module: mission_report
 #: model:ir.actions.act_window,name:mission_report.action_mission_activity_report_my
 #: model:ir.ui.menu,name:mission_report.menu_mission_activity_report_my
 msgid "My activity reports"
 msgstr "Mes comptes rendus"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_inherit_mission_report
+msgid "My entries"
+msgstr "Mes saisies"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_search
@@ -973,8 +1727,13 @@ msgstr "Nom"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_hr_leave__entry_type
-msgid "Nature de la saisie"
-msgstr ""
+msgid "Nature of the entry"
+msgstr "Nature de la saisie"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__needs_source_dates
+msgid "Needs Source Dates"
+msgstr "Dates de l'affaire d'origine à renseigner"
 
 #. module: mission_report
 #. odoo-python
@@ -989,9 +1748,59 @@ msgid "New activity report"
 msgstr "Nouveau compte rendu d'activité"
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/volet.py:0
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_volet_wizard_view_form
+#: model_terms:ir.ui.view,arch_db:mission_report.view_order_form_mission_volet
+msgid "New phase"
+msgstr "Nouveau volet"
+
+#. module: mission_report
+#: model:ir.model,name:mission_report.model_mission_volet_wizard
+msgid "New phase of an order"
+msgstr "Nouveau volet d'une affaire"
+
+#. module: mission_report
+#. odoo-javascript
+#: code:addons/mission_report/static/src/xml/calendar_year_button.xml:0
+msgid "Next"
+msgstr "Suivant"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__activity_calendar_event_id
+msgid "Next Activity Calendar Event"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__activity_summary
+msgid "Next Activity Summary"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__activity_type_id
+msgid "Next Activity Type"
+msgstr ""
+
+#. module: mission_report
 #: model_terms:ir.actions.act_window,help:mission_report.action_mission_activity_report_template
 msgid "No Excel template."
 msgstr "Aucun modèle Excel."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_expense_view_search_igd
+msgid "No IGD"
+msgstr "Sans IGD"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/igd.py:0
+msgid "No IGD generated"
+msgstr "Aucune IGD générée"
 
 #. module: mission_report
 #: model_terms:ir.actions.act_window,help:mission_report.action_mission_activity_report_all
@@ -1010,9 +1819,35 @@ msgid "No client"
 msgstr "Sans client"
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/igd.py:0
+msgid "No mission has an average monthly IGD set."
+msgstr "Aucune mission n'a d'IGD moyens prévus par mois."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_reminder.py:0
+#: code:addons/mission_report/models/volet.py:0
+msgid "No public holiday is entered for %s: they would count as working days."
+msgstr "Aucun jour férié n'est saisi pour %s : ils compteraient comme des jours travaillés."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/volet.py:0
+msgid ""
+"No working day in this period for the chosen people: check the dates and "
+"their work schedule."
+msgstr "Aucun jour ouvré sur cette période pour les intervenants choisis : vérifiez les dates et leur calendrier de travail."
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__note
 msgid "Note"
 msgstr "Note"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__note_warning
+msgid "Note Warning"
+msgstr "Avertissement sur la note"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_template_view_form
@@ -1040,11 +1875,32 @@ msgid "Number of messages with delivery error"
 msgstr "Nombre de messages avec une erreur d'envoi"
 
 #. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_sale_order__mission_volet_number
+msgid ""
+"Number of the phase of the mission, printed on the quote with the period of "
+"the order."
+msgstr "Numéro du volet de la mission, imprimé sur le devis avec la période de l'affaire."
+
+#. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_public_holiday_wizard_view_form
 msgid ""
 "Odoo recomputes the entries a new public holiday overlaps: their duration\n"
 "                    decreases, and an entry left without any day is refused."
 msgstr "Odoo recalcule les saisies qu'un nouveau jour férié chevauche : leur durée diminue, et une saisie qui n'a plus aucun jour est refusée."
+
+#. module: mission_report
+#. odoo-javascript
+#: code:addons/mission_report/static/src/js/presence_status.js:0
+#: code:addons/mission_report/static/src/xml/avatar_card_resource_popover.xml:0
+#: model:ir.model.fields.selection,name:mission_report.selection__hr_employee__hr_icon_display__presence_holiday_activity
+msgid "On a mission"
+msgstr "En mission"
+
+#. module: mission_report
+#. odoo-javascript
+#: code:addons/mission_report/static/src/js/presence_status.js:0
+msgid "On a mission, until %(date)s"
+msgstr "En mission, jusqu'au %(date)s"
 
 #. module: mission_report
 #. odoo-python
@@ -1060,6 +1916,12 @@ msgstr "Seul un compte rendu en brouillon peut être soumis."
 
 #. module: mission_report
 #. odoo-python
+#: code:addons/mission_report/models/hr_leave_report_calendar.py:0
+msgid "Only a refused or cancelled entry can be deleted."
+msgstr "Seule une saisie refusée ou annulée peut être supprimée."
+
+#. module: mission_report
+#. odoo-python
 #: code:addons/mission_report/models/activity_report.py:0
 msgid "Only a submitted report can be validated."
 msgstr "Seul un compte rendu soumis peut être validé."
@@ -1071,9 +1933,103 @@ msgid "Only draft activity reports can be deleted."
 msgstr "Seuls les comptes rendus en brouillon peuvent être supprimés."
 
 #. module: mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.hr_holidays_cancel_leave_form_inherit_mission_report
-msgid "Pourquoi souhaitez-vous annuler cette saisie ?"
-msgstr ""
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_igd_wizard_view_form
+msgid "Open the time entry"
+msgstr "Ouvrir la saisie des temps"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_sale_order__mission_date_start
+msgid ""
+"Optional while the mission has only one order. First day covered by the "
+"order: the days and expenses of the mission from this date go to it."
+msgstr "Facultatif tant que la mission n'a qu'une affaire. Premier jour couvert par l'affaire : les journées et les frais de la mission à partir de cette date vont sur elle."
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_sale_order__mission_date_end
+msgid ""
+"Optional while the mission has only one order. Last day covered by the "
+"order."
+msgstr "Facultatif tant que la mission n'a qu'une affaire. Dernier jour couvert par l'affaire."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/billing_unit.py:0
+msgid "Order billed per day: these service lines are in hours: %s."
+msgstr "Affaire facturée au jour : ces lignes de prestation sont en heures : %s."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/billing_unit.py:0
+msgid ""
+"Order billed per hour: put these service lines in hours, at an hourly price:"
+" %s."
+msgstr "Affaire facturée à l'heure : mettez ces lignes de prestation en heures, à un prix horaire : %s."
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__order_id
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_volet_wizard_view_form
+msgid "Original order"
+msgstr "Affaire d'origine"
+
+#. module: mission_report
+#: model:ir.actions.act_window,name:mission_report.action_activity_report_internal
+#: model:ir.ui.menu,name:mission_report.menu_activity_report_internal
+msgid "Overall activity report"
+msgstr "Rapport d'activité globale"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__employee_ids
+#: model:ir.model.fields,field_description:mission_report.field_sale_order__mission_employee_names
+msgid "People involved"
+msgstr "Intervenants"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_sale_order__mission_employee_names
+msgid "People who have entries on the missions (projects) of this order."
+msgstr "Personnes qui ont des saisies sur les missions (projets) de cette commande."
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_volet_wizard__mission_billing_unit__day
+#: model:ir.model.fields.selection,name:mission_report.selection__res_company__mission_billing_unit_default__day
+#: model:ir.model.fields.selection,name:mission_report.selection__sale_order__mission_billing_unit__day
+msgid "Per day"
+msgstr "Au jour"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_sale_order__mission_billing_unit
+msgid ""
+"Per day: the validated days of the reports make the delivered quantity. Per "
+"hour: the validated hours, on lines in hours at an hourly price."
+msgstr "Au jour : les journées validées des comptes rendus font la quantité livrée. À l'heure : les heures validées, sur des lignes en heures à un prix horaire."
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_volet_wizard__mission_billing_unit__hour
+#: model:ir.model.fields.selection,name:mission_report.selection__res_company__mission_billing_unit_default__hour
+#: model:ir.model.fields.selection,name:mission_report.selection__sale_order__mission_billing_unit__hour
+msgid "Per hour"
+msgstr "À l'heure"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_sale_order__mission_volet_number
+msgid "Phase"
+msgstr "Volet"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/volet.py:0
+msgid "Phase created from %s."
+msgstr "Volet créé à partir de %s."
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__days
+msgid "Planned quantity"
+msgstr "Quantité prévue"
+
+#. module: mission_report
+#. odoo-javascript
+#: code:addons/mission_report/static/src/js/presence_status.js:0
+msgid "Present, no mission"
+msgstr "Présent, pas de mission"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__preview_html
@@ -1081,35 +2037,39 @@ msgid "Preview Html"
 msgstr "Aperçu"
 
 #. module: mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
-msgid "Export PDF"
-msgstr "Exporter pdf"
+#. odoo-javascript
+#: code:addons/mission_report/static/src/xml/calendar_year_button.xml:0
+msgid "Previous"
+msgstr "Précédent"
 
 #. module: mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
-msgid "Export client PDF"
-msgstr "Exporter pdf client"
+#: model:ir.model.fields,help:mission_report.field_sale_order__mission_description
+msgid ""
+"Printed on the quote under the subject of the proposal. Taken over by \"New "
+"phase\"."
+msgstr "Imprimée sur le devis sous l'objet de la proposition. Reprise par « Nouveau volet »."
 
 #. module: mission_report
+#: model:ir.model,name:mission_report.model_product_product
+msgid "Product Variant"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model,name:mission_report.model_project_project
 #: model:ir.model.fields,field_description:mission_report.field_hr_expense__project_id
 msgid "Project"
 msgstr "Projet"
 
 #. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_hr_leave__project_id
-msgid "Projet associé à la saisie de rapport de mission."
-msgstr ""
+msgid "Project associated with the mission report entry."
+msgstr "Projet associé à la saisie de rapport de mission."
 
 #. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_hr_leave__available_project_ids
-msgid "Projets ayant au moins une tâche assignée à l'employé de cette saisie."
-msgstr ""
-
-#. module: mission_report
-#. odoo-javascript
-#: code:addons/mission_report/static/src/js/presence_status.js:0
-msgid "Présent, pas de mission"
-msgstr ""
+msgid ""
+"Projects with at least one task assigned to the employee of this entry."
+msgstr "Projets ayant au moins une tâche assignée à l'employé de cette saisie."
 
 #. module: mission_report
 #: model:ir.model,name:mission_report.model_hr_employee_public
@@ -1119,38 +2079,19 @@ msgstr "Employé public"
 #. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report.py:0
+#: code:addons/mission_report/models/activity_report_template.py:0
 msgid "Public holiday"
 msgstr "Jour férié"
 
 #. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__days
-msgid "Quantité prévue"
-msgstr ""
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid "Public holidays and reports"
+msgstr "Jours fériés et comptes rendus"
 
 #. module: mission_report
-#: model:ir.ui.menu,name:mission_report.menu_activity_report_client
-msgid "Rapport client"
-msgstr ""
-
-#. module: mission_report
-#: model:ir.actions.act_window,name:mission_report.action_activity_report_client
-msgid "Rapport client (Missions)"
-msgstr ""
-
-#. module: mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_mission_report
-msgid "Rapport d'activité"
-msgstr ""
-
-#. module: mission_report
-#: model:ir.ui.menu,name:mission_report.menu_activity_report_internal
-msgid "Rapport interne"
-msgstr ""
-
-#. module: mission_report
-#: model:ir.actions.act_window,name:mission_report.action_activity_report_internal
-msgid "Rapport interne (Congés & Missions)"
-msgstr ""
+#: model:ir.model.fields,field_description:mission_report.field_project_project__igd_adjustment_ids
+msgid "Quota adjustments"
+msgstr "Ajustements du quota"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__rating_ids
@@ -1158,14 +2099,34 @@ msgid "Ratings"
 msgstr "Évaluations"
 
 #. module: mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_inherit_mission_report
-msgid "Rechercher une saisie"
-msgstr ""
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__reason
+msgid "Reason"
+msgstr "Motif"
 
 #. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_activity_report__user_id
 msgid "Related user name for the resource to manage its access."
 msgstr ""
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid "Reminders"
+msgstr "Relances"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_view_form_inherit_mission_report
+msgid "Reopen to edit"
+msgstr "Rouvrir pour modifier"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_note__report_id
+msgid "Report"
+msgstr "Compte rendu"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid "Report reminders"
+msgstr "Relance des comptes rendus"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_export__report_ids
@@ -1179,36 +2140,67 @@ msgid "Reset the report to draft before changing its employee or month."
 msgstr "Remettez le compte rendu en brouillon avant d'en changer le salarié ou le mois."
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__activity_user_id
+msgid "Responsible User"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__result
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_igd_wizard__state__done
+msgid "Result"
+msgstr "Résultat"
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__message_has_sms_error
 msgid "SMS Delivery error"
 msgstr "Erreur d'envoi SMS"
 
 #. module: mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_view_form_inherit_mission_report
-msgid "Saisie"
+#: model:ir.model,name:mission_report.model_sale_order
+msgid "Sales Order"
 msgstr ""
 
 #. module: mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_calendar_inherit_mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_form_inherit_mission_report
-msgid "Saisie d'activité"
+#: model:ir.model,name:mission_report.model_sale_order_line
+msgid "Sales Order Line"
 msgstr ""
 
 #. module: mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_view_search_inherit_mission_report
-msgid "Saisie en cours aujourd'hui"
-msgstr ""
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_inherit_mission_report
+msgid "Search an entry"
+msgstr "Rechercher une saisie"
 
 #. module: mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_view_inherit_mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_year_view_inherit_mission_report
-msgid "Saisies"
-msgstr ""
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_tree_inherit_mission_report
+msgid "See in the overview"
+msgstr "Voir dans la vue d'ensemble"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_igd_wizard_view_form
+msgid "See the IGD created"
+msgstr "Voir les IGD créées"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.view_order_form_mission_invoicing
+msgid "Sending invoices"
+msgstr "Envoi des factures"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__sequence
 msgid "Sequence"
 msgstr "Séquence"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.view_order_form_mission_volet
+msgid "Service"
+msgstr "Prestation"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_sale_order_line__mission_day_line
+msgid ""
+"Service counted in days: no re-invoiced expenses, no section or note. The "
+"validated days of the reports make the delivered quantity."
+msgstr "Prestation comptée en journées : ni frais refacturés, ni section ou note. Les journées validées des comptes rendus en font la quantité livrée."
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__sheet_name
@@ -1227,6 +2219,36 @@ msgid "St. Stephen's Day"
 msgstr "Saint-Étienne"
 
 #. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_volet_wizard_view_form
+msgid "Start"
+msgstr "Début"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_sale_order_line__mission_period_start
+msgid "Start of period"
+msgstr "Début de période"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_sale_order__mission_date_start
+msgid "Start of the order"
+msgstr "Début de l'affaire"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__source_date_start
+msgid "Start of the original order"
+msgstr "Début de l'affaire d'origine"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__date_start
+msgid "Start of the phase"
+msgstr "Début du volet"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__state
+msgid "State"
+msgstr ""
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report_template.py:0
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__state
@@ -1234,6 +2256,22 @@ msgstr "Saint-Étienne"
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_search
 msgid "Status"
 msgstr "Statut"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.view_order_form_mission_volet
+msgid ""
+"Subject, place and course of the service, printed on the quote under the "
+"title of the phase."
+msgstr "Objet, lieu et déroulement de la prestation, imprimés sur le devis sous le titre du volet."
 
 #. module: mission_report
 #. odoo-python
@@ -1248,7 +2286,14 @@ msgid "Submit"
 msgstr "Soumettre"
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_reminder.py:0
+msgid "Submit your activity report of %s"
+msgstr "Soumettre votre compte rendu d'activité de %s"
+
+#. module: mission_report
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report__state__submitted
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_view_form_inherit_mission_report
 msgid "Submitted"
 msgstr "Soumis"
 
@@ -1269,6 +2314,21 @@ msgid "Submitted on"
 msgstr "Soumis le"
 
 #. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_hr_leave__entry_type
+msgid "Switches between a Mission entry (default) and a Time off entry."
+msgstr "Bascule entre une saisie de Mission (par défaut) et une saisie de Congé."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.view_order_form_mission_volet
+msgid "Take over from the note"
+msgstr "Reprendre depuis la note"
+
+#. module: mission_report
+#: model:ir.ui.menu,name:mission_report.menu_mission_activity_report_all
+msgid "Team reports"
+msgstr "Comptes rendus de l'équipe"
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_export__template_id
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__template_id
 msgid "Template"
@@ -1281,6 +2341,83 @@ msgid "Template “%s” has no Excel file."
 msgstr "Le modèle « %s » n'a pas de fichier Excel."
 
 #. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_volet_wizard__mission_billing_unit
+msgid ""
+"That of the original order by default. Per hour: each month counts the "
+"working hours of the people involved."
+msgstr "Celle de l'affaire d'origine par défaut. À l'heure : chaque mois compte les heures ouvrées des intervenants."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid ""
+"The Expenses categories that \"Generate the IGD\" uses. The planned monthly "
+"amount is set on the form of each mission."
+msgstr "Les catégories de Notes de frais que « Générer les IGD » utilise. Le montant mensuel prévu se règle sur la fiche de chaque mission."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid ""
+"The day of the month on which each employee who entered a mission gets the "
+"task \"Submit your report\", then their manager \"Validate the report\". 0: "
+"no reminder."
+msgstr "Le jour du mois où chaque salarié qui a saisi une mission reçoit la tâche « Soumettre votre compte rendu », puis son responsable « Valider le compte rendu ». 0 : aucune relance."
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_sale_order__mission_delivery_date
+msgid ""
+"The delivery date entered on the order, otherwise the end of the order: to "
+"follow the end of the phases and of the orders at a glance."
+msgstr "La date de livraison saisie sur la commande, à défaut la fin de l'affaire : de quoi suivre d'un coup d'œil la fin des volets et des commandes."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/mission_orders.py:0
+msgid "The end of the order %s precedes its start."
+msgstr "La fin de l'affaire %s précède son début."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/volet.py:0
+msgid "The end of the period of the line \"%s\" precedes its start."
+msgstr "La fin de période de la ligne « %s » précède son début."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/volet.py:0
+msgid "The end of the phase precedes its start."
+msgstr "La fin du volet précède son début."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/volet.py:0
+msgid ""
+"The lines of the phase take over the unit and the price of the original "
+"order: switch them to %s, at a %s price, in the new phase."
+msgstr "Les lignes du volet reprennent l'unité et le prix de l'affaire d'origine : passez-les %s, à un prix %s, dans le nouveau volet."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/mission_orders.py:0
+msgid ""
+"The mission \"%(project)s\" has several orders. Fill in the start and end "
+"dates of each (%(names)s)."
+msgstr "La mission « %(project)s » a plusieurs affaires. Renseignez les dates de début et de fin de chacune (%(names)s)."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/hr_leave.py:0
+msgid ""
+"The mission %s is billed per day: an entry counts whole days. Half days and "
+"hours are reserved for missions billed per hour (\"Billing\" field of the "
+"order)."
+msgstr "La mission %s est facturée au jour : une saisie y compte des journées entières. Les demi-journées et les heures sont réservées aux missions facturées à l'heure (champ « Facturation » de l'affaire)."
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_hr_leave__mission_hourly
+msgid "The mission is billed per hour at the date of the entry."
+msgstr "La mission est facturée à l'heure à la date de la saisie."
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report_template.py:0
 msgid "The mission rows of template “%s” are inconsistent."
@@ -1288,9 +2425,35 @@ msgstr "Les lignes de mission du modèle « %s » sont incohérentes."
 
 #. module: mission_report
 #. odoo-python
+#: code:addons/mission_report/models/volet.py:0
+msgid ""
+"The note could not be split (or the service is already filled in): enter the"
+" description and the expenses by hand."
+msgstr "La note n'a pas pu être découpée (ou la prestation est déjà renseignée) : reprenez la description et les frais à la main."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/volet.py:0
+msgid ""
+"The note of the original order could not be split: it will be copied as it "
+"is (title and estimate of the previous phase included), and the description "
+"of the service and the expenses will stay empty. Fill them in on the Service"
+" tab of the new phase."
+msgstr "La note de l'affaire d'origine n'a pas pu être découpée : elle sera recopiée telle quelle (titre et prévisionnel de l'ancien volet compris), et la description de la prestation et les frais resteront vides. Reprenez-les dans l'onglet Prestation du nouveau volet."
+
+#. module: mission_report
+#. odoo-python
 #: code:addons/mission_report/models/activity_report_template.py:0
 msgid "The openpyxl library is missing on the server."
 msgstr "La bibliothèque openpyxl manque sur le serveur."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/mission_orders.py:0
+msgid ""
+"The periods of the orders %(left)s and %(right)s of the mission "
+"\"%(project)s\" overlap."
+msgstr "Les périodes des affaires %(left)s et %(right)s de la mission « %(project)s » se chevauchent."
 
 #. module: mission_report
 #. odoo-python
@@ -1305,16 +2468,71 @@ msgid ""
 msgstr "Le compte rendu retourne au salarié, qui peut le corriger et le soumettre à nouveau."
 
 #. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_sale_order__mission_expenses_text
+msgid ""
+"The sentence on expenses, printed on the quote after the price and the "
+"estimated volume. Taken over by \"New phase\"."
+msgstr "La phrase sur les frais, imprimée sur le devis après le prix et le volume prévisionnel. Reprise par « Nouveau volet »."
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report_template.py:0
 msgid "The time off rows of template “%s” must come after the mission rows."
 msgstr "Les lignes de congé du modèle « %s » doivent suivre les lignes de mission."
 
 #. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report_template__file_generated
+msgid "The workbook is the module's blank one: module updates remake it."
+msgstr "Le classeur est celui fabriqué par le module : les mises à jour du module le refont."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid ""
+"The workbook the reports are exported to: download it, give it your own "
+"look, upload it again."
+msgstr "Le classeur dans lequel les comptes rendus s'exportent : téléchargez-le, mettez-le à votre image, redéposez-le."
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_volet_wizard__employee_ids
+msgid "The working days of the phase are those of these people."
+msgstr "Les jours ouvrés du volet sont ceux de ces personnes."
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report_template.py:0
 msgid "These reports hold no mission to export."
 msgstr "Ces comptes rendus ne contiennent aucune mission à exporter."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/hr_leave.py:0
+msgid ""
+"This entry has been invoiced (%(invoices)s): its days can no longer be "
+"changed."
+msgstr "Cette saisie a été facturée (%(invoices)s) : ses journées ne peuvent plus être modifiées."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_view_form_inherit_mission_report
+msgid ""
+"This entry is approved. To change it, it goes back to waiting for approval; "
+"once changed, you can approve it again. Continue?"
+msgstr "Cette saisie est approuvée. Pour la modifier, elle repasse en attente d'approbation ; une fois modifiée, vous pourrez l'approuver de nouveau. Continuer ?"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/hr_leave.py:0
+msgid ""
+"This entry is part of the report \"%(report)s\" (%(state)s): its days can no"
+" longer be changed."
+msgstr "Cette saisie figure dans le compte rendu « %(report)s » (%(state)s) : ses journées ne peuvent plus être modifiées."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/hr_leave.py:0
+msgid ""
+"This period holds no working day (weekend or public holiday): choose other "
+"dates."
+msgstr "Cette période ne compte aucun jour travaillé (week-end ou jour férié) : choisissez d'autres dates."
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_template_view_form
@@ -1336,12 +2554,33 @@ msgid "Time Off"
 msgstr "Congés"
 
 #. module: mission_report
+#: model:ir.model,name:mission_report.model_hr_leave_report_calendar
+msgid "Time Off Calendar"
+msgstr ""
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_hr_leave_report_calendar__holiday_status_id
+msgid "Time Off Type"
+msgstr ""
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/mission_orders.py:0
+#: model:ir.embedded.actions,name:mission_report.embedded_action_project_entries_dashboard
+#: model:ir.embedded.actions,name:mission_report.embedded_action_project_entries_tasks
+msgid "Time entries"
+msgstr "Pointages"
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report_template.py:0
+#: model:ir.model.fields.selection,name:mission_report.selection__hr_leave__entry_type__leave
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__block__absence
 #: model_terms:ir.ui.view,arch_db:mission_report.activity_report_grid
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_form_inherit_mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_mission_report
 msgid "Time off"
-msgstr "Absences"
+msgstr "Congé"
 
 #. module: mission_report
 #. odoo-python
@@ -1352,11 +2591,28 @@ msgid "Time off days"
 msgstr "Jours de congé"
 
 #. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_mission_report
+msgid "Time off only"
+msgstr "Congés uniquement"
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report_template.py:0
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__leave_type
 msgid "Time off type"
 msgstr "Type de congé"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_volet_wizard_view_form
+msgid "To be changed, if needed, in the order itself."
+msgstr "À modifier, si besoin, dans l'affaire elle-même."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid ""
+"To generate for each year before preparing a phase: without them, public "
+"holidays would count as working days."
+msgstr "À générer pour chaque année avant de préparer un volet : sans eux, les jours fériés compteraient comme des jours travaillés."
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_search
@@ -1366,6 +2622,7 @@ msgstr "À valider"
 #. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report_template.py:0
+#: code:addons/mission_report/models/volet.py:0
 #: model_terms:ir.ui.view,arch_db:mission_report.activity_report_grid
 msgid "Total"
 msgstr "Total"
@@ -1373,52 +2630,63 @@ msgstr "Total"
 #. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report_template.py:0
-msgid "Total (heures)"
-msgstr ""
+msgid "Total (days)"
+msgstr "Total (jours)"
 
 #. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report_template.py:0
-msgid "Total (jours)"
-msgstr ""
+msgid "Total (hours)"
+msgstr "Total (heures)"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+msgid "Total days"
+msgstr "Total jours"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.view_order_form_mission_volet
+msgid ""
+"Travel expenses will be invoiced at cost on presentation of the receipts."
+msgstr "Les frais de déplacement seront facturés au réel sur présentation des justificatifs."
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_hr_leave__holiday_status_id
 #: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_view_form_inherit_mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_view_search_inherit_mission_report
-msgid "Type de saisie"
-msgstr ""
+msgid "Type of entry"
+msgstr "Type de saisie"
 
 #. module: mission_report
-#. odoo-python
-#: code:addons/mission_report/models/hr_leave.py:0
-msgid ""
-"Une saisie doit posséder soit une Mission soit un Congé, mais pas les deux "
-"ni aucun des deux."
+#: model:ir.model.fields,help:mission_report.field_mission_activity_report__activity_exception_decoration
+msgid "Type of the exception activity on record."
 msgstr ""
 
 #. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report_template.py:0
 #: model_terms:ir.ui.view,arch_db:mission_report.activity_report_grid
-msgid "Unité"
-msgstr ""
+msgid "Unit"
+msgstr "Unité"
 
 #. module: mission_report
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__unit
-msgid "Unité (jours ou heures)"
-msgstr ""
+msgid "Unit (days or hours)"
+msgstr "Unité (jours ou heures)"
 
 #. module: mission_report
-#: model:ir.model.fields,help:mission_report.field_res_company__mission_billing_unit_default
-#: model:ir.model.fields,help:mission_report.field_res_config_settings__mission_billing_unit_default
-msgid "Unité de facturation proposée pour les nouvelles affaires."
-msgstr ""
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid ""
+"Unit of the new mission orders: validated days or hours. Each order can "
+"change it."
+msgstr "Unité des nouvelles affaires de mission : journées ou heures validées. Chaque affaire peut en changer."
 
 #. module: mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_billing
-msgid "Unité des nouvelles affaires de mission : journées ou heures validées."
-msgstr ""
+#: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__unit_warning
+#: model:ir.model.fields,field_description:mission_report.field_sale_order__mission_unit_warning
+msgid "Unit warning"
+msgstr "Avertissement sur l'unité"
 
 #. module: mission_report
 #. odoo-python
@@ -1436,6 +2704,12 @@ msgstr "Utilisateur"
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
 msgid "Validate"
 msgstr "Valider"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_reminder.py:0
+msgid "Validate the activity report of %(employee)s (%(month)s)"
+msgstr "Valider le compte rendu d'activité de %(employee)s (%(month)s)"
 
 #. module: mission_report
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report__state__validated
@@ -1478,16 +2752,9 @@ msgid "Victory in Europe Day"
 msgstr "Victoire 1945"
 
 #. module: mission_report
-#. odoo-python
-#: code:addons/mission_report/models/hr_leave.py:0
-msgid "Votre activité du %(date)s a été enregistrée"
-msgstr ""
-
-#. module: mission_report
-#. odoo-python
-#: code:addons/mission_report/models/hr_leave.py:0
-msgid "Votre activité du %(date_from)s au %(date_to)s a été enregistrée"
-msgstr ""
+#: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__warning
+msgid "Warning"
+msgstr "Avertissement"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__website_message_ids
@@ -1500,11 +2767,13 @@ msgid "Website communication history"
 msgstr "Historique des échanges sur le site web"
 
 #. module: mission_report
+#. odoo-javascript
 #. odoo-python
 #: code:addons/mission_report/models/activity_report_template.py:0
+#: code:addons/mission_report/static/src/xml/calendar_year_button.xml:0
 #: model_terms:ir.ui.view,arch_db:mission_report.activity_report_grid
 msgid "Week"
-msgstr "Sem."
+msgstr "Semaine"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__week_row
@@ -1515,6 +2784,12 @@ msgstr "Ligne des numéros de semaine"
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__weekday_row
 msgid "Weekdays row"
 msgstr "Ligne des jours de la semaine"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+msgid "Weekend"
+msgstr "Week-end"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__weekend_color
@@ -1528,6 +2803,16 @@ msgid "Whit Monday"
 msgstr "Lundi de Pentecôte"
 
 #. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__hr_leave__mission_duration__day
+msgid "Whole day"
+msgstr "Journée entière"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.hr_holidays_cancel_leave_form_inherit_mission_report
+msgid "Why do you want to cancel this entry?"
+msgstr "Pourquoi souhaitez-vous annuler cette saisie ?"
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report_template.py:0
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__potential_days
@@ -1536,9 +2821,30 @@ msgid "Working days"
 msgstr "Jours potentiels"
 
 #. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_volet_wizard__days
+msgid "Working days, or working hours for a phase billed per hour."
+msgstr "Jours ouvrés, ou heures ouvrées pour un volet facturé à l'heure."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report_template.py:0
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__potential_hours
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__potential_hours
+msgid "Working hours"
+msgstr "Heures ouvrées"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__report_year
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__report_year
 #: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__year
 msgid "Year"
 msgstr "Année"
+
+#. module: mission_report
+#. odoo-javascript
+#: code:addons/mission_report/static/src/xml/calendar_year_button.xml:0
+msgid "Yearly view"
+msgstr "Vue annuelle"
 
 #. module: mission_report
 #. odoo-python
@@ -1553,27 +2859,67 @@ msgid "You are not allowed to validate the report of %s."
 msgstr "Vous ne pouvez pas valider le compte rendu de %s."
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/igd.py:0
+msgid ""
+"You can only generate IGD for yourself, your subordinates, the employees of "
+"your departments or those whose expenses you approve. Not allowed: %s."
+msgstr "Vous ne pouvez générer des IGD que pour vous-même, vos subordonnés, les salariés de vos départements ou ceux dont vous approuvez les dépenses. Non autorisé : %s."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/hr_leave.py:0
+msgid "Your activity from %(date_from)s to %(date_to)s has been recorded"
+msgstr "Votre activité du %(date_from)s au %(date_to)s a été enregistrée"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/hr_leave.py:0
+msgid "Your activity of %(date)s has been recorded"
+msgstr "Votre activité du %(date)s a été enregistrée"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/hr_leave_report_calendar.py:0
+msgid ""
+"Your profile does not allow you to put this entry back to waiting for "
+"approval."
+msgstr "Votre profil ne permet pas de remettre cette saisie en attente d'approbation."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/volet.py:0
+msgid "daily"
+msgstr "journalier"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/billing_unit.py:0
+#: code:addons/mission_report/models/volet.py:0
+msgid "day"
+msgstr "jour"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/activity_report.py:0
+#: code:addons/mission_report/models/activity_report_template.py:0
+#: code:addons/mission_report/models/billing_unit.py:0
+#: code:addons/mission_report/models/hr_leave.py:0
+#: code:addons/mission_report/models/volet.py:0
+msgid "days"
+msgstr "jours"
+
+#. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_template_view_form
 msgid "e.g. Client report"
 msgstr "ex. CRA client"
 
 #. module: mission_report
 #. odoo-python
-#: code:addons/mission_report/models/volet.py:0
-msgid "en heures"
-msgstr ""
-
-#. module: mission_report
-#. odoo-python
-#: code:addons/mission_report/models/volet.py:0
-msgid "en jours"
-msgstr ""
-
-#. module: mission_report
-#. odoo-python
 #: code:addons/mission_report/models/billing_unit.py:0
-msgid "heure"
-msgstr ""
+#: code:addons/mission_report/models/volet.py:0
+msgid "hour"
+msgstr "heure"
 
 #. module: mission_report
 #. odoo-python
@@ -1581,54 +2927,57 @@ msgstr ""
 #: code:addons/mission_report/models/activity_report_template.py:0
 #: code:addons/mission_report/models/billing_unit.py:0
 #: code:addons/mission_report/models/hr_leave.py:0
-msgid "heures"
-msgstr ""
+#: code:addons/mission_report/models/volet.py:0
+msgid "hours"
+msgstr "heures"
 
 #. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/volet.py:0
-msgid "horaire"
-msgstr ""
-
-#. module: mission_report
-#. odoo-python
-#: code:addons/mission_report/models/billing_unit.py:0
-msgid "jour"
-msgstr ""
+msgid "in days"
+msgstr "en jours"
 
 #. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/volet.py:0
-msgid "journalier"
-msgstr ""
+msgid "in hours"
+msgstr "en heures"
 
 #. module: mission_report
 #. odoo-python
-#: code:addons/mission_report/models/activity_report.py:0
-#: code:addons/mission_report/models/activity_report_template.py:0
-#: code:addons/mission_report/models/billing_unit.py:0
-#: code:addons/mission_report/models/hr_leave.py:0
-msgid "jours"
-msgstr ""
+#: code:addons/mission_report/models/igd.py:0
+msgid "no day of presence on \"%s\" this month."
+msgstr "aucune journée de présence sur « %s » ce mois-ci."
 
 #. module: mission_report
 #. odoo-python
-#: code:addons/mission_report/models/billing_unit.py:0
-msgid "par heure travaillée"
-msgstr ""
+#: code:addons/mission_report/models/igd.py:0
+msgid "no mission day entered this month."
+msgstr "aucune journée de mission saisie ce mois-ci."
 
 #. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/billing_unit.py:0
-msgid "par jour travaillé"
-msgstr ""
+msgid "per day worked"
+msgstr "par jour travaillé"
 
 #. module: mission_report
-#: model:ir.model.fields.selection,name:mission_report.selection__mission_volet_wizard__mission_billing_unit__hour
-#: model:ir.model.fields.selection,name:mission_report.selection__res_company__mission_billing_unit_default__hour
-#: model:ir.model.fields.selection,name:mission_report.selection__sale_order__mission_billing_unit__hour
-msgid "À l'heure"
-msgstr ""
+#. odoo-python
+#: code:addons/mission_report/models/billing_unit.py:0
+msgid "per hour worked"
+msgstr "par heure travaillée"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/volet.py:0
+msgid "schedule"
+msgstr "horaire"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/igd.py:0
+msgid "the planned amount for \"%s\" is already reached."
+msgstr "le montant prévu pour « %s » est déjà atteint."
 
 #. module: mission_report
 #. odoo-python
@@ -1647,44 +2996,4 @@ msgstr "« %s » : une lettre de colonne (A) ou une cellule (B3)."
 #: code:addons/mission_report/models/activity_report_template.py:0
 msgid "“Day 1 column” takes a column letter, such as D."
 msgstr "« Colonne du jour 1 » attend une lettre de colonne, par exemple D."
-
-#. module: mission_report
-#. odoo-python
-#: code:addons/mission_report/models/activity_report.py:0
-msgid "Activity report created"
-msgstr "Compte rendu d'activité créé"
-
-#. module: mission_report
-#. odoo-python
-#: code:addons/mission_report/models/activity_report_template.py:0
-msgid "Total days"
-msgstr "Total jours"
-
-#. module: mission_report
-#. odoo-python
-#: code:addons/mission_report/models/activity_report_template.py:0
-msgid "Weekend"
-msgstr "Week-end"
-
-#. module: mission_report
-#. odoo-python
-#: code:addons/mission_report/models/activity_report_template.py:0
-msgid "Manager signature"
-msgstr "Signature du responsable"
-
-#. module: mission_report
-#. odoo-python
-#: code:addons/mission_report/models/activity_report_template.py:0
-msgid "Employee signature"
-msgstr "Signature du collaborateur"
-
-#. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__file_generated
-msgid "File Generated"
-msgstr "Classeur fabriqué par le module"
-
-#. module: mission_report
-#: model:ir.model.fields,help:mission_report.field_mission_activity_report_template__file_generated
-msgid "The workbook is the module's blank one: module updates remake it."
-msgstr "Le classeur est celui fabriqué par le module : les mises à jour du module le refont."
 

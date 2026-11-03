@@ -10,25 +10,25 @@
         <field name="inherit_id" ref="base.res_config_settings_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//form" position="inside">
-                <app string="Activité" name="mission_report">
-                    <block title="Facturation" name="mission_billing_block">
+                <app string="Activity" name="mission_report">
+                    <block title="Billing" name="mission_billing_block">
                         <setting id="mission_billing_unit_default" company_dependent="1"
-                                 string="Facturation par défaut"
-                                 help="Unité des nouvelles affaires de mission : journées ou heures validées. Chaque affaire peut en changer.">
+                                 string="Default billing"
+                                 help="Unit of the new mission orders: validated days or hours. Each order can change it.">
                             <field name="mission_billing_unit_default" widget="radio"
                                    options="{'horizontal': true}"/>
                         </setting>
                         <setting id="mission_hours_outside_schedule" company_dependent="1"
-                                 string="Heures hors horaires de travail"
-                                 help="Une saisie en heures compte toutes les heures saisies. Décoché, seules comptent celles de l'horaire de travail du salarié.">
+                                 string="Hours outside working hours"
+                                 help="An entry in hours counts all the hours entered. Unticked, only those of the working schedule of the employee count.">
                             <field name="mission_hours_outside_schedule"/>
                         </setting>
                     </block>
 
-                    <block title="Relances" name="mission_reminder_block">
+                    <block title="Reminders" name="mission_reminder_block">
                         <setting id="mission_reminder_day" company_dependent="1"
-                                 string="Relance des comptes rendus"
-                                 help="Le jour du mois où chaque salarié qui a saisi une mission reçoit la tâche « Soumettre votre compte rendu », puis son responsable « Valider le compte rendu ». 0 : aucune relance.">
+                                 string="Report reminders"
+                                 help="The day of the month on which each employee who entered a mission gets the task &quot;Submit your report&quot;, then their manager &quot;Validate the report&quot;. 0: no reminder.">
                             <div class="content-group">
                                 <div class="row mt16">
                                     <label for="mission_reminder_day" class="col-lg-4 o_light_label"/>
@@ -38,9 +38,9 @@
                         </setting>
                     </block>
 
-                    <block title="Indemnités de grand déplacement (IGD)" name="mission_igd_block">
-                        <setting id="mission_igd_categories" class="col-lg-12" string="Catégories de dépenses des IGD"
-                                 help="Les catégories de Notes de frais que « Générer les IGD » utilise. Le montant mensuel prévu se règle sur la fiche de chaque mission.">
+                    <block title="Long-distance travel allowances (IGD)" name="mission_igd_block">
+                        <setting id="mission_igd_categories" class="col-lg-12" string="Expense categories of the IGD"
+                                 help="The Expenses categories that &quot;Generate the IGD&quot; uses. The planned monthly amount is set on the form of each mission.">
                             <div class="content-group">
                                 <div class="row mt16">
                                     <label for="igd_lodging_product_id" class="col-lg-4 o_light_label"/>
@@ -63,20 +63,20 @@
                         </setting>
                     </block>
 
-                    <block title="Jours fériés et comptes rendus" name="mission_tools_block">
-                        <setting id="mission_public_holidays" string="Jours fériés français"
-                                 help="À générer pour chaque année avant de préparer un volet : sans eux, les jours fériés compteraient comme des jours travaillés.">
+                    <block title="Public holidays and reports" name="mission_tools_block">
+                        <setting id="mission_public_holidays" string="French public holidays"
+                                 help="To generate for each year before preparing a phase: without them, public holidays would count as working days.">
                             <div class="content-group">
                                 <button name="%(mission_report.action_mission_public_holiday_wizard)d"
-                                        type="action" string="Générer les jours fériés"
+                                        type="action" string="Generate public holidays"
                                         class="btn-link ps-0" icon="oi-arrow-right"/>
                             </div>
                         </setting>
-                        <setting id="mission_report_templates" string="Modèles Excel des comptes rendus"
-                                 help="Le classeur dans lequel les comptes rendus s'exportent : téléchargez-le, mettez-le à votre image, redéposez-le.">
+                        <setting id="mission_report_templates" string="Excel templates of the reports"
+                                 help="The workbook the reports are exported to: download it, give it your own look, upload it again.">
                             <div class="content-group">
                                 <button name="%(mission_report.action_mission_activity_report_template)d"
-                                        type="action" string="Modèles Excel"
+                                        type="action" string="Excel templates"
                                         class="btn-link ps-0" icon="oi-arrow-right"/>
                             </div>
                         </setting>

@@ -2,10 +2,10 @@
 <!-- Copyright 2026 T.T.C. SAS
      License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0). -->
 <odoo>
-    <!-- Entrée de menu dédiée "Activité" : 2, juste après Dépenses (1) et avant toute application d'Odoo
+    <!-- Entrée de menu dédiée "Activity" : 2, juste après Dépenses (1) et avant toute application d'Odoo
          (Discuss est à 5). -->
     <menuitem id="menu_mission_report_root"
-              name="Activité"
+              name="Activity"
               web_icon="mission_report,static/description/icon.png"
               sequence="2"/>
 
@@ -13,7 +13,7 @@
     <!-- Un seul menu pour les saisies et les comptes rendus : les siens, puis ceux de l'équipe
          (entrées réservées à ceux qui ont les droits). -->
     <menuitem id="hr_holidays.menu_hr_holidays_my_leaves"
-              name="Saisies"
+              name="Entries"
               parent="menu_mission_report_root"
               sequence="10"/>
 
@@ -43,19 +43,19 @@
 
     <!-- Mon temps > "Mes congés" (libellé hérité de l'action, le menuitem natif n'en porte pas) -->
     <menuitem id="hr_holidays.hr_leave_menu_my"
-              name="Mes saisies"
+              name="My entries"
               parent="hr_holidays.menu_hr_holidays_my_leaves"
               action="hr_holidays.hr_leave_action_my"
               sequence="2"/>
 
     <!-- Management > "Congés" : les saisies de l'équipe, sous « Saisies ». -->
     <menuitem id="hr_holidays.menu_open_department_leave_approve"
-              name="Saisies de l'équipe"
+              name="Team entries"
               parent="hr_holidays.menu_hr_holidays_my_leaves"
               action="hr_holidays.hr_leave_action_action_approve_department"
               sequence="10"/>
 
-    <!-- Management > "Saisies" s'ouvrait sur « En attente de ma signature » : on garde
+    <!-- Management > "Entries" s'ouvrait sur « En attente de ma signature » : on garde
          l'année en cours et on laisse la personne choisir son filtre. -->
     <record id="hr_holidays.hr_leave_action_action_approve_department" model="ir.actions.act_window">
         <field name="context">{'search_default_current_year': 1, 'hide_employee_name': 1}</field>

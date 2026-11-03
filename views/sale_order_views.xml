@@ -13,7 +13,7 @@
             </field>
             <!-- La colonne « Date de livraison » : celle de la commande, sinon la fin de l'affaire. -->
             <field name="commitment_date" position="replace">
-                <field name="mission_delivery_date" string="Date de livraison" optional="show"/>
+                <field name="mission_delivery_date" string="Delivery date" optional="show"/>
             </field>
         </field>
     </record>

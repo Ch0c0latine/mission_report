@@ -28,7 +28,7 @@ from .activity_report import INTERNAL, INTERNAL_KEY
 _SPACE = r'(?:&nbsp;|\s|\xa0)*'
 # « Volet 2 : période du 01/10/2026 au 31/03/2027 », avec ou sans espaces insécables.
 VOLET_HEADING = re.compile(
-    r'Volet' + _SPACE + r'(\d+)' + _SPACE + r':' + _SPACE + r'période du' + _SPACE
+    r'Phase' + _SPACE + r'(\d+)' + _SPACE + r':' + _SPACE + r'période du' + _SPACE
     + r'(\d\d/\d\d/\d{4})' + _SPACE + r'au' + _SPACE + r'(\d\d/\d\d/\d{4})')
 # « Ce volet concerne la période du 01/07/2026 au 30/09/2026 : … » quand il n'y a pas de titre.
 VOLET_PLAN_PERIOD = re.compile(
@@ -58,7 +58,7 @@ class ProjectProject(models.Model):
         self.ensure_one()
         return {
             'type': 'ir.actions.act_window',
-            'name': _("Pointages"),
+            'name': _("Time entries"),
             'res_model': 'hr.leave',
             'view_mode': 'pivot,list',
             'views': [(False, 'pivot'), (False, 'list')],
@@ -128,17 +128,17 @@ class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
     mission_date_start = fields.Date(
-        string="Début de l'affaire",
-        help="Facultatif tant que la mission n'a qu'une affaire. Premier jour couvert par "
-             "l'affaire : les journées et les frais de la mission à partir de cette date vont sur elle.")
+        string="Start of the order",
+        help="Optional while the mission has only one order. First day covered by the order: "
+             "the days and expenses of the mission from this date go to it.")
     mission_date_end = fields.Date(
-        string="Fin de l'affaire",
-        help="Facultatif tant que la mission n'a qu'une affaire. Dernier jour couvert par l'affaire.")
+        string="End of the order",
+        help="Optional while the mission has only one order. Last day covered by the order.")
 
     mission_delivery_date = fields.Date(
-        string="Date de livraison", compute='_compute_mission_delivery_date', store=True,
-        help="La date de livraison saisie sur la commande, à défaut la fin de l'affaire : de quoi "
-             "suivre d'un coup d'œil la fin des volets et des commandes.")
+        string="Delivery date", compute='_compute_mission_delivery_date', store=True,
+        help="The delivery date entered on the order, otherwise the end of the order: to "
+             "follow the end of the phases and of the orders at a glance.")
 
     @api.depends('commitment_date', 'mission_date_end')
     def _compute_mission_delivery_date(self):
@@ -154,7 +154,7 @@ class SaleOrder(models.Model):
         for order in self:
             if order.mission_date_start and order.mission_date_end \
                     and order.mission_date_end < order.mission_date_start:
-                raise ValidationError(_("La fin de l'affaire %s précède son début.", order.name))
+                raise ValidationError(_("The end of the order %s precedes its start.", order.name))
 
     def _mission_covers(self, day):
         self.ensure_one()
@@ -238,14 +238,14 @@ class SaleOrder(models.Model):
                     missing |= other
             if missing:
                 raise ValidationError(_(
-                    "La mission « %(project)s » a plusieurs affaires. Renseignez les dates de "
-                    "début et de fin de chacune (%(names)s).",
+                    "The mission \"%(project)s\" has several orders. Fill in the start and end dates "
+                    "of each (%(names)s).",
                     project=project.display_name, names=", ".join(missing.mapped('name'))))
             for left, right in zip(ordered, ordered[1:]):
                 if (left.mission_date_end or date.max) >= (right.mission_date_start or date.min):
                     raise ValidationError(_(
-                        "Les périodes des affaires %(left)s et %(right)s de la mission « %(project)s » "
-                        "se chevauchent.", left=left.name, right=right.name,
+                        "The periods of the orders %(left)s and %(right)s of the mission \"%(project)s\" "
+                        "overlap.", left=left.name, right=right.name,
                         project=project.display_name))
 
     def _mission_close_neighbour_periods(self, order):

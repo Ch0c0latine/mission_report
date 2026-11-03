@@ -9,7 +9,7 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//page[@name='other_information']" position="inside">
-                <group name="mission_invoicing" string="Envoi des factures">
+                <group name="mission_invoicing" string="Sending invoices">
                     <field name="mission_invoice_partner_ids" widget="many2many_tags_email"
                            context="{'show_email': True}"/>
                 </group>

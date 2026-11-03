@@ -2,7 +2,7 @@
 # Copyright 2026 T.T.C. SAS
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 {
-    'name': 'Activité',
+    'name': 'Activity',
     'version': '19.0.2.8.1',
     'summary': 'Activity and mission reports by project based on leaves logic',
     'description': """

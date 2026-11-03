@@ -16,13 +16,13 @@ class HrEmployee(models.Model):
     # d'hr_holidays ne retombent sur le cas "présence" par défaut. Le libellé,
     # l'icône et la couleur affichés viennent de static/src/js/presence_status.js.
     hr_icon_display = fields.Selection(selection_add=[
-        ('presence_holiday_activity', 'En mission'),
+        ('presence_holiday_activity', 'On a mission'),
     ])
     activity_date_to = fields.Date(
-        "Fin de la mission en cours",
+        "End of the current mission",
         compute='_compute_activity_date_to',
-        help="Dernier jour de la saisie de mission en cours. Alimente le badge "
-             "de présence, qui annonce une fin de mission et non un retour de congé."
+        help="Last day of the current mission entry. Feeds the presence badge, which "
+             "announces the end of a mission and not a return from time off."
     )
 
     def _get_current_entries(self):
@@ -81,7 +81,7 @@ class HrEmployeePublic(models.Model):
     # Le badge s'affiche aussi sur les fiches publiques, qui lisent les valeurs
     # de hr.employee.
     activity_date_to = fields.Date(
-        "Fin de la mission en cours", compute='_compute_activity_date_to')
+        "End of the current mission", compute='_compute_activity_date_to')
 
     def _compute_activity_date_to(self):
         self._compute_from_employee('activity_date_to')

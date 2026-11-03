@@ -40,12 +40,12 @@ WORKFLOW_FIELDS = ('state', 'snapshot', 'submit_date', 'submitted_by_id',
 
 class MissionActivityReportNote(models.Model):
     _name = 'mission.activity.report.note'
-    _description = "Information portée sur un jour d'un compte rendu"
+    _description = "Information carried on a day of a report"
     _order = 'date, id'
 
     report_id = fields.Many2one(
         'mission.activity.report', required=True, ondelete='cascade', index=True)
-    date = fields.Date(string="Jour", required=True)
+    date = fields.Date(string="Day", required=True)
     note = fields.Char(string="Information", required=True, translate=False)
 
     @api.constrains('date', 'report_id')
@@ -54,7 +54,7 @@ class MissionActivityReportNote(models.Model):
             report = note.report_id
             if report.date_from and not (report.date_from <= note.date <= report.date_to):
                 raise ValidationError(_(
-                    "Le %(date)s ne fait pas partie du mois du compte rendu (%(month)s).",
+                    "%(date)s is not part of the month of the report (%(month)s).",
                     date=format_date(self.env, note.date), month=report.month_label))
 
 
@@ -102,15 +102,15 @@ class MissionActivityReport(models.Model):
     potential_days = fields.Float(string="Working days", compute='_compute_totals')
     mission_days = fields.Float(string="Mission days", compute='_compute_totals')
     # Missions facturées à l'heure : leurs heures, jamais ajoutées aux jours.
-    potential_hours = fields.Float(string="Heures ouvrées", compute='_compute_totals')
-    mission_hours = fields.Float(string="Heures de mission", compute='_compute_totals')
+    potential_hours = fields.Float(string="Working hours", compute='_compute_totals')
+    mission_hours = fields.Float(string="Mission hours", compute='_compute_totals')
     absence_days = fields.Float(string="Time off days", compute='_compute_totals')
     preview_html = fields.Html(compute='_compute_preview_html', sanitize=False)
     note_ids = fields.One2many(
-        'mission.activity.report.note', 'report_id', string="Informations par jour",
-        help="Texte libre porté sur un jour du mois, affiché sous le tableau, jour par jour.")
+        'mission.activity.report.note', 'report_id', string="Information per day",
+        help="Free text carried on a day of the month, shown under the table, day by day.")
     comment = fields.Text(
-        string="Commentaire", help="Texte libre imprimé sous le tableau du compte rendu.")
+        string="Comment", help="Free text printed under the table of the report.")
 
     _employee_month_unique = models.Constraint(
         'UNIQUE(employee_id, date_from)',
@@ -211,8 +211,7 @@ class MissionActivityReport(models.Model):
             if not internal:
                 if vals.get('state', 'draft') != 'draft' or any(
                         vals.get(name) for name in WORKFLOW_FIELDS if name != 'state'):
-                    raise UserError(_("Un compte rendu se crée en brouillon : utilisez les boutons "
-                                      "Soumettre et Valider."))
+                    raise UserError(_("A report is created as a draft: use the Submit and Validate buttons."))
             if vals.get('date_from'):
                 vals['date_from'] = fields.Date.to_date(vals['date_from']).replace(day=1)
         return super().create(vals_list)
@@ -517,7 +516,7 @@ class MissionActivityReport(models.Model):
                 weeks.append({'week': day['week'], 'span': 1})
         data['weeks'] = weeks
         data['status'] = self._get_status_label()
-        data['unit_labels'] = {'day': _("jours"), 'hour': _("heures")}
+        data['unit_labels'] = {'day': _("days"), 'hour': _("hours")}
         if partner_id is not None:
             missions = [line for line in data['missions'] if line['partner_id'] == partner_id]
             data['missions'] = missions

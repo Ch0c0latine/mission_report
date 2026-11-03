@@ -189,15 +189,15 @@ class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
     mission_volet_number = fields.Integer(
-        string="Volet", copy=False,
-        help="Numéro du volet de la mission, imprimé sur le devis avec la période de l'affaire.")
+        string="Phase", copy=False,
+        help="Number of the phase of the mission, printed on the quote with the period of the order.")
     mission_description = fields.Html(
-        string="Description de la prestation",
-        help="Imprimée sur le devis sous l'objet de la proposition. Reprise par « Nouveau volet ».")
+        string="Description of the service",
+        help="Printed on the quote under the subject of the proposal. Taken over by \"New phase\".")
     mission_expenses_text = fields.Html(
-        string="Frais",
-        help="La phrase sur les frais, imprimée sur le devis après le prix et le volume prévisionnel. "
-             "Reprise par « Nouveau volet ».")
+        string="Expenses sentence",
+        help="The sentence on expenses, printed on the quote after the price and the "
+             "estimated volume. Taken over by \"New phase\".")
 
     def _volet_day_lines(self):
         """Lignes de journées de l'affaire (ni frais, ni notes)."""
@@ -231,8 +231,8 @@ class SaleOrder(models.Model):
             done |= order
         if not done:
             raise UserError(_(
-                "La note n'a pas pu être découpée (ou la prestation est déjà renseignée) : "
-                "reprenez la description et les frais à la main."))
+                "The note could not be split (or the service is already filled in): enter the "
+                "description and the expenses by hand."))
         return True
 
     def _volet_workers(self):
@@ -250,9 +250,9 @@ class SaleOrder(models.Model):
     def action_mission_new_volet(self):
         self.ensure_one()
         if not self.project_id:
-            raise UserError(_("Choisissez d'abord le projet de l'affaire (onglet Autres informations)."))
+            raise UserError(_("Choose the project of the order first (Other Information tab)."))
         return {
-            'type': 'ir.actions.act_window', 'name': _("Nouveau volet"),
+            'type': 'ir.actions.act_window', 'name': _("New phase"),
             'res_model': 'mission.volet.wizard', 'context': {'default_order_id': self.id},
             'view_mode': 'form', 'views': [(False, 'form')], 'target': 'new',
         }
@@ -262,13 +262,13 @@ class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
     mission_day_line = fields.Boolean(
-        string="Ligne de journées", compute='_compute_mission_day_line',
-        help="Prestation comptée en journées : ni frais refacturés, ni section ou note. Les journées "
-             "validées des comptes rendus en font la quantité livrée.")
+        string="Days line", compute='_compute_mission_day_line',
+        help="Service counted in days: no re-invoiced expenses, no section or note. The "
+             "validated days of the reports make the delivered quantity.")
     mission_period_start = fields.Date(
-        string="Début de période",
-        help="Ligne d'un mois du volet : les journées validées de cette période vont sur elle.")
-    mission_period_end = fields.Date(string="Fin de période")
+        string="Start of period",
+        help="Line of one month of the phase: the validated days of this period go to it.")
+    mission_period_end = fields.Date(string="End of period")
 
     @api.depends('display_type', 'is_service', 'product_id.can_be_expensed')
     def _compute_mission_day_line(self):
@@ -281,7 +281,7 @@ class SaleOrderLine(models.Model):
         for line in self:
             if line.mission_period_start and line.mission_period_end \
                     and line.mission_period_end < line.mission_period_start:
-                raise ValidationError(_("La fin de période de la ligne « %s » précède son début.", line.name))
+                raise ValidationError(_("The end of the period of the line \"%s\" precedes its start.", line.name))
 
     def mission_period_label(self):
         """« 01/10/2026 – 31/10/2026 », vide sans période."""
@@ -333,26 +333,26 @@ class MissionVoletWizard(models.TransientModel):
     _name = 'mission.volet.wizard'
     # hr.mixin : voir mission.igd.wizard.
     _inherit = ['hr.mixin']
-    _description = "Nouveau volet d'une affaire"
+    _description = "New phase of an order"
 
-    order_id = fields.Many2one('sale.order', string="Affaire d'origine", required=True, readonly=True)
+    order_id = fields.Many2one('sale.order', string="Original order", required=True, readonly=True)
     employee_ids = fields.Many2many(
         'hr.employee', 'mission_volet_wizard_employee_rel', 'wizard_id', 'employee_id',
-        string="Intervenants",
-        help="Les jours ouvrés du volet sont ceux de ces personnes.")
-    date_start = fields.Date(string="Début du volet", required=True)
-    date_end = fields.Date(string="Fin du volet", required=True)
+        string="People involved",
+        help="The working days of the phase are those of these people.")
+    date_start = fields.Date(string="Start of the phase", required=True)
+    date_end = fields.Date(string="End of the phase", required=True)
     needs_source_dates = fields.Boolean(compute='_compute_needs_source_dates')
-    source_date_start = fields.Date(string="Début de l'affaire d'origine")
-    source_date_end = fields.Date(string="Fin de l'affaire d'origine")
+    source_date_start = fields.Date(string="Start of the original order")
+    source_date_end = fields.Date(string="End of the original order")
     mission_billing_unit = fields.Selection(
-        BILLING_UNITS, string="Facturation", required=True, default='day',
-        help="Celle de l'affaire d'origine par défaut. À l'heure : chaque mois compte les heures "
-             "ouvrées des intervenants.")
-    unit_warning = fields.Char(string="Avertissement sur l'unité", compute='_compute_unit_warning')
-    days = fields.Float(string="Quantité prévue", compute='_compute_plan',
-                        help="Jours ouvrés, ou heures ouvrées pour un volet facturé à l'heure.")
-    plan = fields.Html(string="Prévisionnel", compute='_compute_plan', sanitize=False)
+        BILLING_UNITS, string="Billing", required=True, default='day',
+        help="That of the original order by default. Per hour: each month counts the working "
+             "hours of the people involved.")
+    unit_warning = fields.Char(string="Unit warning", compute='_compute_unit_warning')
+    days = fields.Float(string="Planned quantity", compute='_compute_plan',
+                        help="Working days, or working hours for a phase billed per hour.")
+    plan = fields.Html(string="Estimate", compute='_compute_plan', sanitize=False)
     warning = fields.Char(compute='_compute_plan')
     note_warning = fields.Char(compute='_compute_note_warning')
 
@@ -406,10 +406,10 @@ class MissionVoletWizard(models.TransientModel):
             changed = wizard.order_id and wizard.mission_billing_unit \
                 and wizard.mission_billing_unit != (wizard.order_id.mission_billing_unit or 'day')
             wizard.unit_warning = changed and _(
-                "Les lignes du volet reprennent l'unité et le prix de l'affaire d'origine : passez-les "
-                "%s, à un prix %s, dans le nouveau volet.",
-                _("en heures") if wizard.mission_billing_unit == 'hour' else _("en jours"),
-                _("horaire") if wizard.mission_billing_unit == 'hour' else _("journalier")) or False
+                "The lines of the phase take over the unit and the price of the original order: "
+                "switch them to %s, at a %s price, in the new phase.",
+                _("in hours") if wizard.mission_billing_unit == 'hour' else _("in days"),
+                _("schedule") if wizard.mission_billing_unit == 'hour' else _("daily")) or False
 
     @api.depends('order_id')
     def _compute_note_warning(self):
@@ -417,10 +417,10 @@ class MissionVoletWizard(models.TransientModel):
             order = wizard.order_id
             wizard.note_warning = bool(order) and order._volet_legacy() and not is_html_empty(order.note) \
                 and not split_volet_note(order.note) and _(
-                    "La note de l'affaire d'origine n'a pas pu être découpée : elle sera recopiée telle "
-                    "quelle (titre et prévisionnel de l'ancien volet compris), et la description de la "
-                    "prestation et les frais resteront vides. Reprenez-les dans l'onglet Prestation du "
-                    "nouveau volet.") or False
+                    "The note of the original order could not be split: it will be copied as it is "
+                    "(title and estimate of the previous phase included), and the description of the "
+                    "service and the expenses will stay empty. Fill them in on the Service tab of "
+                    "the new phase.") or False
 
     # -- prévisionnel --------------------------------------------------------
 
@@ -462,7 +462,7 @@ class MissionVoletWizard(models.TransientModel):
         missing = self._missing_holiday_years()
         if not missing:
             return False
-        return _("Aucun jour férié n'est saisi pour %s : ils compteraient comme des jours travaillés.",
+        return _("No public holiday is entered for %s: they would count as working days.",
                  ", ".join(map(str, missing)))
 
     def action_generate_holidays(self):
@@ -495,8 +495,8 @@ class MissionVoletWizard(models.TransientModel):
                 "<table class='table table-sm'><thead><tr><th>%s</th><th class='text-end'>%s</th>"
                 "<th class='text-end'>%s</th></tr></thead><tbody>%s</tbody>"
                 "<tfoot><tr><th>%s</th><th class='text-end'>%s</th><th class='text-end'>%s</th></tr></tfoot></table>"
-            ) % (_("Mois"), _("Heures") if wizard.mission_billing_unit == 'hour' else _("Jours"),
-                 _("Montant HT"), rows, _("Total"), number(total),
+            ) % (_("Month"), _("Hours") if wizard.mission_billing_unit == 'hour' else _("Days"),
+                 _("Amount excl. tax"), rows, _("Total"), number(total),
                  format_amount(wizard.env, total * rate, currency)) if months else False
 
     # -- création ------------------------------------------------------------
@@ -568,13 +568,14 @@ class MissionVoletWizard(models.TransientModel):
                     if line.price_unit and estimate:
                         provision, rate, worked, spent = estimate
                         vals['product_uom_qty'] = round(provision / line.price_unit, 2)
-                        unit = _("heures") if self.mission_billing_unit == 'hour' else _("jours")
+                        unit = _("hours") if self.mission_billing_unit == 'hour' else _("days")
                         vals['name'] = _(
-                            "%(name)s\nProvision estimative d'après les volets précédents : %(rate)s par %(one)s "
-                            "travaillé (%(spent)s pour %(worked)s %(unit)s), pour %(days)s %(unit)s.",
+                            "%(name)s\n"
+                            "Estimate based on the previous phases: %(rate)s per %(one)s worked (%(spent)s "
+                            "for %(worked)s %(unit)s), for %(days)s %(unit)s.",
                             name=(line.name or '').split('\n')[0],
                             rate=format_amount(self.env, rate, order.currency_id),
-                            one=_("heure") if self.mission_billing_unit == 'hour' else _("jour"),
+                            one=_("hour") if self.mission_billing_unit == 'hour' else _("day"),
                             spent=format_amount(self.env, spent, order.currency_id),
                             worked=number(worked), days=number(self.days), unit=unit)
                 commands.append(Command.create(vals))
@@ -614,17 +615,17 @@ class MissionVoletWizard(models.TransientModel):
         self.ensure_one()
         order = self.order_id
         if self.date_end < self.date_start:
-            raise UserError(_("La fin du volet précède son début."))
+            raise UserError(_("The end of the phase precedes its start."))
         if not self.employee_ids:
             raise UserError(_(
-                "Choisissez au moins un intervenant : ses jours ouvrés donnent le prévisionnel du volet."))
+                "Choose at least one person: their working days give the estimate of the phase."))
         if not self.days:
             raise UserError(_(
-                "Aucun jour ouvré sur cette période pour les intervenants choisis : vérifiez les dates "
-                "et leur calendrier de travail."))
+                "No working day in this period for the chosen people: check the dates and their "
+                "work schedule."))
         if self.needs_source_dates:
             if not (self.source_date_start and self.source_date_end):
-                raise UserError(_("Renseignez les dates de l'affaire d'origine."))
+                raise UserError(_("Fill in the dates of the original order."))
             order.with_context(**{INTERNAL_KEY: INTERNAL}).write({
                 'mission_date_start': self.source_date_start, 'mission_date_end': self.source_date_end})
         description, expenses, note = order.mission_description, order.mission_expenses_text, order.note
@@ -647,7 +648,7 @@ class MissionVoletWizard(models.TransientModel):
             'date_order': fields.Datetime.now(),
             'order_line': self._volet_lines(),
         })
-        new.message_post(body=_("Volet créé à partir de %s.", order.name))
+        new.message_post(body=_("Phase created from %s.", order.name))
         return {
             'type': 'ir.actions.act_window', 'res_model': 'sale.order', 'res_id': new.id,
             'view_mode': 'form', 'views': [(False, 'form')], 'target': 'current',
