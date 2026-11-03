@@ -192,12 +192,7 @@
                                     <field name="commission_referral"/>
                                 </group>
                             </group>
-                            <p class="text-muted" invisible="commission_eligible">
-                                The margin is under the thresholds: no commission is due. It would be
-                                <field name="commission_full_potential" class="oe_inline"/> with full management,
-                                <field name="commission_management_potential" class="oe_inline"/> with management and
-                                <field name="commission_referral_potential" class="oe_inline"/> with a referral.
-                            </p>
+                            <p class="text-muted" invisible="commission_eligible">The margin is under the thresholds: no commission is due.</p>
                         </page>
                         <page string="Long-distance allowances" name="igd">
                             <field name="igd_ids">
