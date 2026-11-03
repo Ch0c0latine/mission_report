@@ -44,3 +44,18 @@ class TestCasLimites(TestSaleDelivery):
         report.action_generate_holidays()
         report.invalidate_recordset(['holidays_warning'])
         self.assertFalse(report.holidays_warning)
+
+    def test_les_lignes_portant_le_projet_cree_par_la_commande_sont_alimentees(self):
+        """Une ligne dont le projet est celui que la commande a créé (sans saisie) suit la mission de sa commande."""
+        auto = self.env['project.project'].create({'name': "Projet créé par la commande"})
+        self.order.project_id = self.project_a
+        self.line.project_id = auto
+        self._validate(self.report)
+        self.assertEqual(self.line.qty_delivered, 9.0)
+
+    def test_une_ligne_d_une_autre_mission_reste_a_elle(self):
+        """Le projet de la ligne porte des saisies : c'est une autre mission de la commande."""
+        self.order.project_id = self.project_a
+        self.line.project_id = self.project_b
+        self._validate(self.report)
+        self.assertEqual(self.line.qty_delivered, 0.0)

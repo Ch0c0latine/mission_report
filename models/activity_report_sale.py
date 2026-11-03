@@ -68,10 +68,12 @@ class MissionActivityReport(models.Model):
 
     @api.model
     def _sale_lines_of(self, project):
-        """Lignes de journées de la mission, toutes affaires confondues.
+        """Day lines of the mission, all orders together.
 
-        Seulement celles sans projet ou de ce projet : une commande peut porter
-        plusieurs missions.
+        Only those without a project, or with this project: an order can carry several
+        missions. A line whose project is another one, created by the order itself when it
+        was confirmed (the project of a service sold), belongs to the mission of its order
+        as long as nobody entered anything on that project: a mission has entries.
         """
         lines = project.sale_line_id
         Line = self.env['sale.order.line'].sudo()
@@ -79,9 +81,22 @@ class MissionActivityReport(models.Model):
             lines |= Line.search([('project_id', '=', project.id)])
         for order in project.sudo()._mission_all_orders():
             lines |= order.order_line
+        Leave = self.env['hr.leave'].sudo()
+        entered = {}
+
+        def another_mission(line):
+            other = line.project_id
+            if not other or other == project:
+                return False
+            if line.order_id.project_id != project:
+                return True
+            if other.id not in entered:
+                entered[other.id] = bool(Leave.search_count([('project_id', '=', other.id)], limit=1))
+            return entered[other.id]
+
         return lines.filtered(
             lambda l: l.mission_day_line and l.qty_delivered_method == 'manual' and l.state == 'sale'
-            and (not l.project_id or l.project_id == project))
+            and not another_mission(l))
 
     @api.model
     def _sale_sync_delivered(self, project_ids=None, days=None):
