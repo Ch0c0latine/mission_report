@@ -2994,16 +2994,19 @@ msgid "“Day 1 column” takes a column letter, such as D."
 msgstr "« Colonne du jour 1 » attend une lettre de colonne, par exemple D."
 
 #. module: mission_report
+#. odoo-python
 #: code:addons/mission_report/models/project_profitability.py:0
 msgid "Mission days (wages)"
 msgstr "Journées de mission (salaires)"
 
 #. module: mission_report
+#. odoo-python
 #: code:addons/mission_report/models/project_profitability.py:0
 msgid "Long-distance allowances (IGD)"
 msgstr "Indemnités de grand déplacement (IGD)"
 
 #. module: mission_report
+#. odoo-python
 #: code:addons/mission_report/models/project_profitability.py:0
 msgid "Expenses not re-invoiced"
 msgstr "Frais non refacturés"
