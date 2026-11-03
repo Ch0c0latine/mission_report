@@ -2895,10 +2895,11 @@ msgid ""
 "Overdue: Due date is already passed\n"
 "Today: Activity date is today\n"
 "Planned: Future activities."
-msgstr "Statut basé sur les activités
-En retard : la date d'échéance est dépassée
-Aujourd'hui : la date de l'activité est aujourd'hui
-Planifiée : activités à venir."
+msgstr ""
+"Statut basé sur les activités\n"
+"En retard : la date d'échéance est dépassée\n"
+"Aujourd'hui : la date de l'activité est aujourd'hui\n"
+"Planifiée : activités à venir."
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.view_order_form_mission_volet
