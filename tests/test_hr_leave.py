@@ -52,7 +52,7 @@ class TestHrLeaveMissionReport(TransactionCase):
         })
         self.assertTrue(leave.id)
         self.assertTrue(leave.holiday_status_id)
-        self.assertEqual(leave.holiday_status_id.name, 'Activité')
+        self.assertEqual(leave.holiday_status_id.name, 'Activity')
 
     def test_partner_id_follows_project(self):
         leave = self.env['hr.leave'].create({
@@ -336,7 +336,8 @@ class TestHrLeaveMissionReport(TransactionCase):
                 'request_date_to': date_to,
             })
             bodies = leave.message_ids.mapped(lambda message: str(message.body))
-            self.assertTrue(any('a été enregistrée' in body for body in bodies), bodies)
+            recorded = 'a été enregistrée' if lang == 'fr_FR' else 'has been recorded'
+            self.assertTrue(any(recorded in body for body in bodies), bodies)
             self.assertFalse(any('planned on' in body or 'planifié le' in body for body in bodies), bodies)
 
     def test_leave_accepted_message_keeps_the_native_wording(self):

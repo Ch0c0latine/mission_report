@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-03 11:04+0000\n"
-"PO-Revision-Date: 2026-11-03 11:04+0000\n"
+"POT-Creation-Date: 2026-11-03 11:09+0000\n"
+"PO-Revision-Date: 2026-11-03 11:09+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -277,6 +277,7 @@ msgstr "Activités et congés saisis par l'employé"
 #. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report_template.py:0
+#: model:hr.leave.type,name:mission_report.hr_leave_type_activite
 #: model:ir.ui.menu,name:mission_report.menu_mission_report_root
 #: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
 msgid "Activity"
@@ -314,7 +315,7 @@ msgstr "Saisie d'activité"
 #: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
 msgid "Activity report"
-msgstr "Rapport d'activité"
+msgstr "Compte rendu d'activité"
 
 #. module: mission_report
 #: model:ir.actions.report,name:mission_report.action_report_activity_client
@@ -378,11 +379,6 @@ msgstr "Comptes rendus d'activité"
 #: code:addons/mission_report/models/activity_report_template.py:0
 msgid "Activity reports.zip"
 msgstr "Comptes rendus d'activité.zip"
-
-#. module: mission_report
-#: model:hr.leave.type,name:mission_report.hr_leave_type_activite
-msgid "Activité"
-msgstr ""
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_res_company__igd_real_meal_product_ids
@@ -938,7 +934,7 @@ msgstr "Modifier"
 #: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_search
 msgid "Employee"
-msgstr "Salarié"
+msgstr "Employé"
 
 #. module: mission_report
 #. odoo-python
@@ -1376,7 +1372,7 @@ msgstr "Dans le détail : %s."
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_note__note
 #: model_terms:ir.ui.view,arch_db:mission_report.activity_report_grid
 msgid "Information"
-msgstr "Informations"
+msgstr "Information"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__show_texts

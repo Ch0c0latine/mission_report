@@ -522,10 +522,13 @@ class HrLeave(models.Model):
     # depuis le .po du module qui le déclare), et ce ne sont ni des vues ni des
     # libellés de champs : on réécrit donc le texte une fois produit.
     #
-    # Les substitutions portent sur le français, seule langue de ce module. Dans
-    # une autre langue elles ne trouvent rien et sont sans effet - le texte
-    # d'origine reste affiché, rien ne casse.
+    # The substitutions are written for English and French. In another language they find
+    # nothing and have no effect: the original text stays, nothing breaks.
     _ACTIVITY_WORDING = {
+        # English.
+        "The time off has been automatically approved": "The entry has been automatically approved",
+        "booked time off which": "entered an activity which",
+        # French.
         # Posté par create() quand le type ne demande aucune validation, ce qui
         # est le cas de toutes les missions.
         "Le congé a été automatiquement approuvé":
@@ -658,10 +661,26 @@ class HrLeave(models.Model):
         'hr_holidays.action_hr_holidays_dashboard',
     )
     _RENAMED_FIELDS = (
-        # Titre du filtre du calendrier de saisie, qui ne lit que le libellé du
-        # champ : "Type de congés" d'hr_holidays.
+        # Title of the filter of the entry calendar, which only reads the label of the
+        # field: "Time Off Type" of hr_holidays.
         ('hr.leave', 'holiday_status_id'),
     )
+    # The names above, in French (the translation files of the module do not reach the records
+    # of another module). The other languages read the English name.
+    _RENAMED_FRENCH = {
+        'hr_holidays.menu_hr_holidays_my_leaves': "Saisies",
+        'hr_holidays.menu_hr_holidays_dashboard': "Vue d'ensemble",
+        'hr_holidays.menu_hr_holidays_management': "Management",
+        'hr_holidays.menu_hr_holidays_report': "Analyse",
+        'hr_holidays.menu_hr_holidays_configuration': "Configuration",
+        'hr_holidays.hr_leave_menu_my': "Mes saisies",
+        'hr_holidays.menu_open_department_leave_approve': "Saisies de l'équipe",
+        'mission_report.menu_mission_activity_report_all': "Comptes rendus de l'équipe",
+        'hr_holidays.hr_leave_action_my': "Mes saisies",
+        'hr_holidays.hr_leave_action_action_approve_department': "Saisies",
+        'hr_holidays.action_hr_holidays_dashboard': "Vue d'ensemble",
+        'hr.leave,holiday_status_id': "Type de saisie",
+    }
 
     @api.model
     def _sync_renamed_records_translations(self):
@@ -673,11 +692,15 @@ class HrLeave(models.Model):
             if not record:
                 continue
             name = record.with_context(lang='en_US').name
-            record.update_field_translations('name', {lang: name for lang in langs})
+            french = self._RENAMED_FRENCH.get(xmlid, name)
+            record.update_field_translations(
+                'name', {lang: french if lang.startswith('fr') else name for lang in langs})
         for model_name, field_name in self._RENAMED_FIELDS:
             field = self.env['ir.model.fields']._get(model_name, field_name)
             description = field.with_context(lang='en_US').field_description
-            field.update_field_translations('field_description', {lang: description for lang in langs})
+            french = self._RENAMED_FRENCH.get('%s,%s' % (model_name, field_name), description)
+            field.update_field_translations(
+                'field_description', {lang: french if lang.startswith('fr') else description for lang in langs})
         # Les libellés de champs sont mis en cache par le registre.
         self.env.registry.clear_cache()
 

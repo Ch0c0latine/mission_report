@@ -28,7 +28,7 @@ from .activity_report import INTERNAL, INTERNAL_KEY
 _SPACE = r'(?:&nbsp;|\s|\xa0)*'
 # « Volet 2 : période du 01/10/2026 au 31/03/2027 », avec ou sans espaces insécables.
 VOLET_HEADING = re.compile(
-    r'Phase' + _SPACE + r'(\d+)' + _SPACE + r':' + _SPACE + r'période du' + _SPACE
+    r'Volet' + _SPACE + r'(\d+)' + _SPACE + r':' + _SPACE + r'période du' + _SPACE
     + r'(\d\d/\d\d/\d{4})' + _SPACE + r'au' + _SPACE + r'(\d\d/\d\d/\d{4})')
 # « Ce volet concerne la période du 01/07/2026 au 30/09/2026 : … » quand il n'y a pas de titre.
 VOLET_PLAN_PERIOD = re.compile(

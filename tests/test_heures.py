@@ -22,6 +22,9 @@ class TestHeures(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        # These tests read the French documents of the module.
+        cls.env['res.lang']._activate_lang('fr_FR')
+        cls.env = cls.env(context=dict(cls.env.context, lang='fr_FR'))
         cls.company = cls.env.company
         cls.user = cls.env['res.users'].create({
             'name': 'Employé Heures', 'login': 'heures_employee_mission_report@example.com',
