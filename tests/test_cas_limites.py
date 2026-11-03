@@ -59,3 +59,26 @@ class TestCasLimites(TestSaleDelivery):
         self.line.project_id = self.project_b
         self._validate(self.report)
         self.assertEqual(self.line.qty_delivered, 2.0, "the two days of mission B, not the nine of A")
+
+    def test_la_rentabilite_compte_les_salaires_des_journees_validees(self):
+        """Le panneau de rentabilité du projet porte le coût des journées : salaire × coefficient ÷ jours ouvrés."""
+        self.employee.version_id.wage = 3800.0
+        self._validate(self.report)
+        project = self.project_a
+        data = project._get_profitability_items(with_action=False)
+        costs = {item['id']: item for item in data['costs']['data']}
+        # May 2031 holds 19 working days: 200 a day, nine days validated on the mission.
+        self.assertAlmostEqual(costs['mission_salaries']['billed'], -1800.0, places=2)
+        self.company.mission_cost_coefficient = 1.5
+        costs = {item['id']: item for item in project._get_profitability_items(with_action=False)['costs']['data']}
+        self.assertAlmostEqual(costs['mission_salaries']['billed'], -2700.0, places=2)
+        self.assertLessEqual(data['costs']['total']['billed'], -1800.0)
+
+    def test_les_salaires_ne_sont_montres_qu_aux_responsables(self):
+        self.employee.version_id.wage = 3800.0
+        self._validate(self.report)
+        user = self.env['res.users'].create({
+            'name': "Simple utilisateur", 'login': 'simple_rentabilite_zz@example.com',
+            'group_ids': [(6, 0, [self.env.ref('base.group_user').id, self.env.ref('project.group_project_user').id])]})
+        self.assertFalse(self.project_a.with_user(user)._mission_show_costs())
+        self.assertTrue(self.project_a._mission_show_costs())

@@ -25,6 +25,19 @@
                         </setting>
                     </block>
 
+                    <block title="Profitability" name="mission_profitability_block">
+                        <setting id="mission_cost_coefficient" company_dependent="1"
+                                 string="Wage coefficient"
+                                 help="Multiplied by the gross monthly wage of the HR contract to give the cost of an employee for the company: 1.45 adds employer charges of 45 %. The cost of a day is that cost divided by the working days of the month. Shown in the profitability panel of the projects, to the managers.">
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="mission_cost_coefficient" class="col-lg-4 o_light_label"/>
+                                    <field name="mission_cost_coefficient"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+
                     <block title="Reminders" name="mission_reminder_block">
                         <setting id="mission_reminder_day" company_dependent="1"
                                  string="Report reminders"
