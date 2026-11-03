@@ -33,7 +33,7 @@
                 <field name="order_id"/>
                 <filter name="without_order" string="Without order" domain="[('order_id', '=', False)]"/>
                 <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
-                <group string="Group By">
+                <group>
                     <filter name="group_partner" string="Customer" context="{'group_by': 'partner_id'}"/>
                     <filter name="group_project" string="Project" context="{'group_by': 'project_id'}"/>
                 </group>
