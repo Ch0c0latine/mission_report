@@ -15,6 +15,9 @@ from odoo.tools.safe_eval import safe_eval
 from odoo.tools.translate import code_translations
 
 from .activity_report import INTERNAL, INTERNAL_KEY
+
+#: Names of the leave type that marks a mission entry (the second one is the former, French, name).
+ACTIVITY_TYPE_NAMES = ('Activity', 'Activité')
 from .work_time import hours_by_day, work_intervals
 
 
@@ -276,7 +279,7 @@ class HrLeave(models.Model):
         if leave_type and not leave_type.requires_allocation:
             return leave_type
         leave_type = self.env['hr.leave.type'].with_context(active_test=False).search(
-            [('name', '=', 'Activity'), ('requires_allocation', '=', False)], limit=1)
+            [('name', 'in', ACTIVITY_TYPE_NAMES), ('requires_allocation', '=', False)], limit=1)
         if not leave_type:
             leave_type = self.env['hr.leave.type'].create({
                 'name': 'Activity',
@@ -288,7 +291,12 @@ class HrLeave(models.Model):
         return leave_type
 
     def _is_activity_leave_type(self, leave_type):
-        return bool(leave_type) and leave_type.name == 'Activity'
+        """The leave type that marks a mission entry: the record of the module, or one of that name
+        (a database from before the module was written in English calls it "Activité")."""
+        if not leave_type:
+            return False
+        marker = self.env.ref('mission_report.hr_leave_type_activite', raise_if_not_found=False)
+        return leave_type == marker or leave_type.name in ACTIVITY_TYPE_NAMES
 
     def _get_mission_only_employees(self):
         """Parmi ces saisies, les employés qui n'ont que des missions.
