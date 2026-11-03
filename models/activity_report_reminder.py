@@ -35,6 +35,31 @@ class ResConfigSettings(models.TransientModel):
 class MissionActivityReport(models.Model):
     _inherit = ['mission.activity.report', 'mail.activity.mixin']
 
+    holidays_warning = fields.Char(compute='_compute_holidays_warning')
+
+    @api.depends('date_from', 'company_id')
+    def _compute_holidays_warning(self):
+        """Une année sans aucun jour férié saisi : le compte rendu compterait les fériés comme des jours travaillés."""
+        Leaves = self.env['resource.calendar.leaves'].sudo()
+        for report in self:
+            report.holidays_warning = False
+            if not report.date_from:
+                continue
+            year = report.date_from.year
+            if not Leaves.search_count([
+                    ('resource_id', '=', False), ('holiday_id', '=', False),
+                    ('date_from', '>=', '%s-01-01 00:00:00' % year), ('date_from', '<=', '%s-12-31 23:59:59' % year)]):
+                report.holidays_warning = _(
+                    "Aucun jour férié n'est saisi pour %s : ils compteraient comme des jours travaillés.", year)
+
+    def action_generate_holidays(self):
+        """Les jours fériés français de l'année du compte rendu."""
+        self.ensure_one()
+        company = self.company_id or self.env.company
+        self.env['mission.public.holiday.wizard'].create(
+            {'year': self.date_from.year, 'company_id': company.id})._generate()
+        return True
+
     def _reminder_type(self):
         return self.env.ref('mission_report.mail_activity_type_report', raise_if_not_found=False)
 

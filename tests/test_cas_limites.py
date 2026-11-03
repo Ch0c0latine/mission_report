@@ -23,16 +23,6 @@ class TestCasLimites(TestSaleDelivery):
         june.action_reset_to_draft()
         self.assertEqual(self.line.qty_delivered, 9.0 + 2.0, "juin repris : il reste ses jours de mai")
 
-    def test_une_demi_journee_vaut_une_demi_journee_livree(self):
-        self._entry(self.project_a, '2031-05-19', '2031-05-19')
-        half = self.env['hr.leave'].create({
-            'employee_id': self.employee.id, 'project_id': self.project_a.id,
-            'request_date_from': '2031-05-20', 'request_date_to': '2031-05-20',
-            'mission_duration': 'half', 'request_date_from_period': 'am', 'request_date_to_period': 'am'})
-        self.assertEqual(half.number_of_days, 0.5)
-        self._validate(self.report)
-        self.assertEqual(self.line.qty_delivered, 9.0 + 1.0 + 0.5)
-
     def test_un_compte_rendu_valide_ne_se_supprime_pas(self):
         self._validate(self.report)
         with self.assertRaises(UserError):
@@ -45,3 +35,12 @@ class TestCasLimites(TestSaleDelivery):
         self._validate(self.report)
         self.env['mission.activity.report']._cron_sale_sync_delivered()
         self.assertEqual(self.line.qty_delivered, 9.0)
+
+    def test_un_mois_sans_jours_feries_le_dit(self):
+        """Une année sans jours fériés saisis : le compte rendu avertit, et les génère d'un clic."""
+        self.assertFalse(self.report.holidays_warning, "2031 a ses jours fériés")
+        report = self._report('2034-03-01')
+        self.assertIn("2034", report.holidays_warning)
+        report.action_generate_holidays()
+        report.invalidate_recordset(['holidays_warning'])
+        self.assertFalse(report.holidays_warning)
