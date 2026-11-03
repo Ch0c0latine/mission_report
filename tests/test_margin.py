@@ -66,7 +66,7 @@ class TestMargin(TransactionCase):
         # May 2031 has 19 working days (1 May, 8 May and Ascension out), June 2031 (Whit Monday out) 20.
         self.assertEqual(sheet.month_ids[0].working_days, 19.0)
         sheet.month_ids[1].leave_days = 2.0
-        self.assertEqual(sheet.month_ids[1].working_days, 17.0)
+        self.assertEqual(sheet.month_ids[1].working_days, 18.0)
         self.assertAlmostEqual(sheet.month_ids[0].revenue, 19 * 500.0, places=2)
         self.assertAlmostEqual(sheet.forecast_revenue, sum(sheet.month_ids.mapped('revenue')), places=2)
 
