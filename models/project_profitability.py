@@ -32,7 +32,7 @@ class ResCompany(models.Model):
     _inherit = 'res.company'
 
     mission_cost_coefficient = fields.Float(
-        string="Wage coefficient", default=1.0, digits=(16, 2),
+        string="Wage coefficient", default=1.45, digits=(16, 2),
         help="Multiplied by the gross monthly wage of the HR contract to give the cost of an employee for "
              "the company: 1.45 adds employer charges of 45 %. The cost of a day is that cost divided by "
              "the working days of the month.")
@@ -98,7 +98,7 @@ class ProjectProject(models.Model):
         self.ensure_one()
         project = self.sudo()
         company = project.company_id or self.env.company
-        coefficient = company.mission_cost_coefficient or 1.0
+        coefficient = company.mission_cost_coefficient or 1.45
         basis = {}
         total = 0.0
         for report in self.env['mission.activity.report'].sudo().search([('state', '=', 'validated')]):

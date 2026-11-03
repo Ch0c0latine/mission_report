@@ -63,6 +63,7 @@ class TestCasLimites(TestSaleDelivery):
     def test_la_rentabilite_compte_les_salaires_des_journees_validees(self):
         """Le panneau de rentabilité du projet porte le coût des journées : salaire × coefficient ÷ jours ouvrés."""
         self.employee.version_id.wage = 3800.0
+        self.company.mission_cost_coefficient = 1.0
         self._validate(self.report)
         project = self.project_a
         data = project._get_profitability_items(with_action=False)
