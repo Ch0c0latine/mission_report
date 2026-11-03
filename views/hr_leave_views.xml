@@ -36,6 +36,11 @@
                 <field name="mission_duration" widget="radio" options="{'horizontal': true}"
                        invisible="entry_type != 'mission' or not mission_hourly"
                        readonly="state not in ('confirm', False)"/>
+                <div class="text-muted small" colspan="2"
+                     invisible="entry_type != 'mission' or mission_hourly or not project_id">
+                    Mission facturée au jour : une saisie compte des journées entières. Les demi-journées et les
+                    heures sont réservées aux missions facturées à l'heure.
+                </div>
             </xpath>
 
             <!-- Congé : renommage + visible seulement en mode Congé -->

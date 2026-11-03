@@ -473,7 +473,9 @@ class HrLeave(models.Model):
         for record in self:
             if record.project_id and record.mission_duration != 'day' and not record.mission_hourly:
                 raise ValidationError(_(
-                    "La mission %s est facturée au jour : saisissez des journées entières.",
+                    "La mission %s est facturée au jour : une saisie y compte des journées entières. "
+                    "Les demi-journées et les heures sont réservées aux missions facturées à l'heure "
+                    "(champ « Facturation » de l'affaire).",
                     record.project_id.display_name))
 
     @api.onchange('holiday_status_id')
