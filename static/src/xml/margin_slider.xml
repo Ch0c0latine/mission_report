@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2026 T.T.C. SAS
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0). -->
+<templates xml:space="preserve">
+    <t t-name="mission_report.MarginSliderField">
+        <div class="d-flex align-items-center gap-3 o_margin_slider">
+            <span class="text-muted"><t t-esc="props.min"/> %</span>
+            <input type="range" class="form-range flex-grow-1"
+                   t-att-min="props.min" t-att-max="props.max" step="1"
+                   t-att-value="value" t-att-disabled="props.readonly or undefined"
+                   t-on-input="onInput" t-on-change="onChange"/>
+            <span class="text-muted"><t t-esc="props.max"/> %</span>
+            <strong class="o_margin_slider_value"><t t-esc="value"/> %</strong>
+        </div>
+    </t>
+</templates>

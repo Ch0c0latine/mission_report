@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 T.T.C. SAS
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0). -->
+<odoo>
+    <!-- The scale of the long-distance allowances of the companies that have none (idempotent). -->
+    <function model="res.company" name="_mission_igd_init"/>
+</odoo>

@@ -38,6 +38,25 @@
                         </setting>
                     </block>
 
+                    <block title="Long-distance allowances" name="mission_igd_scale_block">
+                        <setting id="mission_igd_scale" company_dependent="1"
+                                 string="Scale of the allowances (URSSAF)"
+                                 help="Meal and lodging allowances per day worked, by month of the mission. The margin calculations use it: update it when the URSSAF scale changes.">
+                            <field name="mission_igd_rate_ids" nolabel="1">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="label"/>
+                                    <field name="month_from"/>
+                                    <field name="month_to"/>
+                                    <field name="meal"/>
+                                    <field name="lodging"/>
+                                    <field name="total"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </setting>
+                    </block>
+
                     <block title="Reminders" name="mission_reminder_block">
                         <setting id="mission_reminder_day" company_dependent="1"
                                  string="Report reminders"

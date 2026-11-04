@@ -57,7 +57,7 @@ class MissionMargin(models.Model):
 
     # ---- Cost of the person -------------------------------------------------------------------
     cost_origin = fields.Selection(
-        [('employee', "Employee"), ('freelance', "Freelance (daily rate bought)")],
+        [('employee', "Employee"), ('freelance', "Freelance")],
         string="Cost of the person", default='employee', required=True)
     gross_salary = fields.Monetary(string="Gross yearly salary", default=40000.0)
     salary_preset = fields.Selection(
@@ -94,12 +94,11 @@ class MissionMargin(models.Model):
     other_yearly = fields.Monetary(string="Other costs a year")
 
     # ---- Price --------------------------------------------------------------------------------
-    margin_choice = fields.Selection(
-        [('10', "10 %"), ('15', "15 %"), ('20', "20 %"), ('25', "25 %"), ('30', "30 %"), ('35', "35 %"),
-         ('40', "40 %"), ('custom', "Rate typed by hand")],
-        string="Margin wanted", default='20', required=True,
-        help="The daily rate follows the margin wanted (rounded up to 5 €) when the costs change. "
-             "Type a daily rate to set it by hand.")
+    margin_wanted = fields.Integer(
+        string="Margin wanted (%)", default=20,
+        help="Move the slider: the daily rate follows the margin wanted (rounded up to 5 €) when the costs "
+             "change. Type a daily rate to set it by hand.")
+    rate_manual = fields.Boolean(string="Rate typed by hand", default=False)
     daily_rate = fields.Monetary(string="Daily rate sold (TJM)", tracking=True)
     rebilled_daily = fields.Monetary(string="Expenses re-invoiced per day")
     duration_months = fields.Float(string="Duration of the mission (months)", default=12.0)
@@ -115,15 +114,17 @@ class MissionMargin(models.Model):
     commission_rate_management = fields.Float(string="Management of the service or sales", default=0.10)
     commission_rate_referral = fields.Float(string="Referral of a candidate or a deal", default=0.05)
 
-    igd_lodging = fields.Boolean(string="Lodging (overnight stay)", help="A night in a hotel for each day worked.")
-    igd_meals = fields.Selection(
-        [('0', "No meal"), ('1', "1 meal"), ('2', "2 meals")], string="Meals", default='0', required=True,
-        help="Meals paid for each day worked, at the rates of the table of the Long-distance allowances tab.")
+    igd_lodging = fields.Boolean(string="Lodging", help="A night in a hotel for each day worked.")
+    igd_lunch = fields.Boolean(string="Lunch", help="A meal paid for each day worked.")
+    igd_dinner = fields.Boolean(string="Dinner", help="A second meal paid for each day worked.")
+    igd_monthly_amount = fields.Monetary(
+        string="Fixed amount a month",
+        help="0: every day worked gets what is ticked, at the rates of the scale (Settings). "
+             "Otherwise, the agreed amount of allowances a month (e.g. 1 000 € a month).")
     igd_rebilled = fields.Boolean(
         string="Allowances re-invoiced to the customer",
         help="The allowances are added to the expenses re-invoiced per day.")
-    igd_ids = fields.One2many('mission.margin.igd', 'margin_id', string="Long-distance allowances",
-                              default=lambda self: self._default_igd())
+    igd_rate_ids = fields.One2many(related='company_id.mission_igd_rate_ids', string="Scale of the allowances")
     month_ids = fields.One2many('mission.margin.month', 'margin_id', string="Monthly billing forecast")
 
     # ---- Results ------------------------------------------------------------------------------
@@ -167,17 +168,6 @@ class MissionMargin(models.Model):
     forecast_margin = fields.Monetary(string="Forecast margin", compute='_compute_forecast')
     forecast_days = fields.Float(string="Forecast worked days", compute='_compute_forecast')
 
-    def _default_igd(self):
-        """The 2026 rates of the spreadsheet: a meal and the lodging, by period of the mission."""
-        rows = [
-            (_("First 3 months"), 1, 3, 21.4, 56.8),
-            (_("Month 4 to 24"), 4, 24, 18.2, 48.3),
-            (_("Month 25 to 72"), 25, 72, 15.0, 39.8),
-        ]
-        return [(0, 0, {'sequence': i, 'label': label, 'month_from': start, 'month_to': end,
-                        'meal': meal, 'lodging': lodging})
-                for i, (label, start, end, meal, lodging) in enumerate(rows, 1)]
-
     @api.depends('order_id.partner_id', 'project_id.partner_id')
     def _compute_partner(self):
         for margin in self:
@@ -190,8 +180,10 @@ class MissionMargin(models.Model):
         'ppe_yearly', 'equipment_yearly', 'other_yearly', 'daily_rate', 'rebilled_daily', 'duration_months',
         'employee_charge_rate', 'target_amount_1', 'target_amount_2', 'target_rate_1', 'target_rate_2',
         'commission_threshold_rate', 'commission_threshold_amount', 'commission_rate_full',
-        'commission_rate_management', 'commission_rate_referral', 'igd_lodging', 'igd_meals', 'igd_rebilled',
-        'igd_ids.month_from', 'igd_ids.month_to', 'igd_ids.meal', 'igd_ids.lodging')
+        'commission_rate_management', 'commission_rate_referral', 'igd_lodging', 'igd_lunch', 'igd_dinner',
+        'igd_monthly_amount', 'igd_rebilled', 'company_id.mission_igd_rate_ids.month_from',
+        'company_id.mission_igd_rate_ids.month_to', 'company_id.mission_igd_rate_ids.meal',
+        'company_id.mission_igd_rate_ids.lodging')
     def _compute_results(self):
         for m in self:
             days = 365 - m.weekend_days - m.public_holidays - m.paid_leave_days - m.rtt_days
@@ -295,16 +287,22 @@ class MissionMargin(models.Model):
             self._follow_margin()
 
     def _igd_per_day(self):
-        """Allowances paid per worked day, over the duration of the mission: the rates change with the month."""
+        """Allowances per worked day: the amount agreed a month, or what is ticked on every day worked.
+
+        With every day worked populated, the scale (Settings) gives the rates by month of the mission.
+        """
         self.ensure_one()
-        meals = int(self.igd_meals or 0)
+        if self.igd_monthly_amount:
+            days = 365 - self.weekend_days - self.public_holidays - self.paid_leave_days - self.rtt_days
+            return self.igd_monthly_amount * 12 / days if days > 0 else 0.0
+        meals = int(bool(self.igd_lunch)) + int(bool(self.igd_dinner))
         if not (meals or self.igd_lodging):
             return 0.0
         months = max(int(round(self.duration_months)), 1)
-        lines = self.igd_ids.sorted(lambda line: (line.sequence, line.id))
+        rates = self.company_id.sudo().mission_igd_rate_ids.sorted(lambda line: (line.sequence, line.id))
         total = 0.0
         for month in range(1, months + 1):
-            line = next((line for line in lines
+            line = next((line for line in rates
                          if line.month_from <= month and (not line.month_to or month <= line.month_to)), None)
             if line:
                 total += meals * line.meal + (line.lodging if self.igd_lodging else 0.0)
@@ -324,28 +322,34 @@ class MissionMargin(models.Model):
         'employer_charge_rate', 'overhead_rate', 'payslip_monthly_cost', 'freelance_daily_rate',
         'daily_cost_calendar', 'daily_cost_worked', 'mileage_monthly', 'expenses_monthly', 'training_yearly',
         'ppe_yearly', 'equipment_yearly', 'other_yearly', 'rebilled_daily', 'duration_months', 'igd_lodging',
-        'igd_meals', 'igd_rebilled', 'igd_ids', 'margin_choice')
+        'igd_lunch', 'igd_dinner', 'igd_monthly_amount', 'igd_rebilled', 'margin_wanted')
 
     def _follow_margin(self):
         for m in self:
-            if m.margin_choice != 'custom':
-                m.with_context(margin_follow=True).daily_rate = m._rate_for_margin(int(m.margin_choice) / 100.0)
+            if not m.rate_manual:
+                m.with_context(margin_follow=True).daily_rate = m._rate_for_margin(m.margin_wanted / 100.0)
 
     @api.onchange(*COST_FIELDS)
     def _onchange_follow_margin(self):
         self._follow_margin()
 
+    @api.onchange('margin_wanted')
+    def _onchange_margin_wanted(self):
+        # Moving the slider gives the control back to the margin.
+        self.rate_manual = False
+        self._follow_margin()
+
     @api.onchange('daily_rate')
     def _onchange_daily_rate(self):
         # Typed by hand: unless it is the rate the margin wanted gave (the sheet sets it itself).
-        if self.margin_choice != 'custom' and self.daily_rate != self._rate_for_margin(int(self.margin_choice) / 100.0):
-            self.margin_choice = 'custom'
+        if not self.rate_manual and self.daily_rate != self._rate_for_margin(self.margin_wanted / 100.0):
+            self.rate_manual = True
 
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
-            if 'daily_rate' in vals and 'margin_choice' not in vals:
-                vals['margin_choice'] = 'custom'
+            if 'daily_rate' in vals and 'rate_manual' not in vals:
+                vals['rate_manual'] = True
         records = super().create(vals_list)
         for record, vals in zip(records, vals_list):
             if 'daily_rate' not in vals:
@@ -354,10 +358,12 @@ class MissionMargin(models.Model):
         return records
 
     def write(self, vals):
-        if 'daily_rate' in vals and 'margin_choice' not in vals and not self.env.context.get('margin_follow'):
-            vals = dict(vals, margin_choice='custom')
+        if 'margin_wanted' in vals and 'rate_manual' not in vals and 'daily_rate' not in vals:
+            vals = dict(vals, rate_manual=False)
+        elif 'daily_rate' in vals and 'rate_manual' not in vals and not self.env.context.get('margin_follow'):
+            vals = dict(vals, rate_manual=True)
         result = super().write(vals)
-        if 'daily_rate' not in vals and any(key in vals for key in self.COST_FIELDS):
+        if 'daily_rate' not in vals and any(key in vals for key in self.COST_FIELDS + ('rate_manual',)):
             self._follow_margin()
         if 'project_id' in vals or 'order_id' in vals:
             self._sync_links()
@@ -431,6 +437,7 @@ class MissionMargin(models.Model):
             raise UserError(_("This calculation already has a project."))
         self.project_id = self.env['project.project'].create({
             'name': self.name, 'partner_id': self.partner_id.id, 'company_id': self.company_id.id})
+        self.project_id.invalidate_recordset(['mission_draft'])
         return self.action_open_project()
 
     def action_open_project(self):
@@ -444,16 +451,18 @@ class MissionMargin(models.Model):
                 'view_mode': 'form', 'target': 'current'}
 
 
-class MissionMarginIgd(models.Model):
-    _name = 'mission.margin.igd'
-    _description = "Long-distance allowances of a margin calculation"
-    _order = 'sequence, id'
+class MissionIgdRate(models.Model):
+    """The scale of the long-distance allowances (URSSAF), by period of a mission, for a company."""
+    _name = 'mission.igd.rate'
+    _description = "Rate of the long-distance allowances"
+    _order = 'company_id, sequence, id'
 
-    margin_id = fields.Many2one('mission.margin', required=True, ondelete='cascade')
+    company_id = fields.Many2one('res.company', required=True, default=lambda self: self.env.company, index=True)
+    currency_id = fields.Many2one(related='company_id.currency_id')
     sequence = fields.Integer(default=10)
     label = fields.Char(string="Period", required=True)
-    month_from = fields.Integer(string="From month")
-    month_to = fields.Integer(string="To month")
+    month_from = fields.Integer(string="From month", default=1)
+    month_to = fields.Integer(string="To month", help="0: until the end of the mission.")
     meal = fields.Monetary(string="Meal", currency_field='currency_id')
     lodging = fields.Monetary(
         string="Lodging and breakfast", currency_field='currency_id',
@@ -462,12 +471,46 @@ class MissionMarginIgd(models.Model):
         string="Total per worked day", compute='_compute_total', currency_field='currency_id',
         help="Two meals and the lodging. Not due on leave, on the days back home, or when the "
              "travel is paid at its actual cost.")
-    currency_id = fields.Many2one(related='margin_id.currency_id')
 
     @api.depends('meal', 'lodging')
     def _compute_total(self):
         for line in self:
             line.total = 2 * line.meal + line.lodging
+
+
+class ResConfigSettings(models.TransientModel):
+    _inherit = 'res.config.settings'
+
+    mission_igd_rate_ids = fields.One2many(related='company_id.mission_igd_rate_ids', readonly=False)
+
+
+class ResCompany(models.Model):
+    _inherit = 'res.company'
+
+    mission_igd_rate_ids = fields.One2many(
+        'mission.igd.rate', 'company_id', string="Scale of the allowances",
+        default=lambda self: self._default_igd_rates())
+
+    @api.model
+    def _default_igd_rates(self):
+        """The 2026 scale: a meal and the lodging, by period of the mission."""
+        rows = [
+            (_("First 3 months"), 1, 3, 21.4, 56.8),
+            (_("Month 4 to 24"), 4, 24, 18.2, 48.3),
+            (_("Month 25 to 72"), 25, 72, 15.0, 39.8),
+        ]
+        return [(0, 0, {'sequence': i, 'label': label, 'month_from': start, 'month_to': end,
+                        'meal': meal, 'lodging': lodging})
+                for i, (label, start, end, meal, lodging) in enumerate(rows, 1)]
+
+    def _mission_igd_ensure_rates(self):
+        for company in self.filtered(lambda c: not c.mission_igd_rate_ids):
+            company.mission_igd_rate_ids = company._default_igd_rates()
+
+    @api.model
+    def _mission_igd_init(self):
+        """The scale of the allowances of the companies that have none yet (install and update)."""
+        self.search([])._mission_igd_ensure_rates()
 
 
 class MissionMarginMonth(models.Model):
@@ -497,6 +540,16 @@ class ProjectProject(models.Model):
 
     margin_ids = fields.One2many('mission.margin', 'project_id', string="Margin calculations")
     margin_count = fields.Integer(compute='_compute_margin_count')
+    mission_draft = fields.Boolean(
+        string="Draft", compute='_compute_mission_draft', store=True,
+        help="Project of a margin calculation whose order is not confirmed yet.")
+
+    @api.depends('margin_ids', 'margin_ids.order_id.state')
+    def _compute_mission_draft(self):
+        for project in self:
+            sheets = project.sudo().margin_ids
+            project.mission_draft = bool(sheets) and not any(
+                order.state == 'sale' for order in sheets.order_id)
 
     def _compute_margin_count(self):
         # The salaries stay with the sales people and the managers: the count is read without their rights.

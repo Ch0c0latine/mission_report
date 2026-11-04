@@ -95,14 +95,29 @@
                                    invisible="cost_origin != 'employee'"/>
                             <field name="freelance_daily_rate" invisible="cost_origin != 'freelance'"/>
                             <field name="daily_cost_worked" invisible="cost_origin != 'employee'"/>
-                            <field name="igd_lodging" invisible="cost_origin != 'employee'"/>
-                            <field name="igd_meals" widget="radio" options="{'horizontal': true}"
+                            <label for="igd_lodging" string="Allowances per day worked"
                                    invisible="cost_origin != 'employee'"/>
+                            <div class="d-flex flex-wrap gap-4" invisible="cost_origin != 'employee'">
+                                <span class="d-inline-flex align-items-center gap-1">
+                                    <field name="igd_lodging" nolabel="1"/><label for="igd_lodging"/>
+                                </span>
+                                <span class="d-inline-flex align-items-center gap-1">
+                                    <field name="igd_lunch" nolabel="1"/><label for="igd_lunch"/>
+                                </span>
+                                <span class="d-inline-flex align-items-center gap-1">
+                                    <field name="igd_dinner" nolabel="1"/><label for="igd_dinner"/>
+                                </span>
+                            </div>
+                            <field name="igd_monthly_amount" invisible="cost_origin != 'employee'"/>
                             <field name="duration_months"/>
                         </group>
                         <group string="Price and margin">
-                            <field name="margin_choice" widget="radio" options="{'horizontal': true}"/>
+                            <field name="margin_wanted" widget="margin_slider"/>
                             <field name="daily_rate" class="fw-bold"/>
+                            <div class="text-muted" colspan="2" invisible="not rate_manual">
+                                Rate typed by hand: move the slider to give the control back to the margin.
+                            </div>
+                            <field name="rate_manual" invisible="1"/>
                             <field name="rebilled_daily"/>
                             <field name="igd_rebilled" invisible="cost_origin != 'employee' or not igd_daily"/>
                             <field name="margin_rate" widget="percentage" class="fw-bold"/>
@@ -203,10 +218,9 @@
                             <p class="text-muted" invisible="commission_eligible">The margin is under the thresholds: no commission is due.</p>
                         </page>
                         <page string="Long-distance allowances" name="igd" invisible="cost_origin != 'employee'">
-                            <p class="text-muted">Rates per day worked, by month of the mission: tick the lodging and the meals above. Update the rates when the URSSAF scale changes.</p>
-                            <field name="igd_ids">
-                                <list editable="bottom">
-                                    <field name="sequence" widget="handle"/>
+                            <p class="text-muted">Scale of the company (URSSAF), per day worked, by month of the mission: tick the lodging and the meals above. It is updated in the Settings.</p>
+                            <field name="igd_rate_ids" readonly="1">
+                                <list>
                                     <field name="label"/>
                                     <field name="month_from"/>
                                     <field name="month_to"/>
@@ -263,6 +277,40 @@
               groups="sales_team.group_sale_salesman,project.group_project_manager,hr.group_hr_manager"/>
 
     <!-- The sheet from the project and from the order. -->
+    <record id="project_form_draft" model="ir.ui.view">
+        <field name="name">project.project.form.draft</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <field name="mission_draft" invisible="1"/>
+                <widget name="web_ribbon" title="Draft" bg_color="text-bg-warning" invisible="not mission_draft"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="project_search_draft" model="ir.ui.view">
+        <field name="name">project.project.search.draft</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project_project_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter name="mission_draft" string="Drafts (order not confirmed)" domain="[('mission_draft', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="project_list_draft" model="ir.ui.view">
+        <field name="name">project.project.list.draft</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.view_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="mission_draft" widget="boolean" string="Draft" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
     <record id="project_form_margin" model="ir.ui.view">
         <field name="name">project.project.form.margin</field>
         <field name="model">project.project</field>

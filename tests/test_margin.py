@@ -51,17 +51,18 @@ class TestMargin(TransactionCase):
         self.assertAlmostEqual(sheet.total_cost, 400.0 * 218 * 1.10, places=2)
         self.assertEqual(sheet.net_income_month, 0.0)
         employee_costs = self._sheet(cost_origin='freelance', freelance_daily_rate=400.0, daily_cost_worked=60.0,
-                                     igd_lodging=True, igd_meals='2', mileage_monthly=300.0)
+                                     igd_lodging=True, igd_lunch=True, igd_dinner=True, mileage_monthly=300.0)
         self.assertAlmostEqual(employee_costs.total_cost, sheet.total_cost, places=2)
 
     def test_the_margin_wanted_gives_the_daily_rate(self):
         # Without a daily rate typed, the 20 % margin wanted by default sets it, rounded up to 5 euros.
         sheet = self.env['mission.margin'].create({'name': "Auto", 'gross_salary': 40000.0, 'daily_cost_worked': 55.0})
-        self.assertEqual(sheet.margin_choice, '20')
+        self.assertEqual(sheet.margin_wanted, 20)
+        self.assertFalse(sheet.rate_manual)
         self.assertEqual(sheet.daily_rate % 5, 0)
         self.assertGreaterEqual(sheet.margin_rate, 0.20)
         self.assertLess(sheet.margin_rate, 0.21)
-        sheet.write({'margin_choice': '30'})
+        sheet.write({'margin_wanted': 30})
         self.assertGreaterEqual(sheet.margin_rate, 0.30)
         self.assertLess(sheet.margin_rate, 0.31)
         # The costs change: the daily rate follows the margin wanted.
@@ -71,7 +72,7 @@ class TestMargin(TransactionCase):
         self.assertGreaterEqual(sheet.margin_rate, 0.30)
         # A daily rate typed by hand stays.
         sheet.daily_rate = 700.0
-        self.assertEqual(sheet.margin_choice, 'custom')
+        self.assertTrue(sheet.rate_manual)
         sheet.gross_salary = 60000.0
         self.assertEqual(sheet.daily_rate, 700.0)
 
@@ -82,19 +83,19 @@ class TestMargin(TransactionCase):
         self.assertFalse(sheet.salary_preset)
 
     def test_the_allowances_follow_the_meals_and_the_lodging(self):
-        sheet = self._sheet(igd_lodging=True, igd_meals='2', duration_months=3.0)
+        sheet = self._sheet(igd_lodging=True, igd_lunch=True, igd_dinner=True, duration_months=3.0)
         self.assertAlmostEqual(sheet.igd_daily, 2 * 21.4 + 56.8, delta=0.01)
         sheet.duration_months = 12.0
         # 3 months at the first rate, 9 at the second: the average per day worked.
         expected = (3 * (2 * 21.4 + 56.8) + 9 * (2 * 18.2 + 48.3)) / 12
         self.assertAlmostEqual(sheet.igd_daily, expected, delta=0.01)
-        sheet.igd_meals = '1'
+        sheet.igd_dinner = False
         sheet.igd_lodging = False
         self.assertAlmostEqual(sheet.igd_daily, (3 * 21.4 + 9 * 18.2) / 12, delta=0.01)
         cost = self._sheet(daily_rate=500.0).total_cost
-        with_igd = self._sheet(daily_rate=500.0, igd_meals='1')
+        with_igd = self._sheet(daily_rate=500.0, igd_lunch=True)
         self.assertGreater(with_igd.total_cost, cost)
-        rebilled = self._sheet(daily_rate=500.0, igd_meals='1', igd_rebilled=True)
+        rebilled = self._sheet(daily_rate=500.0, igd_lunch=True, igd_rebilled=True)
         self.assertGreater(rebilled.price_per_day, 500.0)
 
     def test_the_quote_is_created_from_the_sheet(self):
@@ -113,11 +114,31 @@ class TestMargin(TransactionCase):
         sheet = self._sheet(payslip_monthly_cost=5000.0)
         self.assertAlmostEqual(sheet.base_cost, 60000.0, places=2)
 
-    def test_igd_defaults_and_total(self):
-        sheet = self._sheet()
-        self.assertEqual(len(sheet.igd_ids), 3)
-        self.assertAlmostEqual(sheet.igd_ids[0].total, 2 * 21.4 + 56.8, places=2)
-        self.assertAlmostEqual(sheet.igd_ids[2].total, 69.8, places=2)
+    def test_the_scale_of_the_allowances_is_the_one_of_the_company(self):
+        rates = self.env.company.mission_igd_rate_ids
+        self.assertEqual(len(rates), 3)
+        self.assertAlmostEqual(rates[0].total, 2 * 21.4 + 56.8, places=2)
+        self.assertAlmostEqual(rates[2].total, 69.8, places=2)
+        # A new scale applies to the sheets at once.
+        sheet = self._sheet(igd_lunch=True, duration_months=2.0)
+        self.assertAlmostEqual(sheet.igd_daily, 21.4, delta=0.01)
+        rates[0].meal = 25.0
+        sheet.invalidate_recordset()
+        self.assertAlmostEqual(sheet.igd_daily, 25.0, delta=0.01)
+
+    def test_a_fixed_monthly_amount_replaces_the_days(self):
+        sheet = self._sheet(igd_lodging=True, igd_lunch=True, igd_dinner=True, igd_monthly_amount=1000.0)
+        self.assertAlmostEqual(sheet.igd_daily, 1000.0 * 12 / 218, delta=0.01)
+
+    def test_the_project_of_a_sheet_is_a_draft_until_the_order_is_confirmed(self):
+        partner = self.env['res.partner'].create({'name': "Client brouillon"})
+        sheet = self._sheet(partner_id=partner.id)
+        sheet.action_create_project()
+        self.assertTrue(sheet.project_id.mission_draft)
+        sheet.action_create_order()
+        self.assertTrue(sheet.project_id.mission_draft, "an order that is only a quote does not end the draft")
+        sheet.order_id.action_confirm()
+        self.assertFalse(sheet.project_id.mission_draft)
 
     def test_the_months_of_the_forecast(self):
         sheet = self._sheet(start_date='2031-05-01', duration_months=3.0)
