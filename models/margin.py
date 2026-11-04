@@ -114,9 +114,9 @@ class MissionMargin(models.Model):
     commission_rate_management = fields.Float(string="Management of the service or sales", default=0.10)
     commission_rate_referral = fields.Float(string="Referral of a candidate or a deal", default=0.05)
 
-    igd_lodging = fields.Boolean(string="Lodging", help="A night in a hotel for each day worked.")
-    igd_lunch = fields.Boolean(string="Lunch", help="A meal paid for each day worked.")
-    igd_dinner = fields.Boolean(string="Dinner", help="A second meal paid for each day worked.")
+    igd_lodging = fields.Boolean(string="Lodging")
+    igd_lunch = fields.Boolean(string="Lunch")
+    igd_dinner = fields.Boolean(string="Dinner")
     igd_monthly_amount = fields.Monetary(
         string="Fixed amount a month",
         help="0: every day worked gets what is ticked, at the rates of the scale (Settings). "
