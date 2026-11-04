@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-04 01:30+0000\n"
-"PO-Revision-Date: 2026-11-04 01:30+0000\n"
+"POT-Creation-Date: 2026-11-04 01:39+0000\n"
+"PO-Revision-Date: 2026-11-04 01:39+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -3278,6 +3278,11 @@ msgid "The mission rows of template “%s” are inconsistent."
 msgstr "Les lignes de mission du modèle « %s » sont incohérentes."
 
 #. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid "The monthly amount replaces the allowances ticked above."
+msgstr "Le montant mensuel remplace les indemnités cochées plus haut."
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/volet.py:0
 msgid ""
@@ -3971,3 +3976,9 @@ msgstr "« %s » : une lettre de colonne (A) ou une cellule (B3)."
 msgid "“Day 1 column” takes a column letter, such as D."
 msgstr "« Colonne du jour 1 » attend une lettre de colonne, par exemple D."
 
+
+#. module: mission_report
+#. odoo-javascript
+#: code:addons/mission_report/static/src/js/margin_slider.js:0
+msgid "actual margin"
+msgstr "marge réelle"
