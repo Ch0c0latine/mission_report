@@ -116,9 +116,9 @@
                                    invisible="cost_origin != 'employee' or not igd_daily"/>
                             <div class="d-flex flex-wrap align-items-center gap-2 fw-bold"
                                  invisible="cost_origin != 'employee' or not igd_daily">
-                                <field name="igd_daily" class="oe_inline"/> <span>a day</span>
-                                <span class="text-muted">-</span>
-                                <field name="igd_month" class="oe_inline"/> <span>a month</span>
+                                <field name="igd_daily" class="oe_inline"/> <div>a day</div>
+                                <div class="text-muted">-</div>
+                                <field name="igd_month" class="oe_inline"/> <div>a month</div>
                             </div>
                             <label for="igd_monthly_amount" invisible="cost_origin != 'employee'"/>
                             <div class="d-flex gap-2" invisible="cost_origin != 'employee'">
@@ -140,20 +140,20 @@
                             <div class="d-flex flex-column gap-1 text-muted">
                                 <div class="d-flex align-items-center gap-2">
                                     <field name="target_rate_1" widget="percentage" class="o_margin_pct"/>
-                                    <span>&#8594;</span> <field name="rate_target_rate_1" class="oe_inline fw-bold"/>
+                                    <div>&#8594;</div> <field name="rate_target_rate_1" class="oe_inline fw-bold"/>
                                 </div>
                                 <div class="d-flex align-items-center gap-2">
                                     <field name="target_rate_2" widget="percentage" class="o_margin_pct"/>
-                                    <span>&#8594;</span> <field name="rate_target_rate_2" class="oe_inline fw-bold"/>
+                                    <div>&#8594;</div> <field name="rate_target_rate_2" class="oe_inline fw-bold"/>
                                 </div>
                                 <div class="d-flex align-items-center gap-2">
                                     <field name="target_amount_1" class="o_margin_amount"/>
-                                    <span>a month</span> <span>&#8594;</span>
+                                    <div>a month</div> <div>&#8594;</div>
                                     <field name="rate_target_1" class="oe_inline fw-bold"/>
                                 </div>
                                 <div class="d-flex align-items-center gap-2">
                                     <field name="target_amount_2" class="o_margin_amount"/>
-                                    <span>a month</span> <span>&#8594;</span>
+                                    <div>a month</div> <div>&#8594;</div>
                                     <field name="rate_target_2" class="oe_inline fw-bold"/>
                                 </div>
                             </div>
