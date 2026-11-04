@@ -59,7 +59,7 @@ class MissionMargin(models.Model):
     cost_origin = fields.Selection(
         [('employee', "Employee"), ('freelance', "Freelance (daily rate bought)")],
         string="Cost of the person", default='employee', required=True)
-    gross_salary = fields.Monetary(string="Gross yearly salary")
+    gross_salary = fields.Monetary(string="Gross yearly salary", default=40000.0)
     salary_preset = fields.Selection(
         lambda self: self._salary_presets(), string="Gross yearly salary", compute='_compute_salary_preset',
         store=True, readonly=False, help="Pick a usual salary, or type the exact amount below.")
