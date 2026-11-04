@@ -11,6 +11,9 @@
                    t-on-input="onInput"/>
             <span class="text-muted text-nowrap"><t t-esc="props.max"/> %</span>
             <strong class="o_margin_slider_value text-nowrap"><t t-esc="value"/> %</strong>
+            <span t-if="props.record.data.rate_manual" class="text-warning text-nowrap">
+                <t t-esc="actualLabel"/>
+            </span>
         </div>
     </t>
 </templates>

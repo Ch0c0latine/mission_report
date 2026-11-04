@@ -94,6 +94,15 @@ class TestMargin(TransactionCase):
         empty = self.env['mission.margin'].create({})
         self.assertTrue(empty.name)
 
+    def test_the_name_follows_the_customer_in_a_form(self):
+        partner = self.env['res.partner'].create({'name': "Client formulaire"})
+        from odoo.tests import Form
+        with Form(self.env['mission.margin']) as form:
+            form.partner_id = partner
+            form.consultant = "Alex"
+        self.assertIn("Client formulaire", form.record.name)
+        self.assertIn("Alex", form.record.name)
+
     def test_the_allowances_total_a_month(self):
         sheet = self._sheet(igd_lodging=True, igd_lunch=True, duration_months=2.0)
         self.assertAlmostEqual(sheet.igd_month, (21.4 + 56.8) * 218 / 12, delta=0.05)
@@ -161,6 +170,8 @@ class TestMargin(TransactionCase):
         self.assertTrue(sheet.project_id.mission_draft, "an order that is only a quote does not end the draft")
         sheet.order_id.action_confirm()
         self.assertFalse(sheet.project_id.mission_draft)
+        # The confirmation puts the tasks in the project of the sheet: no second project.
+        self.assertEqual(sheet.order_id.project_ids, sheet.project_id)
 
     def test_the_months_of_the_forecast(self):
         sheet = self._sheet(start_date='2031-05-01', duration_months=3.0)

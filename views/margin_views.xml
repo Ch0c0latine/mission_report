@@ -48,6 +48,7 @@
             <form string="Margin calculation">
                 <field name="currency_id" invisible="1"/>
                 <field name="active" invisible="1"/>
+                <field name="name_auto" invisible="1"/>
                 <header>
                     <button name="action_create_project" type="object" string="Create the project"
                             invisible="project_id"/>
@@ -124,6 +125,10 @@
                             <div class="d-flex gap-2" invisible="cost_origin != 'employee'">
                                 <field name="igd_monthly_amount" class="o_margin_amount"/>
                                 <field name="igd_monthly_reason" placeholder="Reason" class="flex-grow-1"/>
+                            </div>
+                            <div class="text-muted" colspan="2"
+                                 invisible="cost_origin != 'employee' or not igd_monthly_amount">
+                                The monthly amount replaces the allowances ticked above.
                             </div>
                             <field name="duration_months"/>
                         </group>

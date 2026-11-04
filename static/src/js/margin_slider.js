@@ -6,6 +6,7 @@
  */
 import { Component, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
+import { _t } from "@web/core/l10n/translation";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 
 export class MarginSliderField extends Component {
@@ -25,6 +26,12 @@ export class MarginSliderField extends Component {
 
     get value() {
         return this.state.shown !== null ? this.state.shown : this.props.record.data[this.props.name] || 0;
+    }
+
+    /** The rate typed by hand gives its own margin: said next to the cursor. */
+    get actualLabel() {
+        const rate = (this.props.record.data.margin_rate || 0) * 100;
+        return `${_t("actual margin")} ${rate.toFixed(1)} %`;
     }
 
     /** Daily rate that gives the margin, as the server computes it: rounded up to 5. */

@@ -405,9 +405,14 @@ class MissionMargin(models.Model):
     # ------------------------------------------------------------------
 
     def _quote_product(self):
-        """The service of the days: a product sold, not expensed, that is a service."""
-        return self.env['product.product'].search([
-            ('type', '=', 'service'), ('sale_ok', '=', True), ('can_be_expensed', '=', False)], limit=1)
+        """The service of the days: a service sold, not expensed, whose tasks go to the project of the order
+        (a product tied to a project or a template of its own would open a second project)."""
+        domain = [('type', '=', 'service'), ('sale_ok', '=', True), ('can_be_expensed', '=', False),
+                  ('service_tracking', '=', 'task_in_project'), ('project_id', '=', False),
+                  ('project_template_id', '=', False)]
+        Product = self.env['product.product']
+        return (Product.search(domain + [('name', 'ilike', 'assistance technique')], order='id desc', limit=1)
+                or Product.search(domain, order='id desc', limit=1))
 
     def action_create_order(self):
         """The quote of the mission: the customer, the project, the daily rate and the days of the sheet."""
@@ -420,11 +425,16 @@ class MissionMargin(models.Model):
             self.action_create_project()
         days = sum(self.month_ids.mapped('working_days')) or round(self.days_per_month * max(self.duration_months, 1))
         product = self._quote_product()
-        line = {'product_id': product.id, 'product_uom_qty': days, 'price_unit': self.daily_rate} if product else {
+        line = {'product_id': product.id, 'product_uom_qty': days, 'price_unit': self.daily_rate,
+                'project_id': self.project_id.id} if product else {
             'name': self.name, 'product_uom_qty': days, 'price_unit': self.daily_rate}
-        order = self.env['sale.order'].create({
+        values = {
             'partner_id': self.partner_id.id, 'project_id': self.project_id.id, 'mission_volet_number': 1,
-            'order_line': [(0, 0, line)]})
+            'order_line': [(0, 0, line)]}
+        # An order made from a sheet is the first phase of a mission (the next ones follow it).
+        if 'greenengine_volets' in self.env['sale.order']._fields:
+            values['greenengine_volets'] = True
+        order = self.env['sale.order'].create(values)
         self.order_id = order
         return self.action_open_order()
 
@@ -432,7 +442,7 @@ class MissionMargin(models.Model):
         self.ensure_one()
         if not self.project_id:
             raise UserError(_("Create the project first."))
-        return self.project_id.project_update_all_action()
+        return self.project_id.with_context(active_id=self.project_id.id).project_update_all_action()
 
     def action_generate_months(self):
         """The months of the mission, from its start, with their working days (holidays out)."""
