@@ -411,8 +411,13 @@ class MissionMargin(models.Model):
                   ('service_tracking', '=', 'task_in_project'), ('project_id', '=', False),
                   ('project_template_id', '=', False)]
         Product = self.env['product.product']
-        return (Product.search(domain + [('name', 'ilike', 'assistance technique')], order='id desc', limit=1)
-                or Product.search(domain, order='id desc', limit=1))
+        found = (Product.search(domain + [('name', 'ilike', 'assistance technique')], order='id desc', limit=1)
+                 or Product.search(domain, order='id desc', limit=1))
+        if found:
+            return found
+        # A database with no such service: the one delivered with the module.
+        template = self.env.ref('mission_report.product_mission_days', raise_if_not_found=False)
+        return template.product_variant_id if template and template.sudo().active else Product
 
     def action_create_order(self):
         """The quote of the mission: the customer, the project, the daily rate and the days of the sheet."""

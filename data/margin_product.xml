@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 T.T.C. SAS
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0). -->
+<odoo noupdate="1">
+    <!-- The service of the days of a margin calculation, when the database has no service of its own
+         (an order line without product cannot be confirmed). Its tasks go to the project of the order. -->
+    <record id="product_mission_days" model="product.template">
+        <field name="name">Mission days</field>
+        <field name="type">service</field>
+        <field name="sale_ok" eval="True"/>
+        <field name="purchase_ok" eval="False"/>
+        <field name="list_price">0.0</field>
+        <field name="service_tracking">task_in_project</field>
+    </record>
+</odoo>

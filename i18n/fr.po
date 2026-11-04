@@ -2152,6 +2152,7 @@ msgstr "Mission facturée à l'heure : une journée entière compte les heures d
 #: code:addons/mission_report/models/activity_report_template.py:0
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__mission_days
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__mission_total
+#: model:product.template,name:mission_report.product_mission_days
 msgid "Mission days"
 msgstr "Jours de mission"
 

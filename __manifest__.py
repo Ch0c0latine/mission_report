@@ -31,6 +31,7 @@
     'data': [
         'security/ir.model.access.csv',
         'data/igd_rates.xml',
+        'data/margin_product.xml',
         'data/hr_leave_type_data.xml',
         'views/hr_leave_views.xml',
         'views/menu_views.xml',
