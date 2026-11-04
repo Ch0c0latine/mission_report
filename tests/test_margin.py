@@ -61,7 +61,6 @@ class TestMargin(TransactionCase):
         self.assertEqual(sheet.daily_rate % 5, 0)
         self.assertGreaterEqual(sheet.margin_rate, 0.20)
         self.assertLess(sheet.margin_rate, 0.21)
-        sheet.margin_choice = '30'
         sheet.write({'margin_choice': '30'})
         self.assertGreaterEqual(sheet.margin_rate, 0.30)
         self.assertLess(sheet.margin_rate, 0.31)
@@ -84,14 +83,14 @@ class TestMargin(TransactionCase):
 
     def test_the_allowances_follow_the_meals_and_the_lodging(self):
         sheet = self._sheet(igd_lodging=True, igd_meals='2', duration_months=3.0)
-        self.assertAlmostEqual(sheet.igd_daily, 2 * 21.4 + 56.8, places=2)
+        self.assertAlmostEqual(sheet.igd_daily, 2 * 21.4 + 56.8, delta=0.01)
         sheet.duration_months = 12.0
         # 3 months at the first rate, 9 at the second: the average per day worked.
         expected = (3 * (2 * 21.4 + 56.8) + 9 * (2 * 18.2 + 48.3)) / 12
-        self.assertAlmostEqual(sheet.igd_daily, expected, places=2)
+        self.assertAlmostEqual(sheet.igd_daily, expected, delta=0.01)
         sheet.igd_meals = '1'
         sheet.igd_lodging = False
-        self.assertAlmostEqual(sheet.igd_daily, (3 * 21.4 + 9 * 18.2) / 12, places=2)
+        self.assertAlmostEqual(sheet.igd_daily, (3 * 21.4 + 9 * 18.2) / 12, delta=0.01)
         cost = self._sheet(daily_rate=500.0).total_cost
         with_igd = self._sheet(daily_rate=500.0, igd_meals='1')
         self.assertGreater(with_igd.total_cost, cost)

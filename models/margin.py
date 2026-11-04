@@ -329,7 +329,7 @@ class MissionMargin(models.Model):
     def _follow_margin(self):
         for m in self:
             if m.margin_choice != 'custom':
-                m.daily_rate = m._rate_for_margin(int(m.margin_choice) / 100.0)
+                m.with_context(margin_follow=True).daily_rate = m._rate_for_margin(int(m.margin_choice) / 100.0)
 
     @api.onchange(*COST_FIELDS)
     def _onchange_follow_margin(self):
@@ -354,7 +354,7 @@ class MissionMargin(models.Model):
         return records
 
     def write(self, vals):
-        if 'daily_rate' in vals and 'margin_choice' not in vals:
+        if 'daily_rate' in vals and 'margin_choice' not in vals and not self.env.context.get('margin_follow'):
             vals = dict(vals, margin_choice='custom')
         result = super().write(vals)
         if 'daily_rate' not in vals and any(key in vals for key in self.COST_FIELDS):
