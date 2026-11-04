@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-03 23:48+0000\n"
-"PO-Revision-Date: 2026-11-03 23:48+0000\n"
+"POT-Creation-Date: 2026-11-04 00:44+0000\n"
+"PO-Revision-Date: 2026-11-04 00:44+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -134,6 +134,16 @@ msgid "0: none."
 msgstr "0 : aucune."
 
 #. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_margin__igd_meals__1
+msgid "1 meal"
+msgstr "1 repas"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_margin__igd_meals__2
+msgid "2 meals"
+msgstr "2 repas"
+
+#. module: mission_report
 #: model:mail.template,body_html:mission_report.mail_template_invoice_mission
 msgid ""
 "<div style=\"margin: 0px; padding: 0px;\">\n"
@@ -172,6 +182,11 @@ msgstr "<span class=\"o_absence\" style=\"background-color: #C6EFCE;\"/>Congé"
 #: model_terms:ir.ui.view,arch_db:mission_report.hr_employee_view_form_inherit_mission_report
 msgid "<span class=\"o_stat_text\">Activities</span>"
 msgstr "<span class=\"o_stat_text\">Activités</span>"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid "<span class=\"o_stat_text\">Actual profitability</span>"
+msgstr "<span class=\"o_stat_text\">Rentabilité réelle</span>"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
@@ -247,6 +262,11 @@ msgstr "Une lettre de colonne (« A ») : la valeur de chaque ligne du bloc. Une
 #: model:ir.model.fields,help:mission_report.field_res_config_settings__igd_real_meal_product_ids
 msgid "A day that carries an actual meal gets no meal IGD."
 msgstr "Un jour qui porte un repas au réel ne reçoit pas d'IGD repas."
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_margin__igd_lodging
+msgid "A night in a hotel for each day worked."
+msgstr "Une nuit d'hôtel pour chaque jour travaillé."
 
 #. module: mission_report
 #. odoo-python
@@ -437,6 +457,16 @@ msgid ""
 "Allowances for long-term assignments abroad (expatriation allowance). "
 "Counted among the IGD for the expense filter."
 msgstr "Indemnités de long déplacement à l'étranger (forfait expatriation). Comptée parmi les IGD pour le filtre des dépenses."
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__igd_daily
+msgid "Allowances per worked day"
+msgstr "Indemnités par jour travaillé"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__igd_rebilled
+msgid "Allowances re-invoiced to the customer"
+msgstr "Indemnités refacturées au client"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__alsace_moselle
@@ -633,6 +663,12 @@ msgstr "Choisissez au moins un intervenant : ses jours ouvrés donnent le prévi
 
 #. module: mission_report
 #. odoo-python
+#: code:addons/mission_report/models/margin.py:0
+msgid "Choose the customer first."
+msgstr "Choisissez d'abord le client."
+
+#. module: mission_report
+#. odoo-python
 #: code:addons/mission_report/models/igd.py:0
 msgid ""
 "Choose the lodging and meal IGD categories on the company (Settings > "
@@ -783,11 +819,6 @@ msgid ""
 msgstr "Contacts à qui envoyer les factures de cette affaire. Vide : le client de la facture."
 
 #. module: mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
-msgid "Cost and price"
-msgstr "Coût et tarif"
-
-#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__cost_origin
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
 msgid "Cost of the person"
@@ -802,11 +833,6 @@ msgstr "Coût de la personne par an"
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__daily_cost_calendar
 msgid "Cost per calendar day"
 msgstr "Coût par jour calendaire"
-
-#. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_margin__daily_cost_worked
-msgid "Cost per worked day"
-msgstr "Coût par jour travaillé"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_res_company__mission_hours_outside_schedule
@@ -828,6 +854,17 @@ msgstr "Créer le volet"
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
 msgid "Create the project"
 msgstr "Créer le projet"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/margin.py:0
+msgid "Create the project first."
+msgstr "Créez d'abord le projet."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid "Create the quote"
+msgstr "Créer le devis"
 
 #. module: mission_report
 #: model_terms:ir.actions.act_window,help:mission_report.action_mission_activity_report_my
@@ -914,11 +951,6 @@ msgid "Daily rate"
 msgstr "Tarif journalier"
 
 #. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_margin__daily_rate
-msgid "Daily rate (TJM)"
-msgstr "Tarif journalier (TJM)"
-
-#. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
 msgid "Daily rate (TJM) to reach a target margin"
 msgstr "Tarif journalier (TJM) pour atteindre une marge cible"
@@ -948,6 +980,11 @@ msgstr "TJM pour la marge 2 (€ par mois)"
 msgid ""
 "Daily rate paid to a freelance: it replaces the salary and the charges."
 msgstr "Tarif journalier payé à un freelance : il remplace le salaire et les charges."
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__daily_rate
+msgid "Daily rate sold (TJM)"
+msgstr "Tarif journalier vendu (TJM)"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__date_to
@@ -1062,6 +1099,11 @@ msgstr "Date de livraison"
 #: model_terms:ir.ui.view,arch_db:mission_report.view_order_form_mission_volet
 msgid "Description of the service"
 msgstr "Description de la prestation"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid "Details of the costs"
+msgstr "Détail des coûts"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_export_view_form
@@ -1255,6 +1297,11 @@ msgid "Estimate"
 msgstr "Prévisionnel"
 
 #. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid "Exact gross amount"
+msgstr "Montant brut exact"
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__file
 msgid "Excel file"
 msgstr "Fichier Excel"
@@ -1302,7 +1349,17 @@ msgid "Expenses not re-invoiced"
 msgstr "Frais non refacturés"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__daily_cost_worked
+msgid "Expenses paid per worked day"
+msgstr "Frais payés par jour travaillé"
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__rebilled_daily
+msgid "Expenses re-invoiced per day"
+msgstr "Frais refacturés par jour"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__rebilled_total
 msgid "Expenses re-invoiced per worked day"
 msgstr "Frais refacturés par jour travaillé"
 
@@ -1544,6 +1601,7 @@ msgstr "Intéressement brut par mois"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__gross_salary
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__salary_preset
 msgid "Gross yearly salary"
 msgstr "Salaire brut annuel"
 
@@ -1822,8 +1880,13 @@ msgstr "Lignes"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__loaded_cost
-msgid "Loaded salary a year"
-msgstr "Salaire chargé par an"
+msgid "Loaded cost a year"
+msgstr "Coût chargé par an"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__igd_lodging
+msgid "Lodging (overnight stay)"
+msgstr "Nuitée (logement)"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_res_company__igd_lodging_product_id
@@ -1890,7 +1953,6 @@ msgstr "Correspondances"
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_igd__margin_id
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_month__margin_id
-#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
 #: model_terms:ir.ui.view,arch_db:mission_report.project_form_margin
 #: model_terms:ir.ui.view,arch_db:mission_report.sale_order_form_margin
 msgid "Margin"
@@ -1936,14 +1998,19 @@ msgstr "Calculs de marge"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__margin_duration
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
 msgid "Margin over the mission"
 msgstr "Marge sur la mission"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__margin_day
-#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
 msgid "Margin per worked day"
 msgstr "Marge par jour travaillé"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__margin_choice
+msgid "Margin wanted"
+msgstr "Marge voulue"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_igd__meal
@@ -1960,6 +2027,18 @@ msgstr "Catégorie IGD repas"
 #: model:ir.model.fields,field_description:mission_report.field_project_project__igd_meal_basis
 msgid "Meal IGD on"
 msgstr "IGD repas sur"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__igd_meals
+msgid "Meals"
+msgstr "Repas"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_margin__igd_meals
+msgid ""
+"Meals paid for each day worked, at the rates of the table of the Long-"
+"distance allowances tab."
+msgstr "Repas pris en charge chaque jour travaillé, aux tarifs du tableau de l'onglet Grands déplacements."
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__message_has_error
@@ -2353,6 +2432,11 @@ msgid "No client"
 msgstr "Sans client"
 
 #. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_margin__igd_meals__0
+msgid "No meal"
+msgstr "Aucun repas"
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/igd.py:0
 msgid "No mission has an average monthly IGD set."
@@ -2522,7 +2606,6 @@ msgid "Other costs"
 msgstr "Autres coûts"
 
 #. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_margin__other_costs
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__other_yearly
 msgid "Other costs a year"
 msgstr "Autres coûts par an"
@@ -2576,11 +2659,6 @@ msgid "Per hour"
 msgstr "À l'heure"
 
 #. module: mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
-msgid "Per year"
-msgstr "Par an"
-
-#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_igd__label
 msgid "Period"
 msgstr "Période"
@@ -2595,6 +2673,11 @@ msgstr "Volet"
 #: code:addons/mission_report/models/volet.py:0
 msgid "Phase created from %s."
 msgstr "Volet créé à partir de %s."
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_margin__salary_preset
+msgid "Pick a usual salary, or type the exact amount below."
+msgstr "Choisissez une rémunération courante, ou saisissez le montant exact en dessous."
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_month__leave_days
@@ -2625,8 +2708,8 @@ msgstr "Précédent"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
-msgid "Price"
-msgstr "Tarif"
+msgid "Price and margin"
+msgstr "Tarif et marge"
 
 #. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_sale_order__mission_description
@@ -2705,6 +2788,18 @@ msgid "RTT days a year"
 msgstr "Jours de RTT par an"
 
 #. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_margin__margin_choice__custom
+msgid "Rate typed by hand"
+msgstr "Tarif saisi à la main"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid ""
+"Rates per day worked, by month of the mission: tick the lodging and the "
+"meals above. Update the rates when the URSSAF scale changes."
+msgstr "Tarifs par jour travaillé, selon le mois de la mission : cochez la nuitée et les repas plus haut. Mettez les tarifs à jour quand le barème de l'URSSAF change."
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__rating_ids
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__rating_ids
 msgid "Ratings"
@@ -2769,7 +2864,6 @@ msgstr "Utilisateur responsable"
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__result
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_igd_wizard__state__done
-#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
 msgid "Result"
 msgstr "Résultat"
 
@@ -2895,11 +2989,7 @@ msgid ""
 "Overdue: Due date is already passed\n"
 "Today: Activity date is today\n"
 "Planned: Future activities."
-msgstr ""
-"Statut basé sur les activités\n"
-"En retard : la date d'échéance est dépassée\n"
-"Aujourd'hui : la date de l'activité est aujourd'hui\n"
-"Planifiée : activités à venir."
+msgstr "Statut basé sur les activités\nEn retard : la date d'échéance est dépassée\nAujourd'hui : la date de l'activité est aujourd'hui\nPlanifiée : activités à venir."
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.view_order_form_mission_volet
@@ -3008,6 +3098,23 @@ msgid ""
 "The Expenses categories that \"Generate the IGD\" uses. The planned monthly "
 "amount is set on the form of each mission."
 msgstr "Les catégories de Notes de frais que « Générer les IGD » utilise. Le montant mensuel prévu se règle sur la fiche de chaque mission."
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_margin__igd_rebilled
+msgid "The allowances are added to the expenses re-invoiced per day."
+msgstr "Les indemnités s'ajoutent aux frais refacturés par jour."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid "The consultant"
+msgstr "Le consultant"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_margin__margin_choice
+msgid ""
+"The daily rate follows the margin wanted (rounded up to 5 €) when the costs "
+"change. Type a daily rate to set it by hand."
+msgstr "Le tarif journalier suit la marge voulue (arrondi au multiple de 5 € supérieur) quand les coûts changent. Saisissez un tarif journalier pour le fixer à la main."
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
@@ -3181,6 +3288,12 @@ msgstr "Ce calcul a déjà un projet."
 
 #. module: mission_report
 #. odoo-python
+#: code:addons/mission_report/models/margin.py:0
+msgid "This calculation already has an order."
+msgstr "Ce calcul a déjà une commande."
+
+#. module: mission_report
+#. odoo-python
 #: code:addons/mission_report/models/hr_leave.py:0
 msgid ""
 "This entry has been invoiced (%(invoices)s): its days can no longer be "
@@ -3341,6 +3454,11 @@ msgstr "Coût total par jour travaillé"
 #: code:addons/mission_report/models/activity_report_template.py:0
 msgid "Total days"
 msgstr "Total jours"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__other_costs
+msgid "Total other costs"
+msgstr "Total des autres coûts"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_igd__total
@@ -3669,8 +3787,8 @@ msgstr "p. ex. Client - Consultant"
 
 #. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_margin__daily_cost_worked
-msgid "e.g. a daily allowance of 55 €."
-msgstr "p. ex. une indemnité journalière de 55 €."
+msgid "e.g. a daily allowance of 55 €, paid to the employee."
+msgstr "p. ex. une indemnité journalière de 55 €, versée au salarié."
 
 #. module: mission_report
 #. odoo-python
