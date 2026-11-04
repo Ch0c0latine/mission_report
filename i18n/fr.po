@@ -3983,3 +3983,28 @@ msgstr "« Colonne du jour 1 » attend une lettre de colonne, par exemple D."
 #: code:addons/mission_report/static/src/js/margin_slider.js:0
 msgid "actual margin"
 msgstr "marge réelle"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mail.selection__mission_activity_report__activity_state__overdue
+msgid "Overdue"
+msgstr "En retard"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mail.selection__mission_activity_report__activity_state__today
+msgid "Today"
+msgstr "Aujourd'hui"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mail.selection__mission_activity_report__activity_state__planned
+msgid "Planned"
+msgstr "Planifié"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mail.selection__mission_activity_report__activity_exception_decoration__warning
+msgid "Alert"
+msgstr "Alerte"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mail.selection__mission_activity_report__activity_exception_decoration__danger
+msgid "Error"
+msgstr "Erreur"
