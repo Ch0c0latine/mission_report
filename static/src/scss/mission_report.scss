@@ -72,3 +72,16 @@
     font-weight: 600;
 }
 
+
+// Calcul de marge : les pourcentages et les montants à côté d'un texte tiennent dans un champ étroit.
+.o_form_view {
+    .o_field_widget.o_margin_pct {
+        width: 6.5rem !important;
+        max-width: 100%;
+        flex: 0 0 auto;
+    }
+    .o_field_widget.o_margin_amount {
+        width: 9rem !important;
+        flex: 0 0 auto;
+    }
+}

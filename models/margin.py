@@ -40,7 +40,11 @@ class MissionMargin(models.Model):
     _inherit = ['mail.thread']
     _order = 'id desc'
 
-    name = fields.Char(required=True, tracking=True, help="Name of the calculation, e.g. the client and the consultant.")
+    name = fields.Char(
+        compute='_compute_name', store=True, readonly=False, required=True, tracking=True,
+        help="Filled in from the customer, the consultant, the daily rate and the duration while you do not "
+             "write your own name.")
+    name_auto = fields.Char(compute='_compute_name', store=True)
     active = fields.Boolean(default=True)
     company_id = fields.Many2one('res.company', required=True, default=lambda self: self.env.company)
     currency_id = fields.Many2one(related='company_id.currency_id')
@@ -85,7 +89,8 @@ class MissionMargin(models.Model):
     # ---- Other costs --------------------------------------------------------------------------
     daily_cost_calendar = fields.Monetary(string="Cost per calendar day")
     daily_cost_worked = fields.Monetary(
-        string="Expenses paid per worked day", help="e.g. a daily allowance of 55 €, paid to the employee.")
+        string="Daily amount", help="Paid to the employee for each day worked, e.g. a daily allowance of 55 €.")
+    daily_cost_reason = fields.Char(string="Reason of the daily amount", help="e.g. daily allowance, travel.")
     mileage_monthly = fields.Monetary(string="Mileage allowances a month")
     expenses_monthly = fields.Monetary(string="Expenses a month")
     training_yearly = fields.Monetary(string="Training depreciation a year")
@@ -117,8 +122,9 @@ class MissionMargin(models.Model):
     igd_lodging = fields.Boolean(string="Lodging")
     igd_lunch = fields.Boolean(string="Lunch")
     igd_dinner = fields.Boolean(string="Dinner")
+    igd_monthly_reason = fields.Char(string="Reason of the monthly amount", help="e.g. agreed with the customer.")
     igd_monthly_amount = fields.Monetary(
-        string="Fixed amount a month",
+        string="Monthly amount",
         help="0: every day worked gets what is ticked, at the rates of the scale (Settings). "
              "Otherwise, the agreed amount of allowances a month (e.g. 1 000 € a month).")
     igd_rebilled = fields.Boolean(
@@ -135,6 +141,7 @@ class MissionMargin(models.Model):
     loaded_cost = fields.Monetary(string="Loaded cost a year", compute='_compute_results')
     other_costs = fields.Monetary(string="Total other costs", compute='_compute_results')
     igd_daily = fields.Monetary(string="Allowances per worked day", compute='_compute_results')
+    igd_month = fields.Monetary(string="Allowances a month", compute='_compute_results')
     rebilled_total = fields.Monetary(string="Expenses re-invoiced per worked day", compute='_compute_results')
     total_cost = fields.Monetary(string="Total cost a year", compute='_compute_results')
     total_cost_month = fields.Monetary(string="Total cost a month", compute='_compute_results')
@@ -167,6 +174,21 @@ class MissionMargin(models.Model):
     forecast_revenue = fields.Monetary(string="Forecast billing", compute='_compute_forecast')
     forecast_margin = fields.Monetary(string="Forecast margin", compute='_compute_forecast')
     forecast_days = fields.Float(string="Forecast worked days", compute='_compute_forecast')
+
+    @api.depends('partner_id', 'consultant', 'daily_rate', 'duration_months')
+    def _compute_name(self):
+        """\"Customer - Consultant - 420 € a day - 12 months\": the name of a sheet nobody named, kept up to date
+        until the user writes their own."""
+        for m in self:
+            parts = [part for part in (m.partner_id.name, m.consultant) if part] or [_("Margin calculation")]
+            if m.daily_rate:
+                parts.append(_("%(rate)s a day", rate=("%g %s" % (m.daily_rate, m.currency_id.symbol or ""))))
+            if m.duration_months:
+                parts.append(_("%(months)s months", months=("%g" % m.duration_months)))
+            auto = " - ".join(parts)
+            if not m.name or m.name == m.name_auto:
+                m.name = auto
+            m.name_auto = auto
 
     @api.depends('order_id.partner_id', 'project_id.partner_id')
     def _compute_partner(self):
@@ -206,6 +228,7 @@ class MissionMargin(models.Model):
             total = base + overhead + others
             revenue = (m.daily_rate + rebilled) * days
             m.igd_daily = igd
+            m.igd_month = igd * days / 12
             m.rebilled_total = rebilled
             margin = revenue - total
             per_day = (lambda amount: amount / days if days else 0.0)

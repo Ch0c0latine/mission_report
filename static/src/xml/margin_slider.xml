@@ -8,7 +8,7 @@
             <input type="range" class="form-range flex-grow-1"
                    t-att-min="props.min" t-att-max="props.max" step="1"
                    t-att-value="value" t-att-disabled="props.readonly or undefined"
-                   t-on-input="onInput" t-on-change="onChange"/>
+                   t-on-input="onInput"/>
             <span class="text-muted text-nowrap"><t t-esc="props.max"/> %</span>
             <strong class="o_margin_slider_value text-nowrap"><t t-esc="value"/> %</strong>
         </div>

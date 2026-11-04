@@ -76,6 +76,28 @@ class TestMargin(TransactionCase):
         sheet.gross_salary = 60000.0
         self.assertEqual(sheet.daily_rate, 700.0)
 
+    def test_the_name_fills_itself_until_it_is_written(self):
+        partner = self.env['res.partner'].create({'name': "Client nom"})
+        sheet = self.env['mission.margin'].create({'partner_id': partner.id, 'consultant': "Alex"})
+        self.assertTrue(sheet.name)
+        self.assertIn("Client nom", sheet.name)
+        self.assertIn("Alex", sheet.name)
+        self.assertIn("12", sheet.name)
+        before = sheet.name
+        sheet.consultant = "Sam"
+        self.assertIn("Sam", sheet.name)
+        self.assertNotEqual(sheet.name, before)
+        # A name written by hand stays.
+        sheet.name = "Mon nom"
+        sheet.consultant = "Robin"
+        self.assertEqual(sheet.name, "Mon nom")
+        empty = self.env['mission.margin'].create({})
+        self.assertTrue(empty.name)
+
+    def test_the_allowances_total_a_month(self):
+        sheet = self._sheet(igd_lodging=True, igd_lunch=True, duration_months=2.0)
+        self.assertAlmostEqual(sheet.igd_month, (21.4 + 56.8) * 218 / 12, delta=0.05)
+
     def test_the_salary_selector(self):
         sheet = self._sheet(gross_salary=42500.0)
         self.assertEqual(sheet.salary_preset, '42500')
