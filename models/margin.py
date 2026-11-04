@@ -41,7 +41,7 @@ class MissionMargin(models.Model):
     _order = 'id desc'
 
     name = fields.Char(
-        compute='_compute_name', store=True, readonly=False, required=True, tracking=True,
+        compute='_compute_name', store=True, readonly=False, tracking=True,
         help="Filled in from the customer, the consultant, the daily rate and the duration while you do not "
              "write your own name.")
     name_auto = fields.Char(compute='_compute_name', store=True)
