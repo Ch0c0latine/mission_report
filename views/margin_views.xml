@@ -104,16 +104,27 @@
                             <field name="freelance_daily_rate" invisible="cost_origin != 'freelance'"/>
                             <label for="igd_lodging" string="Allowances per day worked"
                                    invisible="cost_origin != 'employee'"/>
-                            <div class="d-flex flex-wrap align-items-center gap-4" invisible="cost_origin != 'employee'">
-                                <span class="d-inline-flex align-items-center gap-1">
+                            <div class="o_margin_checks" invisible="cost_origin != 'employee'">
+                                <div class="o_margin_check">
                                     <field name="igd_lodging" nolabel="1"/><label for="igd_lodging"/>
-                                </span>
-                                <span class="d-inline-flex align-items-center gap-1">
+                                    <field name="igd_lodging_basis" nolabel="1" class="o_margin_basis"
+                                           invisible="not igd_lodging"/>
+                                </div>
+                                <div class="o_margin_check">
+                                    <field name="igd_expat" nolabel="1"/><label for="igd_expat"/>
+                                    <field name="igd_expat_amount" nolabel="1" class="o_margin_amount"
+                                           placeholder="per day" invisible="not igd_expat"/>
+                                    <field name="igd_expat_basis" nolabel="1" class="o_margin_basis"
+                                           invisible="not igd_expat"/>
+                                </div>
+                                <div class="o_margin_check">
                                     <field name="igd_lunch" nolabel="1"/><label for="igd_lunch"/>
-                                </span>
-                                <span class="d-inline-flex align-items-center gap-1">
+                                </div>
+                                <div class="o_margin_check">
                                     <field name="igd_dinner" nolabel="1"/><label for="igd_dinner"/>
-                                </span>
+                                    <field name="igd_meal_basis" nolabel="1" class="o_margin_basis"
+                                           invisible="not (igd_lunch or igd_dinner)"/>
+                                </div>
                             </div>
                             <field name="igd_scale_choice" invisible="cost_origin != 'employee'
                                    or not (igd_lodging or igd_lunch or igd_dinner)"/>
@@ -139,22 +150,22 @@
                         </group>
                         <group string="Price and margin">
                             <div colspan="2"><field name="margin_wanted" widget="margin_slider" nolabel="1"/></div>
-                            <field name="margin_wanted"/>
+                            <label for="margin_rate"/>
+                            <div class="d-flex align-items-baseline gap-4">
+                                <field name="margin_rate" widget="percentage" class="fw-bold oe_inline"/>
+                                <field name="margin_month" class="text-muted oe_inline"/>
+                            </div>
                             <div colspan="2"><field name="daily_rate" widget="rate_slider" nolabel="1"/></div>
                             <field name="daily_rate" class="fw-bold"/>
-                            <field name="margin_rate" widget="percentage" class="fw-bold"/>
-                            <field name="margin_month" class="text-muted"/>
                             <label for="target_rate_2" string="Indicative daily rate" class="text-muted"/>
-                            <div class="d-flex flex-column gap-1 text-muted">
-                                <div class="d-flex align-items-center gap-2">
-                                    <field name="target_rate_2" widget="percentage" class="o_margin_pct"/>
-                                    <div>&#8594;</div> <field name="rate_target_rate_2" class="oe_inline fw-bold"/>
-                                </div>
-                                <div class="d-flex align-items-center gap-2">
-                                    <field name="target_amount_2" class="o_margin_amount"/>
-                                    <div>a month</div> <div>&#8594;</div>
-                                    <field name="rate_target_2" class="oe_inline fw-bold"/>
-                                </div>
+                            <div class="d-flex flex-wrap align-items-center gap-2 text-muted">
+                                <field name="target_rate_2" widget="percentage" class="o_margin_pct"/>
+                                <div>&#8594;</div>
+                                <field name="rate_target_rate_2" class="oe_inline fw-bold"/>
+                                <field name="target_amount_2" class="o_margin_amount ms-3"/>
+                                <div>a month</div>
+                                <div>&#8594;</div>
+                                <field name="rate_target_2" class="oe_inline fw-bold"/>
                             </div>
                             <label for="rebilled_daily"/>
                             <div class="d-flex gap-2">

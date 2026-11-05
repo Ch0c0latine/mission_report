@@ -76,12 +76,12 @@
 // Calcul de marge : les pourcentages et les montants à côté d'un texte tiennent dans un champ étroit.
 .o_form_view {
     .o_field_widget.o_margin_pct {
-        width: 6.5rem !important;
+        width: 4.6rem !important;
         max-width: 100%;
         flex: 0 0 auto;
     }
     .o_field_widget.o_margin_amount {
-        width: 9rem !important;
+        width: 7rem !important;
         flex: 0 0 auto;
     }
 }
@@ -101,5 +101,35 @@
     .o_margin_donut_legend {
         min-width: 18rem;
         max-width: 34rem;
+    }
+}
+
+// Calcul de marge : les cases des indemnités sur deux colonnes serrées, chacune avec ses jours.
+.o_form_view {
+    .o_margin_checks {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 1.5rem;
+        row-gap: 0.15rem;
+    }
+    .o_margin_check {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.1rem 0.5rem;
+        min-height: 0;
+
+        .o_field_widget {
+            width: auto;
+            min-height: 0;
+            margin: 0;
+        }
+        label {
+            margin: 0;
+        }
+    }
+    .o_field_widget.o_margin_basis {
+        width: 8.5rem !important;
+        font-size: 0.85em;
     }
 }

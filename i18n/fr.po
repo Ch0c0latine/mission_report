@@ -783,6 +783,9 @@ msgid "By month of the mission"
 msgstr "Selon le mois de la mission (dégressif)"
 
 #. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_margin__igd_expat_basis__calendar
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_margin__igd_lodging_basis__calendar
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_margin__igd_meal_basis__calendar
 #: model:ir.model.fields.selection,name:mission_report.selection__project_project__igd_lodging_basis__calendar
 #: model:ir.model.fields.selection,name:mission_report.selection__project_project__igd_meal_basis__calendar
 msgid "Calendar days"
@@ -1227,6 +1230,9 @@ msgid "Days off of an employee on a day-based contract (forfait jour)."
 msgstr "Jours de repos d'un salarié au forfait jour."
 
 #. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_margin__igd_expat_basis__worked
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_margin__igd_lodging_basis__worked
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_margin__igd_meal_basis__worked
 #: model:ir.model.fields.selection,name:mission_report.selection__project_project__igd_lodging_basis__worked
 #: model:ir.model.fields.selection,name:mission_report.selection__project_project__igd_meal_basis__worked
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
@@ -1242,6 +1248,17 @@ msgstr "Jours travaillés par mois"
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__days_per_year
 msgid "Days worked a year"
 msgstr "Jours travaillés par an"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_margin__igd_expat_basis
+#: model:ir.model.fields,help:mission_report.field_mission_margin__igd_lodging_basis
+#: model:ir.model.fields,help:mission_report.field_mission_margin__igd_meal_basis
+msgid ""
+"Days worked, or every calendar day (weekends, public holidays and time off "
+"included)."
+msgstr ""
+"Jours travaillés, ou tous les jours calendaires (week-ends, jours fériés et "
+"congés compris)."
 
 #. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_project_project__igd_lodging_basis
@@ -1290,11 +1307,6 @@ msgstr "Description de la prestation"
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
 msgid "Details of the costs"
 msgstr "Détail des coûts"
-
-#. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_margin__igd_dinner
-msgid "Dinner"
-msgstr "Dîner"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_export_view_form
@@ -1525,6 +1537,21 @@ msgid "Excel templates of the reports"
 msgstr "Modèles Excel des comptes rendus"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__igd_expat
+msgid "Expat allowance"
+msgstr "Forfait expat"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__igd_expat_basis
+msgid "Expat allowance on"
+msgstr "Forfait expat sur"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__igd_expat_amount
+msgid "Expat allowance per day worked"
+msgstr "Forfait expat par jour travaillé"
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_res_company__igd_expat_product_id
 #: model:ir.model.fields,field_description:mission_report.field_res_config_settings__igd_expat_product_id
 msgid "Expatriation allowance category"
@@ -1737,6 +1764,11 @@ msgstr "Marge prévue"
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__forecast_days
 msgid "Forecast worked days"
 msgstr "Jours travaillés prévus"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_margin__igd_expat_amount
+msgid "Free amount: the expat allowance is not on the scale."
+msgstr "Montant libre : le forfait expat n'est pas dans le barème."
 
 #. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_activity_report__note_ids
@@ -2190,6 +2222,11 @@ msgid "Lodging and breakfast in the other departments."
 msgstr "Logement et petit déjeuner dans les autres départements."
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__igd_lodging_basis
+msgid "Lodging on"
+msgstr "Nuitée sur"
+
+#. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
 #: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
 msgid "Long-distance allowances"
@@ -2213,11 +2250,6 @@ msgstr "Indemnités de grand déplacement (IGD)"
 #: model:ir.model.fields,field_description:mission_report.field_res_config_settings__mission_salary_min
 msgid "Lowest gross yearly salary"
 msgstr "Salaire brut annuel le plus bas"
-
-#. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_margin__igd_lunch
-msgid "Lunch"
-msgstr "Déjeuner"
 
 #. module: mission_report
 #. odoo-python
@@ -2299,14 +2331,24 @@ msgstr "Marge par jour travaillé"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__margin_wanted
-msgid "Margin wanted (%)"
-msgstr "Marge voulue (%)"
+msgid "Margin slider (%)"
+msgstr "Curseur de marge (%)"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_rate__meal
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_igd__meal
 msgid "Meal"
 msgstr "Repas"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__igd_lunch
+msgid "Meal 1"
+msgstr "Repas 1"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__igd_dinner
+msgid "Meal 2"
+msgstr "Repas 2"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_res_company__igd_meal_product_id
@@ -2329,6 +2371,11 @@ msgstr ""
 "Indemnités de repas et de logement par jour travaillé, selon le mois de la "
 "mission : le barème de référence de la société. Chaque calcul de marge en "
 "prend une copie, modifiable pour cette mission uniquement."
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__igd_meal_basis
+msgid "Meals on"
+msgstr "Repas sur"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__message_has_error
@@ -3211,6 +3258,11 @@ msgstr "Taux des indemnités d'un calcul de marge"
 #: model:ir.model,name:mission_report.model_mission_igd_rate
 msgid "Rate of the long-distance allowances"
 msgstr "Tarif des indemnités de grand déplacement"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__rate_manual
+msgid "Rate typed by hand"
+msgstr "Tarif saisi à la main"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
@@ -4517,6 +4569,11 @@ msgstr "aucune journée de présence sur « %s » ce mois-ci."
 #: code:addons/mission_report/models/igd.py:0
 msgid "no mission day entered this month."
 msgstr "aucune journée de mission saisie ce mois-ci."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid "per day"
+msgstr "par jour"
 
 #. module: mission_report
 #. odoo-python

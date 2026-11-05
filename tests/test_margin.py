@@ -277,6 +277,43 @@ class TestMargin(TransactionCase):
                      'rebilled_monthly'):
             self.assertIn(name + '_note', self.env['mission.margin']._fields)
 
+    def test_the_allowances_can_be_paid_on_the_calendar_days(self):
+        # Lodging at the rate of month 4 to 24 (48.30), on every day of the year instead of the days worked.
+        worked = self._sheet(igd_lodging=True)
+        self.assertAlmostEqual(worked.igd_month, 48.3 * 218 / 12, delta=0.01)
+        calendar = self._sheet(igd_lodging=True, igd_lodging_basis='calendar')
+        self.assertAlmostEqual(calendar.igd_month, 48.3 * 365 / 12, delta=0.01)
+        self.assertAlmostEqual(calendar.igd_daily, 48.3 * 365 / 218, delta=0.01)
+        # Each allowance has its own basis: the meals stay on the days worked.
+        mixed = self._sheet(igd_lodging=True, igd_lunch=True, igd_lodging_basis='calendar')
+        self.assertAlmostEqual(mixed.igd_month, (48.3 * 365 + 18.2 * 218) / 12, delta=0.01)
+        meals = self._sheet(igd_lunch=True, igd_dinner=True, igd_meal_basis='calendar')
+        self.assertAlmostEqual(meals.igd_month, 2 * 18.2 * 365 / 12, delta=0.01)
+
+    def test_the_expat_allowance_is_a_free_amount(self):
+        sheet = self._sheet()
+        before = sheet.total_cost
+        sheet.write({'igd_expat': True, 'igd_expat_amount': 30.0})
+        self.assertAlmostEqual(sheet.total_cost, before + 30.0 * 218, places=2)
+        self.assertAlmostEqual(sheet.igd_daily, 30.0, places=2)
+        sheet.igd_expat_basis = 'calendar'
+        self.assertAlmostEqual(sheet.igd_month, 30.0 * 365 / 12, delta=0.01)
+        sheet.igd_expat = False
+        self.assertEqual(sheet.igd_daily, 0.0)
+
+    def test_the_margin_slider_follows_the_daily_rate_typed_or_slid(self):
+        from odoo.tests import Form
+        with Form(self.env['mission.margin']) as form:
+            form.gross_salary = 40000.0
+            form.daily_rate = 600.0
+            self.assertTrue(form.rate_manual)
+            self.assertEqual(form.margin_wanted, min(max(int(round(form.margin_rate * 100)), 10), 40))
+            self.assertGreater(form.margin_wanted, 20)
+            # Moving the margin slider gives the control back to the margin.
+            form.margin_wanted = 15
+            self.assertFalse(form.rate_manual)
+            self.assertEqual(form.margin_wanted, 15)
+
     def test_the_billing_of_a_month_is_shared_between_the_consultant_the_costs_and_the_margin(self):
         sheet = self._sheet(igd_lodging=True, igd_lunch=True, other_yearly=1200.0)
         data = sheet.breakdown

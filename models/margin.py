@@ -18,6 +18,7 @@ from datetime import date, timedelta
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
+from .igd import BASIS
 from .public_holiday_wizard import french_public_holidays
 
 
@@ -119,7 +120,7 @@ class MissionMargin(models.Model):
 
     # ---- Price --------------------------------------------------------------------------------
     margin_wanted = fields.Integer(
-        string="Margin wanted (%)", default=20,
+        string="Margin slider (%)", default=20,
         help="Move the slider: the daily rate follows the margin wanted (rounded up to 5 €) when the costs "
              "change. Type a daily rate to set it by hand.")
     rate_manual = fields.Boolean(string="Rate typed by hand", default=False)
@@ -163,8 +164,20 @@ class MissionMargin(models.Model):
 
     # ---- Long-distance allowances --------------------------------------------------------------
     igd_lodging = fields.Boolean(string="Lodging")
-    igd_lunch = fields.Boolean(string="Lunch")
-    igd_dinner = fields.Boolean(string="Dinner")
+    igd_lunch = fields.Boolean(string="Meal 1")
+    igd_dinner = fields.Boolean(string="Meal 2")
+    igd_expat = fields.Boolean(string="Expat allowance")
+    igd_expat_amount = fields.Monetary(
+        string="Expat allowance per day worked", help="Free amount: the expat allowance is not on the scale.")
+    igd_lodging_basis = fields.Selection(
+        BASIS, string="Lodging on", default='worked', required=True,
+        help="Days worked, or every calendar day (weekends, public holidays and time off included).")
+    igd_meal_basis = fields.Selection(
+        BASIS, string="Meals on", default='worked', required=True,
+        help="Days worked, or every calendar day (weekends, public holidays and time off included).")
+    igd_expat_basis = fields.Selection(
+        BASIS, string="Expat allowance on", default='worked', required=True,
+        help="Days worked, or every calendar day (weekends, public holidays and time off included).")
     igd_scale_choice = fields.Selection(
         lambda self: self._igd_scale_choices(), string="Allowance rates", default='2',
         help="The rates of the scale that apply to every day of the mission: using one period only avoids a "
@@ -251,7 +264,7 @@ class MissionMargin(models.Model):
         'target_amount_2', 'target_rate_1', 'target_rate_2', 'commission_threshold_rate',
         'commission_threshold_amount', 'commission_rule_id.rate_sourcing', 'commission_rule_id.rate_referral',
         'commission_rule_id.rate_candidate', 'commission_rule_id.rate_client', 'commission_rule_id.rate_full',
-        'commission_rule_id.rate_team', 'company_id.mission_commission_cap', 'igd_lodging', 'igd_lunch', 'igd_dinner', 'igd_scale_choice',
+        'commission_rule_id.rate_team', 'company_id.mission_commission_cap', 'igd_lodging', 'igd_lunch', 'igd_dinner', 'igd_expat', 'igd_expat_amount', 'igd_lodging_basis', 'igd_meal_basis', 'igd_expat_basis', 'igd_scale_choice',
         'igd_rebilled', 'igd_line_ids.month_from', 'igd_line_ids.month_to', 'igd_line_ids.meal',
         'igd_line_ids.lodging')
     def _compute_results(self):
@@ -267,8 +280,8 @@ class MissionMargin(models.Model):
                 base = 0.0 if freelance else m.gross_salary * (1 + m.employer_charge_rate)
             overhead = base * m.overhead_rate
             # A freelance bills his expenses in his daily rate: no allowances, no amounts agreed with him.
-            igd = 0.0 if freelance else m._igd_per_day()
-            allowances = igd * days
+            allowances = 0.0 if freelance else m._igd_year()
+            igd = allowances / days if days else 0.0
             agreed = 0.0 if freelance else m.daily_cost_worked * days + m.fixed_monthly_amount * 12
             generic = (m.other_worked_daily * days + m.daily_cost_calendar * 365 + m.expenses_monthly * 12
                        + m.other_yearly)
@@ -421,30 +434,47 @@ class MissionMargin(models.Model):
             margin.igd_line_ids = [(5, 0, 0)] + margin.company_id._mission_igd_scale_commands()
         return True
 
-    def _igd_per_day(self):
-        """Allowances per worked day: what is ticked, at the rates of the scale of the sheet.
+    def _igd_year(self):
+        """Allowances of a year: what is ticked, at the rates of the scale of the sheet, on the days chosen for each
+        (the days worked, or every calendar day), and the expat allowance at its free amount.
 
         One period of the scale applies to every month when it is chosen; otherwise the rates follow the month
         of the mission (the first months cost more than the following ones).
         """
         self.ensure_one()
+        worked = max(365 - self.weekend_days - self.public_holidays - self.paid_leave_days - self.rtt_days, 0.0)
+
+        def span(basis):
+            return 365.0 if basis == 'calendar' else worked
+
+        expat = self.igd_expat_amount * span(self.igd_expat_basis) if self.igd_expat else 0.0
         meals = int(bool(self.igd_lunch)) + int(bool(self.igd_dinner))
         if not (meals or self.igd_lodging):
-            return 0.0
+            return expat
+        lodging_days, meal_days = span(self.igd_lodging_basis), span(self.igd_meal_basis)
+
+        def year_at(line):
+            return (line.lodging * lodging_days if self.igd_lodging else 0.0) + meals * line.meal * meal_days
+
         lines = (self.igd_line_ids or self.company_id.sudo().mission_igd_rate_ids).sorted(
             lambda line: line.sequence)
         choice = int(self.igd_scale_choice or 0)
         if 0 < choice <= len(lines):
-            line = lines[choice - 1]
-            return meals * line.meal + (line.lodging if self.igd_lodging else 0.0)
+            return year_at(lines[choice - 1]) + expat
         months = max(int(round(self.duration_months)), 1)
         total = 0.0
         for month in range(1, months + 1):
             line = next((line for line in lines
                          if line.month_from <= month and (not line.month_to or month <= line.month_to)), None)
             if line:
-                total += meals * line.meal + (line.lodging if self.igd_lodging else 0.0)
-        return total / months
+                total += year_at(line)
+        return total / months + expat
+
+    def _igd_per_day(self):
+        """The allowances of a year, per day worked."""
+        self.ensure_one()
+        worked = max(365 - self.weekend_days - self.public_holidays - self.paid_leave_days - self.rtt_days, 0.0)
+        return self._igd_year() / worked if worked else 0.0
 
     def _rate_for_margin(self, rate):
         """Daily rate that gives a margin (share of the billing), rounded up to 5 €."""
@@ -460,7 +490,8 @@ class MissionMargin(models.Model):
         'employer_charge_rate', 'overhead_rate', 'payslip_monthly_cost', 'freelance_daily_rate',
         'other_worked_daily', 'daily_cost_calendar', 'daily_cost_worked', 'fixed_monthly_amount', 'mileage_monthly',
         'expenses_monthly', 'training_yearly', 'ppe_yearly', 'equipment_yearly', 'other_yearly', 'rebilled_daily',
-        'rebilled_monthly', 'duration_months', 'igd_lodging', 'igd_lunch', 'igd_dinner', 'igd_scale_choice',
+        'rebilled_monthly', 'duration_months', 'igd_lodging', 'igd_lunch', 'igd_dinner', 'igd_expat',
+        'igd_expat_amount', 'igd_lodging_basis', 'igd_meal_basis', 'igd_expat_basis', 'igd_scale_choice',
         'igd_rebilled', 'margin_wanted')
 
     def _follow_margin(self):
@@ -474,6 +505,9 @@ class MissionMargin(models.Model):
 
     @api.onchange('margin_wanted')
     def _onchange_margin_wanted(self):
+        # The slider placed by the daily rate typed or slid (it follows the rate): the rate stays.
+        if self.rate_manual and self.margin_wanted == min(max(int(round(self.margin_rate * 100)), 10), 40):
+            return
         # Moving the slider gives the control back to the margin.
         self.rate_manual = False
         self._follow_margin()
@@ -483,6 +517,9 @@ class MissionMargin(models.Model):
         # Typed by hand: unless it is the rate the margin wanted gave (the sheet sets it itself).
         if not self.rate_manual and self.daily_rate != self._rate_for_margin(self.margin_wanted / 100.0):
             self.rate_manual = True
+        # The margin slider follows the daily rate it did not give (within its limits of 10 to 40 %).
+        if self.rate_manual and self.revenue:
+            self.margin_wanted = min(max(int(round(self.margin_rate * 100)), 10), 40)
 
     @api.model_create_multi
     def create(self, vals_list):
