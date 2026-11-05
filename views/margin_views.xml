@@ -14,7 +14,8 @@
                 <field name="order_id" optional="show"/>
                 <field name="daily_rate" optional="show"/>
                 <field name="margin_month" optional="show"/>
-                <field name="margin_rate" widget="percentage" optional="show"/>
+                <field name="margin_rate" widget="percentage" optional="show"
+                       decoration-danger="margin_rate &lt; 0" decoration-warning="margin_rate &gt;= 0 and margin_rate &lt; 0.2"/>
                 <field name="margin_duration" optional="show"/>
                 <field name="currency_id" column_invisible="1"/>
             </list>
@@ -375,6 +376,10 @@
                             <group>
                                 <field name="start_date"/>
                             </group>
+                            <p class="text-muted" invisible="month_ids">
+                                Choose the start of the mission, then generate the months: each one gets its working days
+                                (or the days planned for a mission by the day) and its billing and margin.
+                            </p>
                             <button name="action_generate_months" type="object" string="Generate the months"
                                     class="btn-secondary"/>
                             <field name="month_ids">
@@ -390,7 +395,7 @@
                             </field>
                         </page>
                         <page string="Notes" name="notes">
-                            <field name="note"/>
+                            <field name="note" placeholder="Context of the mission, assumptions of the calculation, what was agreed..."/>
                         </page>
                     </notebook>
                     <chatter/>

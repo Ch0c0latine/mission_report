@@ -26,7 +26,19 @@ export class MarginSliderField extends Component {
     }
 
     get value() {
-        return this.state.shown !== null ? this.state.shown : this.props.record.data[this.props.name] || 0;
+        if (this.state.shown !== null) {
+            return this.state.shown;
+        }
+        const data = this.props.record.data;
+        // A daily rate typed by hand: the cursor shows the margin it gives.
+        if (data.rate_manual && data.margin_rate) {
+            return Math.min(Math.max(Math.round(data.margin_rate * 100), this.props.min), this.props.max);
+        }
+        return data[this.props.name] || 0;
+    }
+
+    get label() {
+        return this.props.record.fields[this.props.name].string;
     }
 
     /** Daily rate that gives the margin, as the server computes it: rounded up to 5. */
@@ -109,6 +121,10 @@ export class SalarySliderField extends Component {
 
     get step() {
         return 500;
+    }
+
+    get label() {
+        return this.props.record.fields[this.props.name].string;
     }
 
     /** The cursor moves by steps of 500 from round numbers: the first notch is the minimum wage itself. */

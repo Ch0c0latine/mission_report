@@ -89,12 +89,12 @@
                                     <list editable="bottom">
                                         <field name="sequence" widget="handle"/>
                                         <field name="name"/>
-                                        <field name="rate_sourcing" widget="percentage"/>
-                                        <field name="rate_referral" widget="percentage"/>
-                                        <field name="rate_candidate" widget="percentage"/>
-                                        <field name="rate_client" widget="percentage"/>
-                                        <field name="rate_full" widget="percentage"/>
-                                        <field name="rate_team" widget="percentage"/>
+                                        <field name="rate_sourcing" widget="percentage" string="Sourcing"/>
+                                        <field name="rate_referral" widget="percentage" string="Referral"/>
+                                        <field name="rate_candidate" widget="percentage" string="Candidate side"/>
+                                        <field name="rate_client" widget="percentage" string="Client side"/>
+                                        <field name="rate_full" widget="percentage" string="Full"/>
+                                        <field name="rate_team" widget="percentage" string="Collaborators"/>
                                     </list>
                                 </field>
                             </div>

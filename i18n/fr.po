@@ -820,6 +820,11 @@ msgid "Cancel the entry"
 msgstr "Annuler la saisie"
 
 #. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid "Candidate side"
+msgstr "Côté candidat"
+
+#. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_commission_rule__rate_full
 #: model:ir.model.fields,help:mission_report.field_mission_margin__commission_rate_full
 msgid "Candidate side and client side together."
@@ -871,6 +876,16 @@ msgstr ""
 "Choisissez d'abord le projet de l'affaire (onglet Autres informations)."
 
 #. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid ""
+"Choose the start of the mission, then generate the months: each one gets its working days\n"
+"                                (or the days planned for a mission by the day) and its billing and margin."
+msgstr ""
+"Choisissez le début de la mission, puis générez les mois : chacun reçoit ses"
+" jours ouvrés (ou les jours prévus pour une mission à la journée), sa "
+"facturation et sa marge."
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/public_holiday_wizard.py:0
 msgid "Christmas Day"
@@ -894,6 +909,11 @@ msgid "Client (missions of one client)"
 msgstr "Client (missions d'un seul client)"
 
 #. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid "Client side"
+msgstr "Côté client"
+
+#. module: mission_report
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__label
 msgid "Client, or time off type"
 msgstr "Client, ou type de congé"
@@ -902,6 +922,11 @@ msgstr "Client, ou type de congé"
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_igd_wizard_view_form
 msgid "Close"
 msgstr "Fermer"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid "Collaborators"
+msgstr "Collaborateurs"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__color_days
@@ -1017,6 +1042,12 @@ msgid ""
 msgstr ""
 "Contacts à qui envoyer les factures de cette affaire. Vide : le client de la"
 " facture."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid ""
+"Context of the mission, assumptions of the calculation, what was agreed..."
+msgstr "Contexte de la mission, hypothèses du calcul, ce qui a été convenu..."
 
 #. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_margin__igd_line_ids
@@ -1898,6 +1929,11 @@ msgstr "Jours fériés français"
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_igd__month_from
 msgid "From month"
 msgstr "À partir du mois"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid "Full"
+msgstr "Complète"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_commission_rule__rate_full
@@ -3395,6 +3431,11 @@ msgid "Reason of the monthly amount"
 msgstr "Motif du montant mensuel"
 
 #. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid "Referral"
+msgstr "Apport"
+
+#. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_commission_rule__rate_referral
 #: model:ir.model.fields,help:mission_report.field_mission_margin__commission_rate_referral
 msgid ""
@@ -3604,6 +3645,11 @@ msgid "Snapshot"
 msgstr "Chiffres validés"
 
 #. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
+msgid "Sourcing"
+msgstr "Sourcing"
+
+#. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_commission_rule__rate_sourcing
 #: model:ir.model.fields,help:mission_report.field_mission_margin__commission_rate_sourcing
 msgid ""
@@ -3750,6 +3796,14 @@ msgstr ""
 "Bascule entre une saisie de Mission (par défaut) et une saisie de Congé."
 
 #. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_margin__daily_rate
+msgid ""
+"TJM: the daily rate (tarif journalier moyen) sold to the customer for a day "
+"worked."
+msgstr ""
+"TJM : le tarif journalier moyen vendu au client pour une journée travaillée."
+
+#. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.view_order_form_mission_volet
 msgid "Take over from the note"
 msgstr "Reprendre depuis la note"
@@ -3846,6 +3900,23 @@ msgstr "Le consultant"
 #: code:addons/mission_report/static/src/js/margin_donut.js:0
 msgid "The costs exceed the billing by %(amount)s a month"
 msgstr "Les coûts dépassent la facturation de %(amount)s par mois"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_margin__target_amount_2
+msgid ""
+"The daily rate that gives this margin each month, shown after the arrow."
+msgstr ""
+"Le tarif journalier qui donne cette marge chaque mois, indiqué après la "
+"flèche."
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_margin__target_rate_2
+msgid ""
+"The daily rate that gives this share of the billing as margin, shown after "
+"the arrow. Click it to take it."
+msgstr ""
+"Le tarif journalier qui donne cette part de la facturation en marge, indiqué"
+" après la flèche. Cliquez dessus pour le prendre."
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report

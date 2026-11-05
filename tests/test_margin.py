@@ -379,6 +379,14 @@ class TestMargin(TransactionCase):
         regie.action_create_order()
         self.assertEqual(regie.order_id.order_line.product_uom_qty, 10.0)
 
+    def test_the_actual_profitability_opens_the_project_of_the_sheet(self):
+        sheet = self._sheet()
+        sheet.action_create_project()
+        action = sheet.action_open_profitability()
+        self.assertEqual(action['context']['active_id'], sheet.project_id.id)
+        self.assertNotEqual(action['context']['active_id'], sheet.id)
+        self.assertEqual(action['context']['active_model'], 'project.project')
+
     def test_the_billing_of_a_month_is_shared_between_the_consultant_the_costs_and_the_margin(self):
         sheet = self._sheet(igd_lodging=True, igd_lunch=True, other_yearly=1200.0)
         data = sheet.breakdown

@@ -134,7 +134,9 @@ class MissionMargin(models.Model):
         help="Move the slider: the daily rate follows the margin wanted (rounded up to 5 €) when the costs "
              "change. Type a daily rate to set it by hand.")
     rate_manual = fields.Boolean(string="Rate typed by hand", default=False)
-    daily_rate = fields.Monetary(string="Daily rate sold (TJM)", tracking=True)
+    daily_rate = fields.Monetary(
+        string="Daily rate sold (TJM)", tracking=True,
+        help="TJM: the daily rate (tarif journalier moyen) sold to the customer for a day worked.")
     rebilled_daily = fields.Monetary(string="Expenses re-invoiced per day worked")
     rebilled_daily_note = fields.Char(string="Note")
     rebilled_monthly = fields.Monetary(string="Expenses re-invoiced per month")
@@ -149,9 +151,13 @@ class MissionMargin(models.Model):
     employee_charge_rate = fields.Float(
         string="Employee charges", digits=(16, 3), readonly=True, copy=True, default=0.23)
     target_amount_1 = fields.Monetary(string="Target margin 1 a month", default=4000.0)
-    target_amount_2 = fields.Monetary(string="Target margin 2 a month", default=2000.0)
+    target_amount_2 = fields.Monetary(
+        string="Target margin 2 a month", default=2000.0,
+        help="The daily rate that gives this margin each month, shown after the arrow.")
     target_rate_1 = fields.Float(string="Target margin 1 (%)", default=0.30)
-    target_rate_2 = fields.Float(string="Target margin 2 (%)", default=0.20)
+    target_rate_2 = fields.Float(
+        string="Target margin 2 (%)", default=0.20,
+        help="The daily rate that gives this share of the billing as margin, shown after the arrow. Click it to take it.")
 
     # ---- Commissions: the conditions are the company's, the rates follow the status -------------
     commission_threshold_rate = fields.Float(
@@ -670,7 +676,11 @@ class MissionMargin(models.Model):
         self.ensure_one()
         if not self.project_id:
             raise UserError(_("Create the project first."))
-        return self.project_id.with_context(active_id=self.project_id.id).project_update_all_action()
+        action = self.project_id.project_update_all_action()
+        # The button sends the id of the sheet: the dashboard must read the one of the project.
+        action['context'] = {'active_id': self.project_id.id, 'active_model': 'project.project'}
+        action['params'] = dict(action.get('params') or {}, active_id=self.project_id.id)
+        return action
 
     def action_generate_months(self):
         """The months of the mission, from its start, with their working days (holidays out)."""
