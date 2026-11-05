@@ -201,4 +201,25 @@ class TestMargin(TransactionCase):
             'name': "Vendeur", 'login': 'vendeur_marge_zz@example.com',
             'group_ids': [(6, 0, [self.env.ref('base.group_user').id,
                                   self.env.ref('sales_team.group_sale_salesman').id])]})
-        self.assertEqual(sheet.with_user(seller).name, "Test")
+        # A salesperson sees the sheets they made, not the ones of the others; a sales manager sees them all.
+        with self.assertRaises(AccessError):
+            sheet.with_user(seller).read(['name'])
+        mine = self.env['mission.margin'].with_user(seller).create({'name': "De Vendeur"})
+        self.assertEqual(mine.name, "De Vendeur")
+        other = self.env['res.users'].create({
+            'name': "Autre vendeur", 'login': 'autre_vendeur_marge_zz@example.com',
+            'group_ids': [(6, 0, [self.env.ref('base.group_user').id,
+                                  self.env.ref('sales_team.group_sale_salesman').id])]})
+        self.assertEqual(self.env['mission.margin'].with_user(other).search([('id', 'in', (sheet | mine).ids)]),
+                         self.env['mission.margin'])
+        self.assertEqual(self.env['mission.margin'].with_user(seller).search([('id', 'in', (sheet | mine).ids)]), mine)
+        manager = self.env['res.users'].create({
+            'name': "Chef des ventes", 'login': 'chef_marge_zz@example.com',
+            'group_ids': [(6, 0, [self.env.ref('base.group_user').id,
+                                  self.env.ref('sales_team.group_sale_manager').id])]})
+        self.assertEqual(self.env['mission.margin'].with_user(manager).search([('id', 'in', (sheet | mine).ids)]),
+                         sheet | mine)
+        # The months follow their sheet.
+        mine.action_generate_months() if mine.start_date else None
+        self.assertEqual(self.env['mission.margin.month'].with_user(other).search_count(
+            [('margin_id', 'in', (sheet | mine).ids)]), 0)

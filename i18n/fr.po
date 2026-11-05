@@ -4008,3 +4008,23 @@ msgstr "Alerte"
 #: model:ir.model.fields.selection,name:mail.selection__mission_activity_report__activity_exception_decoration__danger
 msgid "Error"
 msgstr "Erreur"
+
+#. module: mission_report
+#: model:ir.rule,name:mission_report.rule_mission_margin_own
+msgid "Margin calculation: the salesperson sees their own"
+msgstr "Calcul de marge : le commercial voit les siens"
+
+#. module: mission_report
+#: model:ir.rule,name:mission_report.rule_mission_margin_all
+msgid "Margin calculation: the managers see all of them"
+msgstr "Calcul de marge : les responsables voient tous les calculs"
+
+#. module: mission_report
+#: model:ir.rule,name:mission_report.rule_mission_margin_month_own
+msgid "Margin calculation, month: the salesperson sees their own"
+msgstr "Calcul de marge, mois : le commercial voit les siens"
+
+#. module: mission_report
+#: model:ir.rule,name:mission_report.rule_mission_margin_month_all
+msgid "Margin calculation, month: the managers see all of them"
+msgstr "Calcul de marge, mois : les responsables voient tous les calculs"
