@@ -116,11 +116,11 @@
         align-items: start;
     }
     .o_margin_check {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: auto 1fr;
         align-items: center;
-        gap: 0.1rem 0.5rem;
-        min-height: 0;
+        column-gap: 0.5rem;
+        row-gap: 0.1rem;
 
         .o_field_widget {
             width: auto;
@@ -129,6 +129,10 @@
         }
         label {
             margin: 0;
+        }
+        .o_margin_basis,
+        .o_margin_check_more {
+            grid-column: 2;
         }
     }
     .o_field_widget.o_margin_basis {
@@ -150,5 +154,20 @@
     }
     .o_field_widget.oe_inline {
         width: auto;
+    }
+}
+
+// Une ligne de valeurs et de leur unité : tout sur la même ligne de base.
+.o_form_view .o_margin_inline {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: baseline;
+    gap: 0.35rem;
+
+    .o_field_widget {
+        width: auto;
+        min-height: 0;
+        margin: 0;
+        display: inline-block;
     }
 }

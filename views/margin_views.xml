@@ -107,7 +107,6 @@
                             <div class="o_margin_checks" invisible="cost_origin != 'employee'">
                                 <div class="o_margin_check">
                                     <field name="igd_lunch" nolabel="1"/><label for="igd_lunch"/>
-                                    <div class="w-100"/>
                                     <field name="igd_meal_basis" nolabel="1" class="o_margin_basis"
                                            invisible="not (igd_lunch or igd_dinner)"/>
                                 </div>
@@ -116,28 +115,27 @@
                                 </div>
                                 <div class="o_margin_check">
                                     <field name="igd_lodging" nolabel="1"/><label for="igd_lodging"/>
-                                    <div class="w-100"/>
                                     <field name="igd_lodging_basis" nolabel="1" class="o_margin_basis"
                                            invisible="not igd_lodging"/>
                                 </div>
                                 <div class="o_margin_check">
                                     <field name="igd_expat" nolabel="1"/><label for="igd_expat"/>
-                                    <div class="w-100"/>
-                                    <field name="igd_expat_amount" nolabel="1" class="o_margin_amount"
-                                           placeholder="per day" invisible="not igd_expat"/>
-                                    <field name="igd_expat_basis" nolabel="1" class="o_margin_basis"
-                                           invisible="not igd_expat"/>
+                                    <div class="o_margin_check_more d-flex align-items-center gap-2"
+                                         invisible="not igd_expat">
+                                        <field name="igd_expat_amount" nolabel="1" class="o_margin_amount"
+                                               placeholder="per day"/>
+                                        <field name="igd_expat_basis" nolabel="1" class="o_margin_basis"/>
+                                    </div>
                                 </div>
                             </div>
                             <field name="igd_scale_choice" invisible="cost_origin != 'employee'
                                    or not (igd_lodging or igd_lunch or igd_dinner)"/>
                             <label for="igd_daily" string="Allowances total"
                                    invisible="cost_origin != 'employee' or not igd_daily"/>
-                            <div class="d-flex flex-wrap align-items-center gap-2 fw-bold"
-                                 invisible="cost_origin != 'employee' or not igd_daily">
-                                <field name="igd_daily" class="oe_inline"/> <div>a day</div>
-                                <div class="text-muted">-</div>
-                                <field name="igd_month" class="oe_inline"/> <div>a month</div>
+                            <div class="o_margin_inline fw-bold" invisible="cost_origin != 'employee' or not igd_daily">
+                                <field name="igd_daily"/><span class="fw-normal text-muted">a day</span>
+                                <span class="text-muted">&#183;</span>
+                                <field name="igd_month"/><span class="fw-normal text-muted">a month</span>
                             </div>
                             <label for="daily_cost_worked" invisible="cost_origin != 'employee'"/>
                             <div class="d-flex gap-2" invisible="cost_origin != 'employee'">
