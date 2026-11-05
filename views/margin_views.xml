@@ -64,6 +64,20 @@
                             class="oe_highlight" invisible="order_id or not partner_id"/>
                     <field name="state" widget="statusbar"/>
                 </header>
+                <div class="o_margin_stickybar d-md-none">
+                    <div>
+                        <div class="text-muted">Margin (%)</div>
+                        <field name="margin_rate" widget="percentage" readonly="1" class="fw-bold oe_inline"/>
+                    </div>
+                    <div>
+                        <div class="text-muted">Margin a month</div>
+                        <field name="margin_month" readonly="1" class="fw-bold oe_inline"/>
+                    </div>
+                    <div>
+                        <div class="text-muted">Daily rate sold (TJM)</div>
+                        <field name="daily_rate" readonly="1" class="fw-bold oe_inline"/>
+                    </div>
+                </div>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
                         <button name="action_open_project" type="object" class="oe_stat_button"
@@ -90,20 +104,6 @@
                                 string="Restore the conditions of the order"/>
                         <button name="action_open_conditions_wizard" type="object" class="btn btn-primary"
                                 string="Record the change of the conditions of the deal"/>
-                    </div>
-                    <div class="o_margin_stickybar d-md-none">
-                        <div>
-                            <div class="text-muted">Margin (%)</div>
-                            <field name="margin_rate" widget="percentage" readonly="1" class="fw-bold oe_inline"/>
-                        </div>
-                        <div>
-                            <div class="text-muted">Margin a month</div>
-                            <field name="margin_month" readonly="1" class="fw-bold oe_inline"/>
-                        </div>
-                        <div>
-                            <div class="text-muted">Daily rate sold (TJM)</div>
-                            <field name="daily_rate" readonly="1" class="fw-bold oe_inline"/>
-                        </div>
                     </div>
                     <div class="oe_title">
                         <label for="name"/>
