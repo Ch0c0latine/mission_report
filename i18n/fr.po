@@ -4618,12 +4618,6 @@ msgid "“Day 1 column” takes a column letter, such as D."
 msgstr "« Colonne du jour 1 » attend une lettre de colonne, par exemple D."
 
 #. module: mission_report
-#. odoo-javascript
-#: code:addons/mission_report/static/src/js/margin_donut.js:0
-msgid "The costs exceed the billing by"
-msgstr "Les coûts dépassent la facturation de"
-
-#. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_hr_expense__project_id
 msgid ""
 "Project this expense belongs to. Setting it books the expense on the "
@@ -4658,3 +4652,9 @@ msgstr "Alerte"
 #: model:ir.model.fields.selection,name:mail.selection__mission_activity_report__activity_exception_decoration__danger
 msgid "Error"
 msgstr "Erreur"
+
+#. module: mission_report
+#. odoo-javascript
+#: code:addons/mission_report/static/src/js/margin_donut.js:0
+msgid "The costs exceed the billing by %(amount)s a month"
+msgstr "Les coûts dépassent la facturation de %(amount)s par mois"

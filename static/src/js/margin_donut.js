@@ -54,7 +54,7 @@ export class MarginDonutField extends Component {
     }
 
     get deficitLabel() {
-        return `${_t("The costs exceed the billing by")} ${this.money(this.data.deficit)} ${_t("a month")}`;
+        return _t("The costs exceed the billing by %(amount)s a month", { amount: this.money(this.data.deficit) });
     }
 }
 
