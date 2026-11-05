@@ -38,10 +38,66 @@
                         </setting>
                     </block>
 
+                    <block title="Margin calculations" name="mission_margin_block">
+                        <setting id="mission_margin_rates" company_dependent="1" class="col-lg-12"
+                                 string="Rates of the company"
+                                 help="Copied into each margin calculation, which cannot change them: a change here applies to the calculations made afterwards.">
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="mission_employer_charge_rate" class="col-lg-4 o_light_label"/>
+                                    <field name="mission_employer_charge_rate" widget="percentage"/>
+                                </div>
+                                <div class="row">
+                                    <label for="mission_employee_charge_rate" class="col-lg-4 o_light_label"/>
+                                    <field name="mission_employee_charge_rate" widget="percentage"/>
+                                </div>
+                                <div class="row">
+                                    <label for="mission_overhead_rate" class="col-lg-4 o_light_label"/>
+                                    <field name="mission_overhead_rate" widget="percentage"/>
+                                </div>
+                                <div class="row">
+                                    <label for="mission_salary_min" class="col-lg-4 o_light_label"/>
+                                    <field name="mission_salary_min"/>
+                                </div>
+                                <div class="row">
+                                    <label for="mission_salary_max" class="col-lg-4 o_light_label"/>
+                                    <field name="mission_salary_max"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting id="mission_margin_commissions" company_dependent="1" class="col-lg-12"
+                                 string="Commissions"
+                                 help="The conditions to earn a commission and the rates of each status of salesperson. The status is chosen on each margin calculation.">
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="mission_show_commissions" class="col-lg-4 o_light_label"/>
+                                    <field name="mission_show_commissions"/>
+                                </div>
+                                <div class="row">
+                                    <label for="mission_commission_threshold_rate" class="col-lg-4 o_light_label"/>
+                                    <field name="mission_commission_threshold_rate" widget="percentage"/>
+                                </div>
+                                <div class="row">
+                                    <label for="mission_commission_threshold_amount" class="col-lg-4 o_light_label"/>
+                                    <field name="mission_commission_threshold_amount"/>
+                                </div>
+                                <field name="mission_commission_rule_ids" nolabel="1">
+                                    <list editable="bottom">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="name"/>
+                                        <field name="rate_full" widget="percentage"/>
+                                        <field name="rate_management" widget="percentage"/>
+                                        <field name="rate_referral" widget="percentage"/>
+                                    </list>
+                                </field>
+                            </div>
+                        </setting>
+                    </block>
+
                     <block title="Long-distance allowances" name="mission_igd_scale_block">
                         <setting id="mission_igd_scale" company_dependent="1"
                                  string="Scale of the allowances (URSSAF)"
-                                 help="Meal and lodging allowances per day worked, by month of the mission. The margin calculations use it: update it when the URSSAF scale changes.">
+                                 help="Meal and lodging allowances per day worked, by month of the mission: the reference scale of the company. Each margin calculation takes a copy of it, which can be edited for that mission only.">
                             <field name="mission_igd_rate_ids" nolabel="1">
                                 <list editable="bottom">
                                     <field name="sequence" widget="handle"/>

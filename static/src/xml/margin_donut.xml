@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2026 T.T.C. SAS
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0). -->
+<templates xml:space="preserve">
+    <t t-name="mission_report.MarginDonutField">
+        <div class="o_margin_donut d-flex flex-wrap align-items-center gap-4">
+            <div class="o_margin_donut_ring position-relative">
+                <svg viewBox="0 0 42 42" width="190" height="190" role="img">
+                    <circle cx="21" cy="21" r="15.915" fill="none" stroke="var(--o-margin-ring, #e9ecef)"
+                            stroke-width="6"/>
+                    <t t-foreach="arcs" t-as="arc" t-key="arc.key">
+                        <circle cx="21" cy="21" r="15.915" fill="none" t-att-stroke="arc.color" stroke-width="6"
+                                t-att-stroke-dasharray="arc.dash" t-att-stroke-dashoffset="arc.offset"/>
+                    </t>
+                </svg>
+                <div class="o_margin_donut_center position-absolute top-50 start-50 translate-middle text-center">
+                    <div class="text-muted small">Billing a month</div>
+                    <div class="fw-bold fs-5"><t t-esc="money(data.total)"/></div>
+                </div>
+            </div>
+            <div class="o_margin_donut_legend flex-grow-1">
+                <t t-foreach="arcs" t-as="arc" t-key="arc.key">
+                    <div class="d-flex align-items-center gap-2 py-1">
+                        <span class="o_margin_donut_dot flex-shrink-0" t-attf-style="background: #{arc.color}"/>
+                        <span class="flex-grow-1" t-esc="arc.label"/>
+                        <span class="text-muted text-end" style="min-width: 3.5rem">
+                            <t t-esc="arc.share.toFixed(1)"/> %
+                        </span>
+                        <strong class="text-end" style="min-width: 6rem"><t t-esc="money(arc.value)"/></strong>
+                    </div>
+                </t>
+                <div t-if="data.deficit" class="text-danger mt-2" t-esc="deficitLabel"/>
+            </div>
+        </div>
+    </t>
+</templates>

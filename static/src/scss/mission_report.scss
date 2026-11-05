@@ -85,3 +85,21 @@
         flex: 0 0 auto;
     }
 }
+
+.o_form_view {
+    .o_margin_donut_dot {
+        width: 0.85rem;
+        height: 0.85rem;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    .o_margin_donut_ring {
+        width: 190px;
+        height: 190px;
+        flex: 0 0 auto;
+    }
+    .o_margin_donut_legend {
+        min-width: 18rem;
+        max-width: 34rem;
+    }
+}

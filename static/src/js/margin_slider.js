@@ -86,3 +86,65 @@ export const marginSliderField = {
 };
 
 registry.category("fields").add("margin_slider", marginSliderField);
+
+
+/**
+ * Curseur du salaire brut annuel : du minimum légal de la société (Paramètres) à son maximum.
+ *
+ * Chaque pas est envoyé tout de suite, un à la fois : le tarif journalier suit le salaire. Le montant exact
+ * se saisit dans le champ situé dessous.
+ */
+export class SalarySliderField extends Component {
+    static template = "mission_report.SalarySliderField";
+    static props = { ...standardFieldProps };
+
+    setup() {
+        this.state = useState({ shown: null });
+        this.pending = null;
+        this.busy = false;
+    }
+
+    get min() {
+        return Math.floor(this.props.record.data.salary_min || 20000);
+    }
+
+    get max() {
+        return Math.ceil(this.props.record.data.salary_max || 80000);
+    }
+
+    get value() {
+        const value = this.state.shown !== null ? this.state.shown : this.props.record.data[this.props.name] || 0;
+        return Math.min(Math.max(value, this.min), this.max);
+    }
+
+    format(amount) {
+        return Math.round(amount).toLocaleString((document.documentElement.lang || "fr").replace("_", "-"));
+    }
+
+    async onInput(ev) {
+        this.state.shown = parseInt(ev.target.value, 10);
+        this.pending = this.state.shown;
+        if (this.busy) {
+            return;
+        }
+        this.busy = true;
+        try {
+            while (this.pending !== null) {
+                const amount = this.pending;
+                this.pending = null;
+                await this.props.record.update({ [this.props.name]: amount });
+            }
+        } finally {
+            this.busy = false;
+            this.state.shown = null;
+        }
+    }
+}
+
+export const salarySliderField = {
+    component: SalarySliderField,
+    displayName: "Salary slider",
+    supportedTypes: ["monetary", "float"],
+};
+
+registry.category("fields").add("salary_slider", salarySliderField);

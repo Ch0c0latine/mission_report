@@ -16,4 +16,14 @@
             </span>
         </div>
     </t>
+    <t t-name="mission_report.SalarySliderField">
+        <div class="d-flex align-items-center gap-3 o_margin_slider">
+            <span class="text-muted text-nowrap"><t t-esc="format(min)"/></span>
+            <input type="range" class="form-range flex-grow-1"
+                   t-att-min="min" t-att-max="max" step="500"
+                   t-att-value="value" t-att-disabled="props.readonly or undefined"
+                   t-on-input="onInput"/>
+            <span class="text-muted text-nowrap"><t t-esc="format(max)"/></span>
+        </div>
+    </t>
 </templates>

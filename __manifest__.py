@@ -3,7 +3,7 @@
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
 {
     'name': 'Activity',
-    'version': '19.0.2.15.0',
+    'version': '19.0.2.16.0',
     'summary': 'Activity and mission reports by project based on leaves logic',
     'description': """
         Module mission_report adapting hr_holidays logic for activity and mission reporting by project.
@@ -63,7 +63,9 @@
             'mission_report/static/src/js/leave_edit_action.js',
             'mission_report/static/src/js/overview_calendar.js',
             'mission_report/static/src/js/margin_slider.js',
+            'mission_report/static/src/js/margin_donut.js',
             'mission_report/static/src/xml/margin_slider.xml',
+            'mission_report/static/src/xml/margin_donut.xml',
             'mission_report/static/src/xml/calendar_year_button.xml',
             'mission_report/static/src/xml/avatar_card_resource_popover.xml',
         ],

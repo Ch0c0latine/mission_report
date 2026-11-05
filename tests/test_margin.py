@@ -104,17 +104,20 @@ class TestMargin(TransactionCase):
         self.assertIn("Alex", form.record.name)
 
     def test_the_allowances_total_a_month(self):
-        sheet = self._sheet(igd_lodging=True, igd_lunch=True, duration_months=2.0)
+        sheet = self._sheet(igd_lodging=True, igd_lunch=True, duration_months=2.0, igd_scale_choice='0')
         self.assertAlmostEqual(sheet.igd_month, (21.4 + 56.8) * 218 / 12, delta=0.05)
 
-    def test_the_salary_selector(self):
-        sheet = self._sheet(gross_salary=42500.0)
-        self.assertEqual(sheet.salary_preset, '42500')
-        sheet.gross_salary = 41000.0
-        self.assertFalse(sheet.salary_preset)
+    def test_the_salary_slider_goes_from_the_minimum_wage_to_the_limit_of_the_company(self):
+        sheet = self._sheet()
+        company = self.env.company
+        self.assertEqual(sheet.salary_min, company.mission_salary_min)
+        self.assertEqual(sheet.salary_max, company.mission_salary_max)
+        self.assertAlmostEqual(company.mission_salary_min, 21876.0)
+        self.assertAlmostEqual(company.mission_salary_max, 80000.0)
 
     def test_the_allowances_follow_the_meals_and_the_lodging(self):
-        sheet = self._sheet(igd_lodging=True, igd_lunch=True, igd_dinner=True, duration_months=3.0)
+        sheet = self._sheet(igd_lodging=True, igd_lunch=True, igd_dinner=True, duration_months=3.0,
+                            igd_scale_choice='0')
         self.assertAlmostEqual(sheet.igd_daily, 2 * 21.4 + 56.8, delta=0.01)
         sheet.duration_months = 12.0
         # 3 months at the first rate, 9 at the second: the average per day worked.
@@ -145,21 +148,112 @@ class TestMargin(TransactionCase):
         sheet = self._sheet(payslip_monthly_cost=5000.0)
         self.assertAlmostEqual(sheet.base_cost, 60000.0, places=2)
 
-    def test_the_scale_of_the_allowances_is_the_one_of_the_company(self):
+    def test_the_scale_of_a_sheet_is_a_copy_of_the_one_of_the_company(self):
         rates = self.env.company.mission_igd_rate_ids
         self.assertEqual(len(rates), 3)
         self.assertAlmostEqual(rates[0].total, 2 * 21.4 + 56.8, places=2)
         self.assertAlmostEqual(rates[2].total, 69.8, places=2)
-        # A new scale applies to the sheets at once.
-        sheet = self._sheet(igd_lunch=True, duration_months=2.0)
+        sheet = self._sheet(igd_lunch=True, duration_months=2.0, igd_scale_choice='0')
+        self.assertEqual(len(sheet.igd_line_ids), 3)
         self.assertAlmostEqual(sheet.igd_daily, 21.4, delta=0.01)
-        rates[0].meal = 25.0
+        # The sheet edits its own scale: the reference of the company does not move.
+        sheet.igd_line_ids[0].meal = 25.0
+        self.assertAlmostEqual(sheet.igd_daily, 25.0, delta=0.01)
+        self.assertAlmostEqual(rates[0].meal, 21.4)
+        # And a new reference does not move the sheets already made.
+        rates[0].meal = 30.0
         sheet.invalidate_recordset()
         self.assertAlmostEqual(sheet.igd_daily, 25.0, delta=0.01)
+        self.assertAlmostEqual(self._sheet(igd_lunch=True, duration_months=2.0, igd_scale_choice='0').igd_daily,
+                               30.0, delta=0.01)
+        sheet.action_reset_igd_scale()
+        self.assertAlmostEqual(sheet.igd_daily, 30.0, delta=0.01)
 
-    def test_a_fixed_monthly_amount_replaces_the_days(self):
-        sheet = self._sheet(igd_lodging=True, igd_lunch=True, igd_dinner=True, igd_monthly_amount=1000.0)
-        self.assertAlmostEqual(sheet.igd_daily, 1000.0 * 12 / 218, delta=0.01)
+    def test_one_period_of_the_scale_applies_to_every_month(self):
+        # By default, the rates of month 4 to 24 for the whole mission: nothing changes at the fourth month.
+        sheet = self._sheet(igd_lodging=True, igd_lunch=True, igd_dinner=True, duration_months=12.0)
+        self.assertEqual(sheet.igd_scale_choice, '2')
+        self.assertAlmostEqual(sheet.igd_daily, 2 * 18.2 + 48.3, delta=0.01)
+        sheet.duration_months = 36.0
+        self.assertAlmostEqual(sheet.igd_daily, 2 * 18.2 + 48.3, delta=0.01)
+        sheet.igd_scale_choice = '3'
+        self.assertAlmostEqual(sheet.igd_daily, 2 * 15.0 + 39.8, delta=0.01)
+        sheet.igd_scale_choice = '1'
+        self.assertAlmostEqual(sheet.igd_daily, 2 * 21.4 + 56.8, delta=0.01)
+        sheet.igd_scale_choice = '0'
+        self.assertLess(sheet.igd_daily, 2 * 21.4 + 56.8)
+        self.assertGreater(sheet.igd_daily, 2 * 15.0 + 39.8)
+
+    def test_a_fixed_monthly_amount_is_not_a_long_distance_allowance(self):
+        sheet = self._sheet(igd_lodging=True, igd_lunch=True, igd_dinner=True)
+        before = sheet.total_cost
+        igd = sheet.igd_daily
+        sheet.fixed_monthly_amount = 300.0
+        self.assertAlmostEqual(sheet.igd_daily, igd, places=4)
+        self.assertAlmostEqual(sheet.total_cost, before + 300.0 * 12, places=2)
+        # It is paid to the employee: it is in the net income.
+        self.assertAlmostEqual(sheet.daily_fees_month, (55.0 * 218 + 300.0 * 12) / 12, places=2)
+
+    def test_the_other_costs_by_period(self):
+        sheet = self._sheet(daily_cost_worked=0.0)
+        before = sheet.total_cost
+        sheet.write({'other_worked_daily': 10.0, 'daily_cost_calendar': 2.0, 'expenses_monthly': 100.0,
+                     'other_yearly': 500.0})
+        self.assertAlmostEqual(sheet.total_cost, before + 10.0 * 218 + 2.0 * 365 + 100.0 * 12 + 500.0, places=2)
+        # They are costs of the company, not amounts paid to the consultant.
+        self.assertAlmostEqual(sheet.net_income_month, sheet.net_salary_month, places=2)
+
+    def test_the_expenses_re_invoiced_per_month_add_to_the_billing(self):
+        sheet = self._sheet()
+        before = sheet.revenue
+        sheet.rebilled_monthly = 100.0
+        self.assertAlmostEqual(sheet.revenue, before + 1200.0, places=2)
+
+    def test_the_rates_of_the_company_are_copied_and_cannot_be_changed_by_the_sheet(self):
+        company = self.env.company
+        old = self._sheet()
+        self.assertAlmostEqual(old.employer_charge_rate, 0.457)
+        self.assertAlmostEqual(old.overhead_rate, 0.10)
+        self.assertAlmostEqual(old.employee_charge_rate, 0.23)
+        company.mission_employer_charge_rate = 0.50
+        self.assertAlmostEqual(self._sheet().employer_charge_rate, 0.50)
+        self.assertAlmostEqual(old.employer_charge_rate, 0.457)
+        fields_get = self.env['mission.margin'].fields_get(
+            ['employer_charge_rate', 'overhead_rate', 'employee_charge_rate', 'commission_threshold_rate',
+             'commission_threshold_amount'], attributes=['readonly'])
+        self.assertTrue(all(field['readonly'] for field in fields_get.values()))
+
+    def test_the_commission_rates_follow_the_status_of_the_salesperson(self):
+        company = self.env.company
+        junior = self.env['mission.commission.rule'].create({
+            'company_id': company.id, 'name': "Junior", 'rate_full': 0.10, 'rate_management': 0.05,
+            'rate_referral': 0.02})
+        sheet = self._sheet()
+        self.assertAlmostEqual(sheet.commission_rate_full, 0.20)
+        full = sheet.commission_full
+        sheet.commission_rule_id = junior
+        self.assertAlmostEqual(sheet.commission_full, full / 2, places=2)
+        self.assertAlmostEqual(sheet.commission_referral, sheet.margin_month * 0.02, places=2)
+        company.mission_show_commissions = False
+        self.assertFalse(sheet.show_commissions)
+
+    def test_the_billing_of_a_month_is_shared_between_the_consultant_the_costs_and_the_margin(self):
+        sheet = self._sheet(igd_lodging=True, igd_lunch=True, other_yearly=1200.0)
+        data = sheet.breakdown
+        parts = {part['key']: part['value'] for part in data['segments']}
+        self.assertAlmostEqual(sum(parts.values()), sheet.revenue / 12, places=2)
+        self.assertAlmostEqual(data['total'], sheet.revenue / 12, places=2)
+        self.assertAlmostEqual(parts['net'], 40000 * 0.77 / 12, places=2)
+        self.assertAlmostEqual(parts['employee'], 40000 * 0.23 / 12, places=2)
+        self.assertAlmostEqual(parts['employer'], 40000 * 0.457 / 12, places=2)
+        self.assertAlmostEqual(parts['margin'], sheet.margin_month, places=2)
+        self.assertEqual(data['deficit'], 0.0)
+        loss = self._sheet(daily_rate=100.0)
+        self.assertGreater(loss.breakdown['deficit'], 0.0)
+        self.assertNotIn('margin', {part['key'] for part in loss.breakdown['segments']})
+        freelance = self._sheet(cost_origin='freelance', freelance_daily_rate=400.0, daily_cost_worked=0.0)
+        self.assertEqual({part['key'] for part in freelance.breakdown['segments']} - {'margin'},
+                         {'pay', 'overhead'})
 
     def test_the_project_of_a_sheet_is_a_draft_until_the_order_is_confirmed(self):
         partner = self.env['res.partner'].create({'name': "Client brouillon"})

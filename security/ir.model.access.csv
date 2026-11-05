@@ -26,3 +26,12 @@ access_mission_igd_rate_hr,mission.igd.rate.hr,model_mission_igd_rate,hr.group_h
 access_mission_igd_rate_project,mission.igd.rate.project,model_mission_igd_rate,project.group_project_manager,1,1,1,1
 access_mission_igd_rate_salesmanager,mission.igd.rate.salesmanager,model_mission_igd_rate,sales_team.group_sale_manager,1,1,1,1
 access_mission_igd_rate_system,mission.igd.rate.system,model_mission_igd_rate,base.group_system,1,1,1,1
+access_mission_margin_igd_sales,mission.margin.igd.sales,model_mission_margin_igd,sales_team.group_sale_salesman,1,1,1,1
+access_mission_margin_igd_project,mission.margin.igd.project,model_mission_margin_igd,project.group_project_manager,1,1,1,1
+access_mission_margin_igd_hr,mission.margin.igd.hr,model_mission_margin_igd,hr.group_hr_manager,1,1,1,1
+access_mission_margin_igd_salesmanager,mission.margin.igd.salesmanager,model_mission_margin_igd,sales_team.group_sale_manager,1,1,1,1
+access_mission_commission_rule_sales,mission.commission.rule.sales,model_mission_commission_rule,sales_team.group_sale_salesman,1,0,0,0
+access_mission_commission_rule_project,mission.commission.rule.project,model_mission_commission_rule,project.group_project_manager,1,1,1,1
+access_mission_commission_rule_hr,mission.commission.rule.hr,model_mission_commission_rule,hr.group_hr_manager,1,1,1,1
+access_mission_commission_rule_salesmanager,mission.commission.rule.salesmanager,model_mission_commission_rule,sales_team.group_sale_manager,1,1,1,1
+access_mission_commission_rule_system,mission.commission.rule.system,model_mission_commission_rule,base.group_system,1,1,1,1

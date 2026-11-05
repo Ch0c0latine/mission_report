@@ -88,21 +88,23 @@
                         </group>
                     </group>
 
+                    <field name="salary_min" invisible="1"/>
+                    <field name="salary_max" invisible="1"/>
+                    <field name="show_commissions" invisible="1"/>
+                    <field name="rate_manual" invisible="1"/>
+                    <field name="cost_per_day" invisible="1"/>
+                    <field name="rebilled_total" invisible="1"/>
                     <group>
                         <group string="The consultant">
                             <field name="cost_origin" widget="radio" options="{'horizontal': true}"/>
-                            <field name="salary_preset" invisible="cost_origin != 'employee'"/>
-                            <field name="gross_salary" string="Exact gross amount"
-                                   invisible="cost_origin != 'employee'"/>
-                            <field name="freelance_daily_rate" invisible="cost_origin != 'freelance'"/>
-                            <label for="daily_cost_worked" invisible="cost_origin != 'employee'"/>
-                            <div class="d-flex gap-2" invisible="cost_origin != 'employee'">
-                                <field name="daily_cost_worked" class="o_margin_amount"/>
-                                <field name="daily_cost_reason" placeholder="Reason" class="flex-grow-1"/>
+                            <div colspan="2" invisible="cost_origin != 'employee'">
+                                <field name="gross_salary" widget="salary_slider" nolabel="1"/>
                             </div>
+                            <field name="gross_salary" invisible="cost_origin != 'employee'"/>
+                            <field name="freelance_daily_rate" invisible="cost_origin != 'freelance'"/>
                             <label for="igd_lodging" string="Allowances per day worked"
                                    invisible="cost_origin != 'employee'"/>
-                            <div class="d-flex flex-wrap gap-4" invisible="cost_origin != 'employee'">
+                            <div class="d-flex flex-wrap align-items-center gap-4" invisible="cost_origin != 'employee'">
                                 <span class="d-inline-flex align-items-center gap-1">
                                     <field name="igd_lodging" nolabel="1"/><label for="igd_lodging"/>
                                 </span>
@@ -113,6 +115,10 @@
                                     <field name="igd_dinner" nolabel="1"/><label for="igd_dinner"/>
                                 </span>
                             </div>
+                            <label for="igd_scale_choice" invisible="cost_origin != 'employee'
+                                   or not (igd_lodging or igd_lunch or igd_dinner)"/>
+                            <field name="igd_scale_choice" invisible="cost_origin != 'employee'
+                                   or not (igd_lodging or igd_lunch or igd_dinner)"/>
                             <label for="igd_daily" string="Allowances total"
                                    invisible="cost_origin != 'employee' or not igd_daily"/>
                             <div class="d-flex flex-wrap align-items-center gap-2 fw-bold"
@@ -121,64 +127,75 @@
                                 <div class="text-muted">-</div>
                                 <field name="igd_month" class="oe_inline"/> <div>a month</div>
                             </div>
-                            <label for="igd_monthly_amount" invisible="cost_origin != 'employee'"/>
+                            <label for="daily_cost_worked" invisible="cost_origin != 'employee'"/>
                             <div class="d-flex gap-2" invisible="cost_origin != 'employee'">
-                                <field name="igd_monthly_amount" class="o_margin_amount"/>
-                                <field name="igd_monthly_reason" placeholder="Reason" class="flex-grow-1"/>
+                                <field name="daily_cost_worked" class="o_margin_amount"/>
+                                <field name="daily_cost_reason" placeholder="Reason" class="flex-grow-1"/>
                             </div>
-                            <div class="text-muted" colspan="2"
-                                 invisible="cost_origin != 'employee' or not igd_monthly_amount">
-                                The monthly amount replaces the allowances ticked above.
+                            <label for="fixed_monthly_amount" invisible="cost_origin != 'employee'"/>
+                            <div class="d-flex gap-2" invisible="cost_origin != 'employee'">
+                                <field name="fixed_monthly_amount" class="o_margin_amount"/>
+                                <field name="fixed_monthly_reason" placeholder="Reason" class="flex-grow-1"/>
                             </div>
                             <field name="duration_months"/>
                         </group>
                         <group string="Price and margin">
                             <field name="margin_wanted" widget="margin_slider"/>
+                            <field name="margin_rate" widget="percentage" class="fw-bold"/>
+                            <field name="margin_month" class="text-muted"/>
                             <field name="daily_rate" class="fw-bold"/>
                             <div class="text-muted" colspan="2" invisible="not rate_manual">
                                 Rate typed by hand: move the slider to give the control back to the margin.
                             </div>
-                            <field name="rate_manual" invisible="1"/>
-                            <field name="cost_per_day" invisible="1"/>
-                            <field name="rebilled_total" invisible="1"/>
-                            <label for="target_rate_1" string="Daily rate for a target margin" class="text-muted"/>
-                            <div class="d-flex flex-column gap-1 text-muted">
-                                <div class="d-flex align-items-center gap-2">
-                                    <field name="target_rate_1" widget="percentage" class="o_margin_pct"/>
-                                    <div>&#8594;</div> <field name="rate_target_rate_1" class="oe_inline fw-bold"/>
-                                </div>
-                                <div class="d-flex align-items-center gap-2">
-                                    <field name="target_rate_2" widget="percentage" class="o_margin_pct"/>
-                                    <div>&#8594;</div> <field name="rate_target_rate_2" class="oe_inline fw-bold"/>
-                                </div>
-                                <div class="d-flex align-items-center gap-2">
-                                    <field name="target_amount_1" class="o_margin_amount"/>
-                                    <div>a month</div> <div>&#8594;</div>
-                                    <field name="rate_target_1" class="oe_inline fw-bold"/>
-                                </div>
-                                <div class="d-flex align-items-center gap-2">
-                                    <field name="target_amount_2" class="o_margin_amount"/>
-                                    <div>a month</div> <div>&#8594;</div>
-                                    <field name="rate_target_2" class="oe_inline fw-bold"/>
-                                </div>
+                            <label for="target_rate_2" string="Indicative daily rate" class="text-muted"/>
+                            <div class="d-flex flex-wrap align-items-center gap-2 text-muted">
+                                <field name="target_rate_2" widget="percentage" class="o_margin_pct"/>
+                                <div>&#8594;</div> <field name="rate_target_rate_2" class="oe_inline fw-bold"/>
+                                <field name="target_amount_2" class="o_margin_amount"/>
+                                <div>a month</div> <div>&#8594;</div>
+                                <field name="rate_target_2" class="oe_inline fw-bold"/>
                             </div>
                             <field name="rebilled_daily"/>
+                            <field name="rebilled_monthly"/>
                             <field name="igd_rebilled" invisible="cost_origin != 'employee' or not igd_daily"/>
-                            <field name="margin_rate" widget="percentage" class="fw-bold"/>
-                            <field name="margin_day"/>
-                            <field name="margin_month"/>
-                            <field name="margin_duration" string="Margin over the mission"/>
                         </group>
+                    </group>
+
+                    <group string="Where a month of billing goes">
+                        <field name="breakdown" widget="margin_donut" nolabel="1" colspan="2"/>
                     </group>
 
                     <notebook>
                         <page string="Details of the costs" name="cost">
                             <group>
-                                <group string="Cost of the person">
-                                    <field name="employer_charge_rate" widget="percentage" class="o_margin_pct"
+                                <group string="Other costs">
+                                    <field name="other_worked_daily"/>
+                                    <field name="daily_cost_calendar"/>
+                                    <field name="expenses_monthly"/>
+                                    <field name="mileage_monthly" invisible="cost_origin != 'employee'"/>
+                                    <field name="training_yearly" invisible="cost_origin != 'employee'"/>
+                                    <field name="ppe_yearly" invisible="cost_origin != 'employee'"/>
+                                    <field name="equipment_yearly" invisible="cost_origin != 'employee'"/>
+                                    <field name="other_yearly"/>
+                                    <field name="other_costs"/>
+                                </group>
+                                <group string="Total">
+                                    <field name="total_cost"/>
+                                    <field name="total_cost_month"/>
+                                    <field name="cost_per_day" string="Total cost per worked day"/>
+                                    <field name="revenue"/>
+                                    <field name="price_per_day"/>
+                                    <field name="margin"/>
+                                    <field name="margin_day"/>
+                                    <field name="margin_duration" string="Margin over the mission"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="Pay and charges">
+                                    <field name="employer_charge_rate" widget="percentage" class="o_margin_pct text-muted"
                                            invisible="cost_origin != 'employee'"/>
                                     <field name="payslip_monthly_cost" invisible="cost_origin != 'employee'"/>
-                                    <field name="overhead_rate" widget="percentage" class="o_margin_pct"/>
+                                    <field name="overhead_rate" widget="percentage" class="o_margin_pct text-muted"/>
                                     <field name="base_cost"/>
                                     <field name="overhead_cost"/>
                                     <field name="loaded_cost"/>
@@ -192,33 +209,12 @@
                                     <field name="days_per_month"/>
                                 </group>
                             </group>
-                            <group>
-                                <group string="Other costs">
-                                    <field name="daily_cost_calendar" invisible="cost_origin != 'employee'"/>
-                                    <field name="mileage_monthly" invisible="cost_origin != 'employee'"/>
-                                    <field name="expenses_monthly" invisible="cost_origin != 'employee'"/>
-                                    <field name="training_yearly" invisible="cost_origin != 'employee'"/>
-                                    <field name="ppe_yearly" invisible="cost_origin != 'employee'"/>
-                                    <field name="equipment_yearly" invisible="cost_origin != 'employee'"/>
-                                    <field name="other_yearly"/>
-                                    <field name="igd_daily" invisible="cost_origin != 'employee'"/>
-                                    <field name="other_costs"/>
-                                </group>
-                                <group string="Total">
-                                    <field name="total_cost"/>
-                                    <field name="total_cost_month"/>
-                                    <field name="cost_per_day" string="Total cost per worked day"/>
-                                    <field name="revenue"/>
-                                    <field name="price_per_day"/>
-                                    <field name="margin"/>
-                                </group>
-                            </group>
                         </page>
                         <page string="Net income" name="net" invisible="cost_origin != 'employee'">
                             <group>
                                 <group string="Consultant">
                                     <field name="gross_salary" readonly="1"/>
-                                    <field name="employee_charge_rate" widget="percentage" class="o_margin_pct"/>
+                                    <field name="employee_charge_rate" widget="percentage" class="o_margin_pct text-muted"/>
                                     <field name="net_salary_month"/>
                                     <field name="net_salary_day"/>
                                     <field name="daily_fees_month"/>
@@ -229,28 +225,33 @@
                                 </group>
                             </group>
                         </page>
-                        <page string="Commissions" name="commissions">
+                        <page string="Commissions" name="commissions" invisible="not show_commissions">
                             <group>
                                 <group string="Conditions">
-                                    <field name="commission_threshold_rate" widget="percentage" class="o_margin_pct"/>
-                                    <field name="commission_threshold_amount"/>
+                                    <field name="commission_threshold_rate" widget="percentage" class="o_margin_pct text-muted"/>
+                                    <field name="commission_threshold_amount" class="text-muted"/>
                                     <field name="commission_eligible"/>
                                 </group>
                                 <group string="Gross commission a month">
-                                    <field name="commission_rate_full" widget="percentage" class="o_margin_pct"/>
+                                    <field name="commission_rule_id" options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="commission_rate_full" widget="percentage" class="o_margin_pct text-muted"/>
                                     <field name="commission_full"/>
-                                    <field name="commission_rate_management" widget="percentage" class="o_margin_pct"/>
+                                    <field name="commission_rate_management" widget="percentage" class="o_margin_pct text-muted"/>
                                     <field name="commission_management"/>
-                                    <field name="commission_rate_referral" widget="percentage" class="o_margin_pct"/>
+                                    <field name="commission_rate_referral" widget="percentage" class="o_margin_pct text-muted"/>
                                     <field name="commission_referral"/>
                                 </group>
                             </group>
                             <p class="text-muted" invisible="commission_eligible">The margin is under the thresholds: no commission is due.</p>
                         </page>
                         <page string="Long-distance allowances" name="igd" invisible="cost_origin != 'employee'">
-                            <p class="text-muted">Scale of the company (URSSAF), per day worked, by month of the mission: tick the lodging and the meals above. It is updated in the Settings.</p>
-                            <field name="igd_rate_ids" readonly="1">
-                                <list>
+                            <p class="text-muted">
+                                Scale of the company (URSSAF), per day worked, copied here: edit it for this mission only,
+                                the reference of the company does not change. Tick the lodging and the meals above.
+                            </p>
+                            <field name="igd_line_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
                                     <field name="label"/>
                                     <field name="month_from"/>
                                     <field name="month_to"/>
@@ -260,6 +261,9 @@
                                     <field name="currency_id" column_invisible="1"/>
                                 </list>
                             </field>
+                            <button name="action_reset_igd_scale" type="object" class="btn-secondary"
+                                    string="Restore the scale of the company"
+                                    confirm="The rates of this mission go back to the scale of the company."/>
                         </page>
                         <page string="Billing forecast" name="forecast">
                             <group>
