@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2026 T.T.C. SAS
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0). -->
+<templates xml:space="preserve">
+    <t t-name="mission_report.MarginGapDialog">
+        <Dialog size="'md'" title="title">
+            <p class="fw-bold" t-esc="props.text"/>
+            <p class="text-muted mb-0">
+                The order does not change by itself. What do you want to do with this difference?
+            </p>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-on-click="() => this.pick('record')">
+                    Record the change in the order
+                </button>
+                <button class="btn btn-secondary" t-on-click="() => this.pick('restore')">
+                    Restore the conditions of the order
+                </button>
+                <button class="btn btn-secondary" t-on-click="() => this.pick('keep')">
+                    Keep the calculation (the difference stays shown)
+                </button>
+            </t>
+        </Dialog>
+    </t>
+</templates>

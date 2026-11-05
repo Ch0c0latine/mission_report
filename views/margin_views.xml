@@ -8,11 +8,14 @@
         <field name="arch" type="xml">
             <list string="Margin calculations">
                 <field name="name"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'"
+                       decoration-warning="state in ('project', 'quote')" decoration-success="state == 'order'"/>
                 <field name="partner_id" optional="show"/>
                 <field name="consultant" optional="show"/>
                 <field name="project_id" optional="show"/>
                 <field name="order_id" optional="show"/>
                 <field name="daily_rate" optional="show"/>
+                <field name="order_gap_short" string="Order" optional="show" class="text-warning"/>
                 <field name="margin_month" optional="show"/>
                 <field name="margin_rate" widget="percentage" optional="show"
                        decoration-danger="margin_rate &lt; 0" decoration-warning="margin_rate &gt;= 0 and margin_rate &lt; 0.2"/>
@@ -32,9 +35,13 @@
                 <field name="partner_id"/>
                 <field name="project_id"/>
                 <field name="order_id"/>
+                <filter name="state_draft" string="Drafts" domain="[('state', 'in', ('draft', 'project'))]"/>
+                <filter name="state_quote" string="Quotes" domain="[('state', '=', 'quote')]"/>
+                <filter name="state_order" string="Orders" domain="[('state', '=', 'order')]"/>
                 <filter name="without_order" string="Without order" domain="[('order_id', '=', False)]"/>
                 <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
                 <group>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
                     <filter name="group_partner" string="Customer" context="{'group_by': 'partner_id'}"/>
                     <filter name="group_project" string="Project" context="{'group_by': 'project_id'}"/>
                 </group>
@@ -46,7 +53,7 @@
         <field name="name">mission.margin.form</field>
         <field name="model">mission.margin</field>
         <field name="arch" type="xml">
-            <form string="Margin calculation">
+            <form string="Margin calculation" js_class="mission_margin_form">
                 <field name="currency_id" invisible="1"/>
                 <field name="active" invisible="1"/>
                 <field name="name_auto" invisible="1"/>
@@ -55,6 +62,7 @@
                             invisible="project_id"/>
                     <button name="action_create_order" type="object" string="Create the quote"
                             class="oe_highlight" invisible="order_id or not partner_id"/>
+                    <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
@@ -73,6 +81,30 @@
                         </button>
                     </div>
                     <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="order_gap" invisible="1"/>
+                    <field name="order_price" invisible="1"/>
+                    <div class="alert alert-warning d-flex flex-wrap align-items-center gap-3 mb-3" role="alert"
+                         invisible="not order_gap">
+                        <div class="flex-grow-1"><field name="order_gap_text" class="fw-bold"/></div>
+                        <button name="action_restore_order_conditions" type="object" class="btn btn-secondary"
+                                string="Restore the conditions of the order"/>
+                        <button name="action_open_conditions_wizard" type="object" class="btn btn-primary"
+                                string="Record the change of the conditions of the deal"/>
+                    </div>
+                    <div class="o_margin_stickybar d-md-none">
+                        <div>
+                            <div class="text-muted">Margin (%)</div>
+                            <field name="margin_rate" widget="percentage" readonly="1" class="fw-bold oe_inline"/>
+                        </div>
+                        <div>
+                            <div class="text-muted">Margin a month</div>
+                            <field name="margin_month" readonly="1" class="fw-bold oe_inline"/>
+                        </div>
+                        <div>
+                            <div class="text-muted">Daily rate sold (TJM)</div>
+                            <field name="daily_rate" readonly="1" class="fw-bold oe_inline"/>
+                        </div>
+                    </div>
                     <div class="oe_title">
                         <label for="name"/>
                         <h1><field name="name" placeholder="Filled in from the customer and the consultant"/></h1>
@@ -172,8 +204,18 @@
                                        decoration-warning="margin_month &gt;= 0 and margin_month &lt; commission_threshold_amount"/>
                             </div>
                             <div colspan="2"><field name="daily_rate" widget="rate_slider" nolabel="1"/></div>
-                            <field name="fixed_price" class="fw-bold" invisible="billing_mode != 'forfait'"/>
-                            <field name="daily_rate" class="fw-bold" invisible="billing_mode == 'forfait'"/>
+                            <label for="fixed_price" invisible="billing_mode != 'forfait'"/>
+                            <div class="d-flex flex-wrap align-items-baseline gap-3" invisible="billing_mode != 'forfait'">
+                                <field name="fixed_price" class="fw-bold oe_inline"/>
+                                <field name="order_gap_short" class="text-warning fw-bold oe_inline"
+                                       invisible="not order_gap"/>
+                            </div>
+                            <label for="daily_rate" invisible="billing_mode == 'forfait'"/>
+                            <div class="d-flex flex-wrap align-items-baseline gap-3" invisible="billing_mode == 'forfait'">
+                                <field name="daily_rate" class="fw-bold oe_inline"/>
+                                <field name="order_gap_short" class="text-warning fw-bold oe_inline"
+                                       invisible="not order_gap"/>
+                            </div>
                             <field name="daily_rate" string="Equivalent daily rate" invisible="billing_mode != 'forfait'"/>
                             <field name="breakeven_days" invisible="billing_mode != 'forfait'"/>
                             <label for="target_rate_2" string="Indicative daily rate" class="text-muted"/>
@@ -250,14 +292,14 @@
                                     <field name="other_costs"/>
                                 </group>
                                 <group string="Total">
-                                    <field name="total_cost"/>
-                                    <field name="total_cost_month"/>
+                                    <field name="mission_days_total"/>
+                                    <field name="mission_cost"/>
+                                    <field name="mission_revenue"/>
+                                    <field name="margin_duration" string="Margin over the mission" class="fw-bold"/>
                                     <field name="cost_per_day" string="Total cost per worked day"/>
-                                    <field name="revenue"/>
                                     <field name="price_per_day"/>
-                                    <field name="margin"/>
                                     <field name="margin_day"/>
-                                    <field name="margin_duration" string="Margin over the mission"/>
+                                    <field name="total_cost_month"/>
                                 </group>
                             </group>
                             <group>
@@ -400,6 +442,39 @@
                     </notebook>
                     <chatter/>
                 </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="mission_margin_condition_wizard_view_form" model="ir.ui.view">
+        <field name="name">mission.margin.condition.wizard.form</field>
+        <field name="model">mission.margin.condition.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Change of the conditions of the deal">
+                <field name="currency_id" invisible="1"/>
+                <field name="note_required" invisible="1"/>
+                <p class="text-muted">
+                    The conditions of the order change to those of the calculation. They are not changed by
+                    themselves once the order is confirmed: say why, so the history of the deal keeps it.
+                </p>
+                <group>
+                    <group>
+                        <field name="margin_id" invisible="1"/>
+                        <field name="order_id"/>
+                        <field name="old_price"/>
+                        <field name="new_price" class="fw-bold"/>
+                    </group>
+                    <group>
+                        <field name="reason" widget="radio"/>
+                    </group>
+                </group>
+                <field name="note" placeholder="What was agreed, with whom, and why..."
+                       required="note_required"/>
+                <footer>
+                    <button name="action_confirm" type="object" string="Record the change" class="btn-primary"
+                            data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
             </form>
         </field>
     </record>

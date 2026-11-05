@@ -387,6 +387,55 @@ class TestMargin(TransactionCase):
         self.assertNotEqual(action['context']['active_id'], sheet.id)
         self.assertEqual(action['context']['active_model'], 'project.project')
 
+    def test_the_status_of_a_calculation_follows_its_project_and_its_order(self):
+        partner = self.env['res.partner'].create({'name': "Client statut"})
+        sheet = self._sheet(partner_id=partner.id)
+        self.assertEqual(sheet.state, 'draft')
+        sheet.action_create_project()
+        self.assertEqual(sheet.state, 'project')
+        sheet.action_create_order()
+        self.assertEqual(sheet.state, 'quote')
+        sheet.order_id.action_confirm()
+        self.assertEqual(sheet.state, 'order')
+
+    def test_a_gap_with_the_order_is_shown_and_never_written_by_itself(self):
+        from odoo.exceptions import UserError
+        partner = self.env['res.partner'].create({'name': "Client écart"})
+        sheet = self._sheet(partner_id=partner.id, daily_rate=500.0)
+        sheet.action_create_order()
+        self.assertFalse(sheet.order_gap)
+        self.assertAlmostEqual(sheet.order_price, 500.0)
+        sheet.daily_rate = 520.0
+        self.assertTrue(sheet.order_gap)
+        self.assertIn("500", sheet.order_gap_short)
+        self.assertIn("520", sheet.order_gap_text)
+        # The order does not move by itself.
+        self.assertAlmostEqual(sheet.order_id.order_line.price_unit, 500.0)
+        # Back to the conditions of the order.
+        sheet.action_restore_order_conditions()
+        self.assertAlmostEqual(sheet.daily_rate, 500.0)
+        self.assertFalse(sheet.order_gap)
+        # A change recorded in a confirmed order needs its note.
+        sheet.order_id.action_confirm()
+        sheet.daily_rate = 550.0
+        wizard = self.env['mission.margin.condition.wizard'].create({'margin_id': sheet.id, 'reason': 'client'})
+        self.assertTrue(wizard.note_required)
+        with self.assertRaises(UserError):
+            wizard.action_confirm()
+        wizard.note = "Renegotiated with the customer on 5 November"
+        wizard.action_confirm()
+        self.assertAlmostEqual(sheet.order_id.order_line.price_unit, 550.0)
+        self.assertFalse(sheet.order_gap)
+        bodies = " ".join(sheet.order_id.message_ids.mapped('body'))
+        self.assertIn("Renegotiated with the customer", bodies)
+
+    def test_the_totals_are_those_of_the_mission(self):
+        sheet = self._sheet(duration_months=6.0, mission_days=14.0)
+        self.assertAlmostEqual(sheet.mission_days_total, 14.0, delta=0.01)
+        self.assertAlmostEqual(sheet.mission_cost, sheet.cost_per_day * 14, delta=0.5)
+        self.assertAlmostEqual(sheet.mission_revenue, sheet.price_per_day * 14, delta=0.5)
+        self.assertAlmostEqual(sheet.mission_revenue - sheet.mission_cost, sheet.margin_duration, delta=1.0)
+
     def test_the_billing_of_a_month_is_shared_between_the_consultant_the_costs_and_the_margin(self):
         sheet = self._sheet(igd_lodging=True, igd_lunch=True, other_yearly=1200.0)
         data = sheet.breakdown

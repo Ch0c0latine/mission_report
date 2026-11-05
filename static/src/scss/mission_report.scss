@@ -182,3 +182,59 @@
         display: inline-block;
     }
 }
+
+// Calcul de marge sur téléphone : les résultats restent en vue pendant la saisie, les curseurs se saisissent du doigt,
+// les cases passent sur une seule colonne.
+.o_form_view .o_margin_stickybar {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.4rem 0.25rem;
+    margin: 0 -0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: var(--o-view-background-color, var(--bs-body-bg, #fff));
+    border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+
+    > div {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+    }
+    .o_field_widget {
+        width: auto;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .o_form_view {
+        .o_margin_slider input[type="range"] {
+            min-height: 2.25rem;
+        }
+        .o_margin_checks {
+            grid-template-columns: 1fr;
+            grid-auto-flow: row;
+            grid-template-rows: none;
+        }
+        .o_margin_indicative {
+            flex-wrap: wrap;
+            white-space: normal;
+        }
+        .o_margin_donut_ring {
+            margin: 0 auto;
+        }
+        .o_margin_donut_legend {
+            min-width: 0;
+            width: 100%;
+        }
+        .o_field_widget.o_margin_amount {
+            width: 7.5rem !important;
+        }
+        .o_field_widget.o_margin_pct {
+            width: 4rem !important;
+        }
+    }
+}

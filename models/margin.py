@@ -15,8 +15,11 @@ order. It is for the sales people and the managers only: it holds salaries.
 import math
 from datetime import date, timedelta
 
+from markupsafe import Markup
+
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+from odoo.tools import format_amount
 
 from .igd import BASIS
 from .public_holiday_wizard import french_public_holidays
@@ -59,6 +62,16 @@ class MissionMargin(models.Model):
                                  readonly=False)
     consultant = fields.Char(string="Consultant", help="The person, or the freelance, who does the mission.")
     note = fields.Html(string="Notes")
+
+    state = fields.Selection(
+        [('draft', "Draft"), ('project', "Project created"), ('quote', "Quote"), ('order', "Order confirmed")],
+        string="Status", compute='_compute_state', store=True, tracking=True)
+    order_price = fields.Monetary(
+        string="Price on the order", compute='_compute_order_gap',
+        help="The daily rate of the order (or its fixed price), as it stands.")
+    order_gap = fields.Boolean(string="Differs from the order", compute='_compute_order_gap')
+    order_gap_text = fields.Char(compute='_compute_order_gap')
+    order_gap_short = fields.Char(string="On the order", compute='_compute_order_gap')
 
     # ---- Consultant: pay and charges ----------------------------------------------------------
     cost_origin = fields.Selection(
@@ -216,6 +229,8 @@ class MissionMargin(models.Model):
     days_per_year = fields.Float(string="Days worked a year", compute='_compute_results', digits=(16, 2))
     days_per_month = fields.Float(string="Days worked a month", compute='_compute_results', digits=(16, 2))
     mission_days_total = fields.Float(string="Days of the mission", compute='_compute_results', digits=(16, 2))
+    mission_cost = fields.Monetary(string="Cost of the mission", compute='_compute_results')
+    mission_revenue = fields.Monetary(string="Billing of the mission", compute='_compute_results')
     breakeven_days = fields.Float(
         string="Days before the margin is gone", compute='_compute_results', digits=(16, 1),
         help="Days of work that the price pays: beyond, the mission loses money.")
@@ -259,6 +274,41 @@ class MissionMargin(models.Model):
     forecast_revenue = fields.Monetary(string="Forecast billing", compute='_compute_forecast')
     forecast_margin = fields.Monetary(string="Forecast margin", compute='_compute_forecast')
     forecast_days = fields.Float(string="Forecast worked days", compute='_compute_forecast')
+
+    @api.depends('project_id', 'order_id', 'order_id.state')
+    def _compute_state(self):
+        for m in self:
+            order = m.order_id
+            if order and order.state == 'sale':
+                m.state = 'order'
+            elif order and order.state != 'cancel':
+                m.state = 'quote'
+            elif m.project_id:
+                m.state = 'project'
+            else:
+                m.state = 'draft'
+
+    @api.depends('order_id', 'order_id.state', 'order_id.order_line.price_unit', 'order_id.order_line.display_type',
+                 'order_id.order_line.price_subtotal', 'daily_rate', 'billing_mode', 'fixed_price', 'currency_id')
+    def _compute_order_gap(self):
+        """The price of the calculation against the one of the order: the order only changes when the user says so."""
+        for m in self:
+            order = m.order_id.sudo()
+            lines = order.order_line.filtered(lambda line: not line.display_type) if order else order.order_line
+            m.order_price = m.order_gap = False
+            m.order_gap_text = m.order_gap_short = False
+            if not order or order.state == 'cancel' or not lines:
+                continue
+            forfait = m.billing_mode == 'forfait'
+            price = sum(lines.mapped('price_subtotal')) if forfait else lines[0].price_unit
+            mine = m.fixed_price if forfait else m.daily_rate
+            m.order_price = price
+            if m.currency_id.compare_amounts(mine, price):
+                amounts = {'mine': format_amount(self.env, mine, m.currency_id),
+                           'order': format_amount(self.env, price, m.currency_id)}
+                m.order_gap = True
+                m.order_gap_text = _("The calculation (%(mine)s) differs from the order (%(order)s).", **amounts)
+                m.order_gap_short = _("\u26a0 %(order)s on the order", **amounts)
 
     @api.depends('partner_id', 'consultant', 'daily_rate', 'duration_months')
     def _compute_name(self):
@@ -332,6 +382,8 @@ class MissionMargin(models.Model):
             m.days_per_year = days
             m.days_per_month = monthly_days
             m.mission_days_total = mission_days
+            m.mission_cost = per_day(total) * mission_days
+            m.mission_revenue = (m.daily_rate + rebilled) * mission_days
             m.breakeven_days = ((m.daily_rate + rebilled) * mission_days) / per_day(total) if per_day(total) else 0.0
             m.base_cost = base
             m.overhead_cost = overhead
@@ -672,6 +724,24 @@ class MissionMargin(models.Model):
         self.order_id = order
         return self.action_open_order()
 
+    def action_restore_order_conditions(self):
+        """The calculation goes back to the conditions of the order."""
+        for m in self.filtered('order_gap'):
+            if m.billing_mode == 'forfait':
+                m.fixed_price = m.order_price
+            else:
+                m.daily_rate = m.order_price
+            m.message_post(body=_("The calculation went back to the conditions of the order (%s).",
+                                  format_amount(self.env, m.order_price, m.currency_id)))
+        return True
+
+    def action_open_conditions_wizard(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window', 'name': _("Record the change of the conditions of the deal"),
+            'res_model': 'mission.margin.condition.wizard', 'view_mode': 'form', 'target': 'new',
+            'context': {'default_margin_id': self.id}}
+
     def action_open_profitability(self):
         self.ensure_one()
         if not self.project_id:
@@ -725,6 +795,60 @@ class MissionMargin(models.Model):
         self.ensure_one()
         return {'type': 'ir.actions.act_window', 'res_model': 'sale.order', 'res_id': self.order_id.id,
                 'view_mode': 'form', 'target': 'current'}
+
+
+class MissionMarginConditionWizard(models.TransientModel):
+    """The calculation and the order disagree: the user decides to write the new conditions into the order, and
+    says why (renegotiation with the customer, a raise of the consultant...). Nothing is written without it."""
+    _name = 'mission.margin.condition.wizard'
+    _description = "Change of the conditions of a deal"
+
+    margin_id = fields.Many2one('mission.margin', required=True, readonly=True)
+    order_id = fields.Many2one(related='margin_id.order_id')
+    currency_id = fields.Many2one(related='margin_id.currency_id')
+    old_price = fields.Monetary(related='margin_id.order_price', string="Price on the order")
+    new_price = fields.Monetary(compute='_compute_new_price', string="Price of the calculation")
+    reason = fields.Selection(
+        [('client', "Renegotiation with the customer"), ('pay', "Pay of the consultant (raise, new offer)"),
+         ('scope', "Change of the scope of the mission"), ('other', "Other")],
+        string="Reason", required=True, default='client')
+    note = fields.Text(string="Note", help="What was agreed, with whom, and why.")
+    note_required = fields.Boolean(compute='_compute_new_price')
+
+    @api.depends('margin_id', 'margin_id.daily_rate', 'margin_id.fixed_price', 'margin_id.order_id.state')
+    def _compute_new_price(self):
+        for wizard in self:
+            margin = wizard.margin_id
+            wizard.new_price = margin.fixed_price if margin.billing_mode == 'forfait' else margin.daily_rate
+            wizard.note_required = margin.order_id.state == 'sale'
+
+    def action_confirm(self):
+        self.ensure_one()
+        margin, order = self.margin_id, self.margin_id.order_id
+        if not order or order.state == 'cancel':
+            raise UserError(_("This calculation has no order to change."))
+        if self.note_required and not (self.note or '').strip():
+            raise UserError(_("The order is confirmed: say in a note why its conditions change (renegotiation, "
+                              "raise...)."))
+        if getattr(order, 'locked', False) and order.state == 'sale':
+            raise UserError(_("The order is locked: unlock it to change its price."))
+        lines = order.order_line.filtered(lambda line: not line.display_type)
+        old, new = margin.order_price, self.new_price
+        if margin.billing_mode == 'forfait':
+            if len(lines) != 1:
+                raise UserError(_("The order has several lines: change its price by hand."))
+            lines.price_unit = new / (lines.product_uom_qty or 1.0)
+        else:
+            same = lines.filtered(lambda line: not margin.currency_id.compare_amounts(line.price_unit, old))
+            (same or lines[:1]).write({'price_unit': new})
+        reason = dict(self._fields['reason'].selection)[self.reason]
+        body = Markup("<b>%s</b>: %s &#8594; %s<br/>%s%s") % (
+            reason, format_amount(self.env, old, margin.currency_id), format_amount(self.env, new, margin.currency_id),
+            _("Recorded by %s.", self.env.user.name),
+            Markup("<br/>%s") % self.note if self.note else "")
+        margin.message_post(body=body)
+        order.message_post(body=body)
+        return {'type': 'ir.actions.act_window_close'}
 
 
 class MissionIgdRate(models.Model):

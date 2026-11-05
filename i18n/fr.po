@@ -755,6 +755,11 @@ msgid "Billing method"
 msgstr "Mode de facturation"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__mission_revenue
+msgid "Billing of the mission"
+msgstr "Facturation de la mission"
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__price_per_day
 msgid "Billing per worked day"
 msgstr "Facturation par jour travaillé"
@@ -810,6 +815,7 @@ msgstr "Jours calendaires"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_igd_wizard_view_form
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_condition_wizard_view_form
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_volet_wizard_view_form
 msgid "Cancel"
 msgstr "Annuler"
@@ -836,6 +842,21 @@ msgstr "Côté candidat et côté client ensemble."
 #: model:ir.model.fields,field_description:mission_report.field_res_config_settings__mission_commission_cap
 msgid "Cap (share of the gross margin of a business)"
 msgstr "Plafond (part de la marge brute d'une affaire)"
+
+#. module: mission_report
+#: model:ir.model,name:mission_report.model_mission_margin_condition_wizard
+msgid "Change of the conditions of a deal"
+msgstr "Changement des conditions d'une affaire"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_condition_wizard_view_form
+msgid "Change of the conditions of the deal"
+msgstr "Changement des conditions de l'affaire"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_margin_condition_wizard__reason__scope
+msgid "Change of the scope of the mission"
+msgstr "Changement du périmètre de la mission"
 
 #. module: mission_report
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_igd_wizard__state__choose
@@ -1067,6 +1088,11 @@ msgstr ""
 "changement ici s'applique aux calculs faits ensuite."
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__mission_cost
+msgid "Cost of the mission"
+msgstr "Coût de la mission"
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_res_company__mission_hours_outside_schedule
 #: model:ir.model.fields,field_description:mission_report.field_res_config_settings__mission_hours_outside_schedule
 msgid "Count hours outside working hours"
@@ -1123,6 +1149,7 @@ msgstr "Dépense créée"
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_rate__create_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__create_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__create_uid
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin_condition_wizard__create_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_igd__create_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_month__create_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__create_uid
@@ -1141,6 +1168,7 @@ msgstr "Créé par"
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_rate__create_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__create_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__create_date
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin_condition_wizard__create_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_igd__create_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_month__create_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__create_date
@@ -1152,6 +1180,7 @@ msgstr "Créé le"
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__currency_id
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_rate__currency_id
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__currency_id
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin_condition_wizard__currency_id
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_igd__currency_id
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_month__currency_id
 msgid "Currency"
@@ -1214,6 +1243,7 @@ msgstr ""
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__daily_rate
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
 msgid "Daily rate sold (TJM)"
 msgstr "Tarif journalier vendu (TJM)"
 
@@ -1383,6 +1413,11 @@ msgid "Details of the costs"
 msgstr "Détail des coûts"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__order_gap
+msgid "Differs from the order"
+msgstr "Écart avec la commande"
+
+#. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_export_view_form
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_public_holiday_wizard_view_form
 msgid "Discard"
@@ -1406,6 +1441,7 @@ msgstr "Annuler"
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_rate__display_name
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__display_name
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__display_name
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin_condition_wizard__display_name
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_igd__display_name
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_month__display_name
 #: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__display_name
@@ -1434,11 +1470,17 @@ msgstr ""
 #: code:addons/mission_report/models/activity_report.py:0
 #: model:ir.model.fields,field_description:mission_report.field_project_project__mission_draft
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report__state__draft
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_margin__state__draft
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_search
 #: model_terms:ir.ui.view,arch_db:mission_report.project_form_draft
 #: model_terms:ir.ui.view,arch_db:mission_report.project_list_draft
 msgid "Draft"
 msgstr "Brouillon"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_search
+msgid "Drafts"
+msgstr "Brouillons"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.project_search_draft
@@ -2094,6 +2136,7 @@ msgstr "Affichage de l'icône RH"
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_rate__id
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__id
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__id
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin_condition_wizard__id
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_igd__id
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_month__id
 #: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__id
@@ -2239,6 +2282,12 @@ msgid "Journal Entry"
 msgstr "Pièce comptable"
 
 #. module: mission_report
+#. odoo-javascript
+#: code:addons/mission_report/static/src/xml/margin_form.xml:0
+msgid "Keep the calculation (the difference stays shown)"
+msgstr "Garder le calcul (l'écart reste affiché)"
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__kind
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__kind
 msgid "Kind"
@@ -2261,6 +2310,7 @@ msgstr "Fête du Travail"
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_rate__write_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__write_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__write_uid
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin_condition_wizard__write_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_igd__write_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_month__write_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__write_uid
@@ -2279,6 +2329,7 @@ msgstr "Dernière mise à jour par"
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_rate__write_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__write_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__write_date
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin_condition_wizard__write_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_igd__write_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_month__write_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_public_holiday_wizard__write_date
@@ -2398,6 +2449,7 @@ msgid "Mappings"
 msgstr "Correspondances"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin_condition_wizard__margin_id
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_igd__margin_id
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_month__margin_id
 #: model_terms:ir.ui.view,arch_db:mission_report.project_form_margin
@@ -2407,6 +2459,7 @@ msgstr "Marge"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__margin_rate
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
 msgid "Margin (%)"
 msgstr "Marge (%)"
 
@@ -2418,6 +2471,7 @@ msgstr "Nombre de calculs de marge"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__margin_month
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
 msgid "Margin a month"
 msgstr "Marge par mois"
 
@@ -2994,9 +3048,15 @@ msgstr ""
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__rebilled_daily_note
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__rebilled_monthly_note
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__training_yearly_note
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin_condition_wizard__note
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
 msgid "Note"
 msgstr "Note"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin_condition_wizard__note_required
+msgid "Note Required"
+msgstr "Note obligatoire"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__note_warning
@@ -3072,6 +3132,11 @@ msgid "On a mission, until %(date)s"
 msgstr "En mission, jusqu'au %(date)s"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__order_gap_short
+msgid "On the order"
+msgstr "Sur la commande"
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report.py:0
 msgid "Only %s or a manager can submit this report."
@@ -3127,8 +3192,15 @@ msgstr ""
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__order_id
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin_condition_wizard__order_id
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_list
 msgid "Order"
 msgstr "Commande"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__order_gap_text
+msgid "Order Gap Text"
+msgstr "Texte de l'écart"
 
 #. module: mission_report
 #. odoo-python
@@ -3148,10 +3220,25 @@ msgstr ""
 " prix horaire : %s."
 
 #. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_margin__state__order
+msgid "Order confirmed"
+msgstr "Commande confirmée"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_search
+msgid "Orders"
+msgstr "Commandes"
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__order_id
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_volet_wizard_view_form
 msgid "Original order"
 msgstr "Affaire d'origine"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_margin_condition_wizard__reason__other
+msgid "Other"
+msgstr "Autre"
 
 #. module: mission_report
 #. odoo-python
@@ -3221,6 +3308,11 @@ msgstr "Rémunération et charges"
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__base_cost
 msgid "Pay and charges a year"
 msgstr "Rémunération et charges par an"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_margin_condition_wizard__reason__pay
+msgid "Pay of the consultant (raise, new offer)"
+msgstr "Rémunération du consultant (augmentation, nouvelle proposition)"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__employee_ids
@@ -3312,6 +3404,17 @@ msgid "Price and margin"
 msgstr "Tarif et marge"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin_condition_wizard__new_price
+msgid "Price of the calculation"
+msgstr "Prix du calcul"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__order_price
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin_condition_wizard__old_price
+msgid "Price on the order"
+msgstr "Prix sur la commande"
+
+#. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_sale_order__mission_description
 msgid ""
 "Printed on the quote under the subject of the proposal. Taken over by \"New "
@@ -3342,6 +3445,11 @@ msgstr "Projet"
 #: model:ir.model.fields,help:mission_report.field_hr_leave__project_id
 msgid "Project associated with the mission report entry."
 msgstr "Projet associé à la saisie de rapport de mission."
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_margin__state__project
+msgid "Project created"
+msgstr "Projet créé"
 
 #. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_project_project__mission_draft
@@ -3384,6 +3492,16 @@ msgid "Quota adjustments"
 msgstr "Ajustements du quota"
 
 #. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_margin__state__quote
+msgid "Quote"
+msgstr "Devis"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_search
+msgid "Quotes"
+msgstr "Devis"
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__rtt_days
 msgid "RTT days a year"
 msgstr "Jours de RTT par an"
@@ -3416,6 +3534,7 @@ msgstr "Évaluations"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__reason
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin_condition_wizard__reason
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
 msgid "Reason"
 msgstr "Motif"
@@ -3429,6 +3548,30 @@ msgstr "Motif du montant journalier"
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__fixed_monthly_reason
 msgid "Reason of the monthly amount"
 msgstr "Motif du montant mensuel"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_condition_wizard_view_form
+msgid "Record the change"
+msgstr "Enregistrer la modification"
+
+#. module: mission_report
+#. odoo-javascript
+#: code:addons/mission_report/static/src/xml/margin_form.xml:0
+msgid "Record the change in the order"
+msgstr "Enregistrer la modification dans la commande"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/margin.py:0
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid "Record the change of the conditions of the deal"
+msgstr "Enregistrer la modification des conditions de l'affaire"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/margin.py:0
+msgid "Recorded by %s."
+msgstr "Enregistré par %s."
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
@@ -3454,6 +3597,11 @@ msgstr "Nom de l'utilisateur lié à la ressource, pour gérer son accès."
 #: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
 msgid "Reminders"
 msgstr "Relances"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_margin_condition_wizard__reason__client
+msgid "Renegotiation with the customer"
+msgstr "Renégociation avec le client"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_report_calendar_view_form_inherit_mission_report
@@ -3487,6 +3635,13 @@ msgstr ""
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__activity_user_id
 msgid "Responsible User"
 msgstr "Utilisateur responsable"
+
+#. module: mission_report
+#. odoo-javascript
+#: code:addons/mission_report/static/src/xml/margin_form.xml:0
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid "Restore the conditions of the order"
+msgstr "Rétablir les conditions de la commande"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
@@ -3598,6 +3753,7 @@ msgstr ""
 
 #. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_margin__order_id
+#: model:ir.model.fields,help:mission_report.field_mission_margin_condition_wizard__order_id
 msgid "Set once the order exists: the calculation then stays with it."
 msgstr "À renseigner une fois la commande créée : le calcul la suit alors."
 
@@ -3717,8 +3873,10 @@ msgstr "État"
 #: code:addons/mission_report/models/activity_report_template.py:0
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__state
 #: model:ir.model.fields,field_description:mission_report.field_mission_commission_rule__name
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__state
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__status
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_search
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_search
 msgid "Status"
 msgstr "Statut"
 
@@ -3875,11 +4033,39 @@ msgid "The allowances are added to the expenses re-invoiced per day."
 msgstr "Les indemnités s'ajoutent aux frais refacturés par jour."
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/margin.py:0
+msgid "The calculation (%(mine)s) differs from the order (%(order)s)."
+msgstr "Le calcul (%(mine)s) s'écarte de la commande (%(order)s)."
+
+#. module: mission_report
+#. odoo-javascript
+#: code:addons/mission_report/static/src/js/margin_form.js:0
+msgid "The calculation differs from the order"
+msgstr "Le calcul s'écarte de la commande"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/margin.py:0
+msgid "The calculation went back to the conditions of the order (%s)."
+msgstr "Le calcul est revenu aux conditions de la commande (%s)."
+
+#. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_margin__commission_rule_id
 msgid ""
 "The commission rates depend on the status of the salesperson (Settings)."
 msgstr ""
 "Les taux de commission dépendent du statut du commercial (Paramètres)."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_condition_wizard_view_form
+msgid ""
+"The conditions of the order change to those of the calculation. They are not changed by\n"
+"                    themselves once the order is confirmed: say why, so the history of the deal keeps it."
+msgstr ""
+"Les conditions de la commande deviennent celles du calcul. Elles ne changent"
+" pas toutes seules une fois la commande confirmée : dites pourquoi, pour que"
+" l'historique de l'affaire le garde."
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
@@ -3900,6 +4086,13 @@ msgstr "Le consultant"
 #: code:addons/mission_report/static/src/js/margin_donut.js:0
 msgid "The costs exceed the billing by %(amount)s a month"
 msgstr "Les coûts dépassent la facturation de %(amount)s par mois"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_margin__order_price
+#: model:ir.model.fields,help:mission_report.field_mission_margin_condition_wizard__old_price
+msgid "The daily rate of the order (or its fixed price), as it stands."
+msgstr ""
+"Le tarif journalier de la commande (ou son prix forfaitaire), tel qu'il est."
 
 #. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_margin__target_amount_2
@@ -4053,6 +4246,37 @@ msgid "The openpyxl library is missing on the server."
 msgstr "La bibliothèque openpyxl manque sur le serveur."
 
 #. module: mission_report
+#. odoo-javascript
+#: code:addons/mission_report/static/src/xml/margin_form.xml:0
+msgid ""
+"The order does not change by itself. What do you want to do with this "
+"difference?"
+msgstr ""
+"La commande ne change pas toute seule. Que voulez-vous faire de cet écart ?"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/margin.py:0
+msgid "The order has several lines: change its price by hand."
+msgstr "La commande a plusieurs lignes : changez son prix à la main."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/margin.py:0
+msgid ""
+"The order is confirmed: say in a note why its conditions change "
+"(renegotiation, raise...)."
+msgstr ""
+"La commande est confirmée : dites dans une note pourquoi ses conditions "
+"changent (renégociation, augmentation...)."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/margin.py:0
+msgid "The order is locked: unlock it to change its price."
+msgstr "La commande est verrouillée : déverrouillez-la pour changer son prix."
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/mission_orders.py:0
 msgid ""
@@ -4166,6 +4390,12 @@ msgstr "Ce calcul a déjà un projet."
 #: code:addons/mission_report/models/margin.py:0
 msgid "This calculation already has an order."
 msgstr "Ce calcul a déjà une commande."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/margin.py:0
+msgid "This calculation has no order to change."
+msgstr "Ce calcul n'a pas de commande à modifier."
 
 #. module: mission_report
 #. odoo-python
@@ -4575,6 +4805,16 @@ msgid "Weekend days a year"
 msgstr "Jours de week-end par an"
 
 #. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_margin_condition_wizard__note
+msgid "What was agreed, with whom, and why."
+msgstr "Ce qui a été convenu, avec qui, et pourquoi."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_condition_wizard_view_form
+msgid "What was agreed, with whom, and why..."
+msgstr "Ce qui a été convenu, avec qui, et pourquoi..."
+
+#. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_margin__payslip_monthly_cost
 msgid ""
 "When filled, replaces the salary and the employer charges: the total cost of"
@@ -4834,6 +5074,12 @@ msgstr "« %s » : une lettre de colonne (A) ou une cellule (B3)."
 #: code:addons/mission_report/models/activity_report_template.py:0
 msgid "“Day 1 column” takes a column letter, such as D."
 msgstr "« Colonne du jour 1 » attend une lettre de colonne, par exemple D."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/margin.py:0
+msgid "⚠ %(order)s on the order"
+msgstr "⚠ %(order)s sur Cde"
 
 #. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_hr_expense__project_id
