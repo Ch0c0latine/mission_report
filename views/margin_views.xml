@@ -165,12 +165,11 @@
                             <div colspan="2"><field name="daily_rate" widget="rate_slider" nolabel="1"/></div>
                             <field name="daily_rate" class="fw-bold"/>
                             <label for="target_rate_2" string="Indicative daily rate" class="text-muted"/>
-                            <div class="d-flex flex-wrap align-items-center gap-2 text-muted">
+                            <div class="o_margin_indicative d-flex flex-nowrap align-items-center gap-1 text-muted">
                                 <field name="target_rate_2" widget="percentage" class="o_margin_pct"/>
                                 <div>&#8594;</div>
                                 <field name="rate_target_rate_2" class="oe_inline fw-bold"/>
-                                <field name="target_amount_2" class="o_margin_amount ms-3"/>
-                                <div>a month</div>
+                                <field name="target_amount_2" class="o_margin_amount ms-2"/>
                                 <div>&#8594;</div>
                                 <field name="rate_target_2" class="oe_inline fw-bold"/>
                             </div>
