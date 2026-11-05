@@ -148,7 +148,7 @@ class MissionMargin(models.Model):
     igd_lunch = fields.Boolean(string="Lunch")
     igd_dinner = fields.Boolean(string="Dinner")
     igd_scale_choice = fields.Selection(
-        lambda self: self._igd_scale_choices(), string="Rates", default='2',
+        lambda self: self._igd_scale_choices(), string="Allowance rates", default='2',
         help="The rates of the scale that apply to every day of the mission: using one period only avoids a "
              "change of profitability and of pay when the mission passes the next period.")
     igd_rebilled = fields.Boolean(
@@ -166,7 +166,7 @@ class MissionMargin(models.Model):
     base_cost = fields.Monetary(string="Pay and charges a year", compute='_compute_results')
     overhead_cost = fields.Monetary(string="Fixed and indirect costs a year", compute='_compute_results')
     loaded_cost = fields.Monetary(string="Loaded cost a year", compute='_compute_results')
-    other_costs = fields.Monetary(string="Total other costs", compute='_compute_results')
+    other_costs = fields.Monetary(string="Total other costs and allowances", compute='_compute_results')
     igd_daily = fields.Monetary(string="Allowances per worked day", compute='_compute_results')
     igd_month = fields.Monetary(string="Allowances a month", compute='_compute_results')
     rebilled_total = fields.Monetary(string="Expenses re-invoiced per worked day", compute='_compute_results')

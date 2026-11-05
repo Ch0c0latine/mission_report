@@ -115,8 +115,6 @@
                                     <field name="igd_dinner" nolabel="1"/><label for="igd_dinner"/>
                                 </span>
                             </div>
-                            <label for="igd_scale_choice" invisible="cost_origin != 'employee'
-                                   or not (igd_lodging or igd_lunch or igd_dinner)"/>
                             <field name="igd_scale_choice" invisible="cost_origin != 'employee'
                                    or not (igd_lodging or igd_lunch or igd_dinner)"/>
                             <label for="igd_daily" string="Allowances total"
@@ -148,12 +146,16 @@
                                 Rate typed by hand: move the slider to give the control back to the margin.
                             </div>
                             <label for="target_rate_2" string="Indicative daily rate" class="text-muted"/>
-                            <div class="d-flex flex-wrap align-items-center gap-2 text-muted">
-                                <field name="target_rate_2" widget="percentage" class="o_margin_pct"/>
-                                <div>&#8594;</div> <field name="rate_target_rate_2" class="oe_inline fw-bold"/>
-                                <field name="target_amount_2" class="o_margin_amount"/>
-                                <div>a month</div> <div>&#8594;</div>
-                                <field name="rate_target_2" class="oe_inline fw-bold"/>
+                            <div class="d-flex flex-column gap-1 text-muted">
+                                <div class="d-flex align-items-center gap-2">
+                                    <field name="target_rate_2" widget="percentage" class="o_margin_pct"/>
+                                    <div>&#8594;</div> <field name="rate_target_rate_2" class="oe_inline fw-bold"/>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <field name="target_amount_2" class="o_margin_amount"/>
+                                    <div>a month</div> <div>&#8594;</div>
+                                    <field name="rate_target_2" class="oe_inline fw-bold"/>
+                                </div>
                             </div>
                             <field name="rebilled_daily"/>
                             <field name="rebilled_monthly"/>

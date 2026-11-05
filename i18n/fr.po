@@ -3140,8 +3140,8 @@ msgstr ""
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__igd_scale_choice
-msgid "Rates"
-msgstr "Taux"
+msgid "Allowance rates"
+msgstr "Taux des indemnités"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
@@ -3998,8 +3998,8 @@ msgstr "Total jours"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__other_costs
-msgid "Total other costs"
-msgstr "Total des autres coûts"
+msgid "Total other costs and allowances"
+msgstr "Total des autres coûts et indemnités"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_rate__total
