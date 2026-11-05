@@ -149,8 +149,8 @@
                             </div>
                             <field name="duration_months"/>
                             <field name="mission_days" placeholder="Full time" invisible="billing_mode == 'forfait'"/>
-                            <field name="mission_days" string="Days estimated for the work" placeholder="Full time"
-                                   invisible="billing_mode != 'forfait'"/>
+                            <field name="mission_days" string="Days estimated for the work" placeholder="Number of days"
+                                   invisible="billing_mode != 'forfait'" required="billing_mode == 'forfait'"/>
                         </group>
                         <group string="Price and margin">
                             <field name="billing_mode" widget="radio" options="{'horizontal': true}"/>

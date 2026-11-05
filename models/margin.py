@@ -542,6 +542,12 @@ class MissionMargin(models.Model):
         self.rate_manual = False
         self._follow_margin()
 
+    @api.constrains('billing_mode', 'mission_days')
+    def _check_forfait_days(self):
+        for m in self:
+            if m.billing_mode == 'forfait' and m.mission_days <= 0:
+                raise UserError(_("A fixed price needs the days estimated for the work."))
+
     def _days_for_price(self):
         """The days a fixed price is shared between: the days estimated, or a full-time mission."""
         self.ensure_one()
