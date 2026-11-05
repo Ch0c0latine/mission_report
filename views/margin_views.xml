@@ -133,9 +133,9 @@
                             <label for="igd_daily" string="Allowances total"
                                    invisible="cost_origin != 'employee' or not igd_daily"/>
                             <div class="o_margin_inline fw-bold" invisible="cost_origin != 'employee' or not igd_daily">
-                                <field name="igd_daily"/><span class="fw-normal text-muted">a day</span>
-                                <span class="text-muted">&#183;</span>
-                                <field name="igd_month"/><span class="fw-normal text-muted">a month</span>
+                                <field name="igd_daily"/><div class="fw-normal text-muted">a day</div>
+                                <div class="text-muted">&#183;</div>
+                                <field name="igd_month"/><div class="fw-normal text-muted">a month</div>
                             </div>
                             <label for="daily_cost_worked" invisible="cost_origin != 'employee'"/>
                             <div class="d-flex gap-2" invisible="cost_origin != 'employee'">
