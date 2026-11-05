@@ -3652,6 +3652,12 @@ msgid "Take over from the note"
 msgstr "Reprendre depuis la note"
 
 #. module: mission_report
+#. odoo-javascript
+#: code:addons/mission_report/static/src/xml/margin_slider.xml:0
+msgid "Take this daily rate"
+msgstr "Prendre ce tarif journalier"
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__target_rate_1
 msgid "Target margin 1 (%)"
 msgstr "Marge cible 1 (%)"
@@ -3731,6 +3737,12 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
 msgid "The consultant"
 msgstr "Le consultant"
+
+#. module: mission_report
+#. odoo-javascript
+#: code:addons/mission_report/static/src/js/margin_donut.js:0
+msgid "The costs exceed the billing by %(amount)s a month"
+msgstr "Les coûts dépassent la facturation de %(amount)s par mois"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report

@@ -131,13 +131,24 @@
             margin: 0;
         }
         .o_margin_basis,
-        .o_margin_check_more {
+        .o_margin_check_more .o_field_widget {
             grid-column: 2;
+        }
+        .o_margin_check_more {
+            display: contents;
         }
     }
     .o_field_widget.o_margin_basis {
-        width: 8.5rem !important;
+        width: auto !important;
+        min-width: 7.5rem;
+        max-width: 100%;
         font-size: 0.85em;
+    }
+    .o_margin_rate_pick {
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: underline dotted;
+        white-space: nowrap;
     }
 }
 

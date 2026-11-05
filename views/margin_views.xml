@@ -166,10 +166,10 @@
                             <div class="o_margin_indicative d-flex flex-nowrap align-items-center gap-1 text-muted">
                                 <field name="target_rate_2" widget="percentage" class="o_margin_pct"/>
                                 <div>&#8594;</div>
-                                <field name="rate_target_rate_2" class="oe_inline fw-bold"/>
+                                <field name="rate_target_rate_2" widget="rate_pick"/>
                                 <field name="target_amount_2" class="o_margin_amount ms-2"/>
                                 <div>&#8594;</div>
-                                <field name="rate_target_2" class="oe_inline fw-bold"/>
+                                <field name="rate_target_2" widget="rate_pick"/>
                             </div>
                             <label for="rebilled_daily"/>
                             <div class="d-flex gap-2">
@@ -379,8 +379,8 @@
                             <field name="note"/>
                         </page>
                     </notebook>
+                    <chatter/>
                 </sheet>
-                <chatter/>
             </form>
         </field>
     </record>

@@ -8,6 +8,7 @@ import { Component, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { _t } from "@web/core/l10n/translation";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
+import { formatMonetary } from "@web/views/fields/formatters";
 
 export class MarginSliderField extends Component {
     static template = "mission_report.MarginSliderField";
@@ -189,3 +190,36 @@ export const rateSliderField = {
 };
 
 registry.category("fields").add("rate_slider", rateSliderField);
+
+
+/**
+ * Un tarif journalier indicatif : le montant est un lien, un clic le saisit comme tarif journalier (TJM) de la fiche.
+ */
+export class RatePickField extends Component {
+    static template = "mission_report.RatePickField";
+    static props = { ...standardFieldProps };
+
+    get value() {
+        return Math.round((this.props.record.data[this.props.name] || 0) * 100) / 100;
+    }
+
+    get formatted() {
+        const currency = this.props.record.data.currency_id;
+        return formatMonetary(this.value, { currencyId: currency && currency.id });
+    }
+
+    async onClick(ev) {
+        ev.preventDefault();
+        if (this.value > 0) {
+            await this.props.record.update({ daily_rate: this.value });
+        }
+    }
+}
+
+export const ratePickField = {
+    component: RatePickField,
+    displayName: "Daily rate to take",
+    supportedTypes: ["monetary", "float"],
+};
+
+registry.category("fields").add("rate_pick", ratePickField);

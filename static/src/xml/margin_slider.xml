@@ -22,4 +22,9 @@
             <span class="text-muted text-nowrap"><t t-esc="format(max)"/></span>
         </div>
     </t>
+    <t t-name="mission_report.RatePickField">
+        <a href="#" class="o_margin_rate_pick" t-on-click="onClick" title="Take this daily rate">
+            <t t-esc="formatted"/>
+        </a>
+    </t>
 </templates>
