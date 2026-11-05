@@ -28,12 +28,6 @@ export class MarginSliderField extends Component {
         return this.state.shown !== null ? this.state.shown : this.props.record.data[this.props.name] || 0;
     }
 
-    /** The rate typed by hand gives its own margin: said next to the cursor. */
-    get actualLabel() {
-        const rate = (this.props.record.data.margin_rate || 0) * 100;
-        return `${_t("actual margin")} ${rate.toFixed(1)} %`;
-    }
-
     /** Daily rate that gives the margin, as the server computes it: rounded up to 5. */
     rateFor(percent) {
         const data = this.props.record.data;
@@ -112,13 +106,17 @@ export class SalarySliderField extends Component {
         return Math.ceil(this.props.record.data.salary_max || 80000);
     }
 
+    get step() {
+        return 500;
+    }
+
     /** The cursor moves by steps of 500 from round numbers: the first notch is the minimum wage itself. */
     get sliderMin() {
-        return Math.floor(this.min / 500) * 500;
+        return Math.floor(this.min / this.step) * this.step;
     }
 
     get sliderMax() {
-        return Math.ceil(this.max / 500) * 500;
+        return Math.ceil(this.max / this.step) * this.step;
     }
 
     get value() {
@@ -157,3 +155,37 @@ export const salarySliderField = {
 };
 
 registry.category("fields").add("salary_slider", salarySliderField);
+
+
+/**
+ * Curseur du tarif journalier (TJM), de la moitié du coût d'une journée jusqu'à plus de deux fois ce coût, par pas
+ * de 5 €. Le déplacer fixe le tarif à la main : le curseur de la marge rend la main à la marge.
+ */
+export class RateSliderField extends SalarySliderField {
+    static template = "mission_report.SalarySliderField";
+
+    get step() {
+        return 5;
+    }
+
+    get min() {
+        const data = this.props.record.data;
+        const low = Math.floor(((data.cost_per_day || 0) * 0.5) / 10) * 10;
+        const current = Math.floor((data[this.props.name] || 0) / 10) * 10 - 50;
+        return Math.max(Math.min(low, current > 0 ? current : low), 0);
+    }
+
+    get max() {
+        const data = this.props.record.data;
+        const high = Math.ceil(Math.max((data.cost_per_day || 0) * 2.2, this.min + 300) / 10) * 10;
+        return Math.max(high, Math.ceil((data[this.props.name] || 0) / 10) * 10 + 50);
+    }
+}
+
+export const rateSliderField = {
+    component: RateSliderField,
+    displayName: "Daily rate slider",
+    supportedTypes: ["monetary", "float"],
+};
+
+registry.category("fields").add("rate_slider", rateSliderField);

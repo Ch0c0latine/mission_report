@@ -25,5 +25,6 @@ class TestTranslations(TransactionCase):
         sources = {row['src']: row['value'] for row in PoFileReader(os.path.join(folder, 'fr.po'))}
         for source in ("Other calendar costs", "Other costs per day worked", "Other monthly costs",
                        "Other yearly costs", "Pay and charges", "Fixed amount per day worked",
-                       "Fixed amount per month", "Where a month of billing goes", "Margin of the company"):
+                       "Fixed amount per month", "Breakdown of the monthly revenue", "Margin of the company",
+                       "Other mission charges", "Business referral", "Full management, client side"):
             self.assertTrue(sources.get(source), source)

@@ -101,13 +101,21 @@ class MissionMargin(models.Model):
 
     # ---- Other costs, from the shortest period to the longest -----------------------------------
     other_worked_daily = fields.Monetary(string="Other costs per day worked")
+    other_worked_daily_note = fields.Char(string="Note", help="e.g. what the amount is for.")
     daily_cost_calendar = fields.Monetary(string="Other calendar costs", help="Per calendar day.")
+    daily_cost_calendar_note = fields.Char(string="Note")
     expenses_monthly = fields.Monetary(string="Other monthly costs")
+    expenses_monthly_note = fields.Char(string="Note")
     mileage_monthly = fields.Monetary(string="Mileage allowances a month")
+    mileage_monthly_note = fields.Char(string="Note")
     training_yearly = fields.Monetary(string="Training depreciation a year")
+    training_yearly_note = fields.Char(string="Note")
     ppe_yearly = fields.Monetary(string="PPE a year")
+    ppe_yearly_note = fields.Char(string="Note")
     equipment_yearly = fields.Monetary(string="Equipment (PC, tools, phone) a year", default=200.0)
+    equipment_yearly_note = fields.Char(string="Note")
     other_yearly = fields.Monetary(string="Other yearly costs")
+    other_yearly_note = fields.Char(string="Note")
 
     # ---- Price --------------------------------------------------------------------------------
     margin_wanted = fields.Integer(
@@ -117,7 +125,9 @@ class MissionMargin(models.Model):
     rate_manual = fields.Boolean(string="Rate typed by hand", default=False)
     daily_rate = fields.Monetary(string="Daily rate sold (TJM)", tracking=True)
     rebilled_daily = fields.Monetary(string="Expenses re-invoiced per day worked")
+    rebilled_daily_note = fields.Char(string="Note")
     rebilled_monthly = fields.Monetary(string="Expenses re-invoiced per month")
+    rebilled_monthly_note = fields.Char(string="Note")
     duration_months = fields.Float(string="Duration of the mission (months)", default=12.0)
     start_date = fields.Date(string="Start", default=fields.Date.context_today)
     employee_charge_rate = fields.Float(
@@ -136,11 +146,19 @@ class MissionMargin(models.Model):
         'mission.commission.rule', string="Status of the salesperson", copy=True,
         domain="[('company_id', '=', company_id)]",
         help="The commission rates depend on the status of the salesperson (Settings).")
-    commission_rate_full = fields.Float(related='commission_rule_id.rate_full', string="Full management")
-    commission_rate_management = fields.Float(
-        related='commission_rule_id.rate_management', string="Management of the service or sales")
-    commission_rate_referral = fields.Float(
-        related='commission_rule_id.rate_referral', string="Referral of a candidate or a deal")
+    commission_cap = fields.Float(
+        related='company_id.mission_commission_cap', string="Cap (share of the gross margin of a business)")
+    commission_rate_sourcing = fields.Float(
+        related='commission_rule_id.rate_sourcing', string="Sourcing of a candidate")
+    commission_rate_referral = fields.Float(related='commission_rule_id.rate_referral', string="Business referral")
+    commission_rate_candidate = fields.Float(
+        related='commission_rule_id.rate_candidate', string="Full management, candidate side")
+    commission_rate_client = fields.Float(
+        related='commission_rule_id.rate_client', string="Full management, client side")
+    commission_rate_full = fields.Float(
+        related='commission_rule_id.rate_full', string="Full management of the business")
+    commission_rate_team = fields.Float(
+        related='commission_rule_id.rate_team', string="Services managed by the collaborators")
     show_commissions = fields.Boolean(related='company_id.mission_show_commissions')
 
     # ---- Long-distance allowances --------------------------------------------------------------
@@ -166,7 +184,7 @@ class MissionMargin(models.Model):
     base_cost = fields.Monetary(string="Pay and charges a year", compute='_compute_results')
     overhead_cost = fields.Monetary(string="Fixed and indirect costs a year", compute='_compute_results')
     loaded_cost = fields.Monetary(string="Loaded cost a year", compute='_compute_results')
-    other_costs = fields.Monetary(string="Total other costs and allowances", compute='_compute_results')
+    other_costs = fields.Monetary(string="Total other mission charges and allowances", compute='_compute_results')
     igd_daily = fields.Monetary(string="Allowances per worked day", compute='_compute_results')
     igd_month = fields.Monetary(string="Allowances a month", compute='_compute_results')
     rebilled_total = fields.Monetary(string="Expenses re-invoiced per worked day", compute='_compute_results')
@@ -192,12 +210,13 @@ class MissionMargin(models.Model):
     net_income_day = fields.Monetary(string="Net income per worked day", compute='_compute_results')
     net_income_year = fields.Monetary(string="Net income a year", compute='_compute_results')
     commission_eligible = fields.Boolean(string="Commissions due", compute='_compute_results')
-    commission_full = fields.Monetary(string="Full management", compute='_compute_results')
-    commission_management = fields.Monetary(string="Management of the service or sales", compute='_compute_results')
-    commission_referral = fields.Monetary(string="Referral", compute='_compute_results')
-    commission_full_potential = fields.Monetary(compute='_compute_results')
-    commission_management_potential = fields.Monetary(compute='_compute_results')
-    commission_referral_potential = fields.Monetary(compute='_compute_results')
+    commission_sourcing = fields.Monetary(string="Sourcing of a candidate", compute='_compute_results')
+    commission_referral = fields.Monetary(string="Business referral", compute='_compute_results')
+    commission_candidate = fields.Monetary(string="Full management, candidate side", compute='_compute_results')
+    commission_client = fields.Monetary(string="Full management, client side", compute='_compute_results')
+    commission_full = fields.Monetary(string="Full management of the business", compute='_compute_results')
+    commission_team = fields.Monetary(string="Services managed by the collaborators", compute='_compute_results')
+    commission_cap_amount = fields.Monetary(string="Most a business can give a month", compute='_compute_results')
     breakdown = fields.Json(string="Breakdown of the monthly revenue", compute='_compute_results')
     forecast_revenue = fields.Monetary(string="Forecast billing", compute='_compute_forecast')
     forecast_margin = fields.Monetary(string="Forecast margin", compute='_compute_forecast')
@@ -230,8 +249,9 @@ class MissionMargin(models.Model):
         'expenses_monthly', 'training_yearly', 'ppe_yearly', 'equipment_yearly', 'other_yearly', 'daily_rate',
         'rebilled_daily', 'rebilled_monthly', 'duration_months', 'employee_charge_rate', 'target_amount_1',
         'target_amount_2', 'target_rate_1', 'target_rate_2', 'commission_threshold_rate',
-        'commission_threshold_amount', 'commission_rule_id.rate_full', 'commission_rule_id.rate_management',
-        'commission_rule_id.rate_referral', 'igd_lodging', 'igd_lunch', 'igd_dinner', 'igd_scale_choice',
+        'commission_threshold_amount', 'commission_rule_id.rate_sourcing', 'commission_rule_id.rate_referral',
+        'commission_rule_id.rate_candidate', 'commission_rule_id.rate_client', 'commission_rule_id.rate_full',
+        'commission_rule_id.rate_team', 'company_id.mission_commission_cap', 'igd_lodging', 'igd_lunch', 'igd_dinner', 'igd_scale_choice',
         'igd_rebilled', 'igd_line_ids.month_from', 'igd_line_ids.month_to', 'igd_line_ids.meal',
         'igd_line_ids.lodging')
     def _compute_results(self):
@@ -300,16 +320,16 @@ class MissionMargin(models.Model):
             m.net_income_year = net + agreed
             eligible = rate > m.commission_threshold_rate or margin_month > m.commission_threshold_amount
             m.commission_eligible = eligible
-            m.commission_full_potential = margin_month * m.commission_rate_full
-            m.commission_management_potential = margin_month * m.commission_rate_management
-            m.commission_referral_potential = margin_month * m.commission_rate_referral
-            m.commission_full = m.commission_full_potential if eligible else 0.0
-            m.commission_management = m.commission_management_potential if eligible else 0.0
-            m.commission_referral = m.commission_referral_potential if eligible else 0.0
-            m.breakdown = m._breakdown(freelance, base, overhead, agreed + allowances,
-                                       others - agreed - allowances, margin, revenue)
+            # Each role gives its share of the margin of a month, once the business is profitable enough.
+            for role in ('sourcing', 'referral', 'candidate', 'client', 'full', 'team'):
+                share = margin_month * m['commission_rate_' + role]
+                m['commission_' + role] = share if eligible and margin_month > 0 else 0.0
+            m.commission_cap_amount = max(margin_month, 0.0) * m.commission_cap if eligible else 0.0
+            calendar = m.daily_cost_calendar * 365
+            m.breakdown = m._breakdown(freelance, base, overhead, agreed + allowances, calendar,
+                                       others - agreed - allowances - calendar, margin, revenue)
 
-    def _breakdown(self, freelance, base, overhead, paid_to_consultant, other, margin, revenue):
+    def _breakdown(self, freelance, base, overhead, paid_to_consultant, calendar, other, margin, revenue):
         """Where a month of billing goes: the pay of the consultant (net, then the charges), the amounts paid
         to them, the fixed and indirect costs, the other costs and what stays with the company."""
         self.ensure_one()
@@ -323,8 +343,9 @@ class MissionMargin(models.Model):
                 ('employer', _("Employer charges"), self.gross_salary * self.employer_charge_rate)]
         parts += [
             ('allowances', _("Allowances and amounts paid to the consultant"), paid_to_consultant),
+            ('calendar', _("Other calendar costs"), calendar),
             ('overhead', _("Fixed and indirect costs"), overhead),
-            ('other', _("Other costs"), other),
+            ('other', _("Other mission charges"), other),
             ('margin', _("Margin of the company"), margin)]
         return {
             'total': revenue / 12,
@@ -644,9 +665,24 @@ class MissionCommissionRule(models.Model):
     company_id = fields.Many2one('res.company', required=True, default=lambda self: self.env.company, index=True)
     sequence = fields.Integer(default=10)
     name = fields.Char(string="Status", required=True, translate=True)
-    rate_full = fields.Float(string="Full management", digits=(16, 3))
-    rate_management = fields.Float(string="Management of the service or sales", digits=(16, 3))
-    rate_referral = fields.Float(string="Referral of a candidate or a deal", digits=(16, 3))
+    rate_sourcing = fields.Float(
+        string="Sourcing of a candidate", digits=(16, 3),
+        help="Sourcing (cooptation) of a candidate: first qualification and first talks.")
+    rate_referral = fields.Float(
+        string="Business referral", digits=(16, 3),
+        help="Referral of a business: identification, qualification of the need and first negotiation.")
+    rate_candidate = fields.Float(
+        string="Full management, candidate side", digits=(16, 3),
+        help="Sourcing, interviews, qualification, technical file, negotiation, HR follow-up, equipment.")
+    rate_client = fields.Float(
+        string="Full management, client side", digits=(16, 3),
+        help="Needs, technical and financial proposal, negotiation, follow-up of the mission, reporting.")
+    rate_full = fields.Float(
+        string="Full management of the business", digits=(16, 3),
+        help="Candidate side and client side together.")
+    rate_team = fields.Float(
+        string="Services managed by the collaborators", digits=(16, 3),
+        help="Services managed by the collaborators under the direct responsibility of the person.")
 
 
 class ResConfigSettings(models.TransientModel):
@@ -661,6 +697,7 @@ class ResConfigSettings(models.TransientModel):
         related='company_id.mission_commission_threshold_rate', readonly=False)
     mission_commission_threshold_amount = fields.Monetary(
         related='company_id.mission_commission_threshold_amount', readonly=False)
+    mission_commission_cap = fields.Float(related='company_id.mission_commission_cap', readonly=False)
     mission_show_commissions = fields.Boolean(related='company_id.mission_show_commissions', readonly=False)
     mission_salary_min = fields.Monetary(related='company_id.mission_salary_min', readonly=False)
     mission_salary_max = fields.Monetary(related='company_id.mission_salary_max', readonly=False)
@@ -689,6 +726,9 @@ class ResCompany(models.Model):
     mission_commission_threshold_amount = fields.Monetary(
         string="Commission threshold (margin a month)", default=2000.0, currency_field='currency_id',
         help="...or over this amount a month.")
+    mission_commission_cap = fields.Float(
+        string="Cap (share of the gross margin of a business)", default=0.20,
+        help="No more than this share of the gross margin of a business can be given as commissions.")
     mission_show_commissions = fields.Boolean(
         string="Show the commissions", default=True,
         help="Untick to hide the commissions of the margin calculations.")
@@ -719,6 +759,19 @@ class ResCompany(models.Model):
         return [(0, 0, {'sequence': row.sequence, 'label': row.label, 'month_from': row.month_from,
                         'month_to': row.month_to, 'meal': row.meal, 'lodging': row.lodging}) for row in rows]
 
+    def _default_commission_rules(self):
+        """The rules of Green Engine (version B): the partners, then the account managers, business providers
+        and co-optations placed under a partner."""
+        self.ensure_one()
+        return [
+            {'company_id': self.id, 'sequence': 1, 'name': _("Partner"), 'rate_sourcing': 0.05,
+             'rate_referral': 0.05, 'rate_candidate': 0.10, 'rate_client': 0.10, 'rate_full': 0.20,
+             'rate_team': 0.04},
+            {'company_id': self.id, 'sequence': 2, 'name': _("Account manager, business provider or co-optation"),
+             'rate_sourcing': 0.04, 'rate_referral': 0.04, 'rate_candidate': 0.08, 'rate_client': 0.08,
+             'rate_full': 0.16, 'rate_team': 0.0},
+        ]
+
     def _mission_igd_ensure_rates(self):
         for company in self.filtered(lambda c: not c.mission_igd_rate_ids):
             company.mission_igd_rate_ids = company._default_igd_rates()
@@ -730,9 +783,7 @@ class ResCompany(models.Model):
         companies = self.search([])
         companies._mission_igd_ensure_rates()
         for company in companies.filtered(lambda c: not c.mission_commission_rule_ids):
-            self.env['mission.commission.rule'].create({
-                'company_id': company.id, 'name': _("Salesperson"),
-                'rate_full': 0.20, 'rate_management': 0.10, 'rate_referral': 0.05})
+            self.env['mission.commission.rule'].create(company._default_commission_rules())
         # The sheets made before the scale of a sheet existed.
         self.env['mission.margin'].sudo().with_context(active_test=False).search([])._ensure_igd_lines()
         for sheet in self.env['mission.margin'].sudo().with_context(active_test=False).search(

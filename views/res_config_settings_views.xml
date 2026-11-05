@@ -81,13 +81,20 @@
                                     <label for="mission_commission_threshold_amount" class="col-lg-4 o_light_label"/>
                                     <field name="mission_commission_threshold_amount"/>
                                 </div>
+                                <div class="row">
+                                    <label for="mission_commission_cap" class="col-lg-4 o_light_label"/>
+                                    <field name="mission_commission_cap" widget="percentage"/>
+                                </div>
                                 <field name="mission_commission_rule_ids" nolabel="1">
                                     <list editable="bottom">
                                         <field name="sequence" widget="handle"/>
                                         <field name="name"/>
-                                        <field name="rate_full" widget="percentage"/>
-                                        <field name="rate_management" widget="percentage"/>
+                                        <field name="rate_sourcing" widget="percentage"/>
                                         <field name="rate_referral" widget="percentage"/>
+                                        <field name="rate_candidate" widget="percentage"/>
+                                        <field name="rate_client" widget="percentage"/>
+                                        <field name="rate_full" widget="percentage"/>
+                                        <field name="rate_team" widget="percentage"/>
                                     </list>
                                 </field>
                             </div>

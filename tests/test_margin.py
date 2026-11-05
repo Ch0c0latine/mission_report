@@ -37,7 +37,8 @@ class TestMargin(TransactionCase):
         sheet = self._sheet()
         self.assertTrue(sheet.commission_eligible)
         self.assertAlmostEqual(sheet.commission_full, 545.03, places=2)
-        self.assertAlmostEqual(sheet.commission_management, 272.52, places=2)
+        self.assertAlmostEqual(sheet.commission_candidate, 272.52, places=2)
+        self.assertAlmostEqual(sheet.commission_client, 272.52, places=2)
         self.assertAlmostEqual(sheet.commission_referral, 136.26, places=2)
         poor = self._sheet(daily_rate=400.0)
         self.assertFalse(poor.commission_eligible)
@@ -226,8 +227,8 @@ class TestMargin(TransactionCase):
     def test_the_commission_rates_follow_the_status_of_the_salesperson(self):
         company = self.env.company
         junior = self.env['mission.commission.rule'].create({
-            'company_id': company.id, 'name': "Junior", 'rate_full': 0.10, 'rate_management': 0.05,
-            'rate_referral': 0.02})
+            'company_id': company.id, 'name': "Junior", 'rate_full': 0.10, 'rate_candidate': 0.05,
+            'rate_client': 0.05, 'rate_sourcing': 0.02, 'rate_referral': 0.02})
         sheet = self._sheet()
         self.assertAlmostEqual(sheet.commission_rate_full, 0.20)
         full = sheet.commission_full
@@ -236,6 +237,45 @@ class TestMargin(TransactionCase):
         self.assertAlmostEqual(sheet.commission_referral, sheet.margin_month * 0.02, places=2)
         company.mission_show_commissions = False
         self.assertFalse(sheet.show_commissions)
+
+    def test_the_rules_of_the_company_give_two_statuses(self):
+        rules = self.env['mission.commission.rule'].search([('company_id', '=', self.env.company.id)])
+        by_rate = {rule.rate_full: rule for rule in rules}
+        partner, account_manager = by_rate[0.20], by_rate[0.16]
+        self.assertEqual((partner.rate_sourcing, partner.rate_referral, partner.rate_candidate, partner.rate_client,
+                          partner.rate_team), (0.05, 0.05, 0.10, 0.10, 0.04))
+        self.assertEqual((account_manager.rate_sourcing, account_manager.rate_referral, account_manager.rate_candidate,
+                          account_manager.rate_client, account_manager.rate_team), (0.04, 0.04, 0.08, 0.08, 0.0))
+        sheet = self._sheet()
+        self.assertEqual(sheet.commission_rule_id, partner)
+        self.assertAlmostEqual(sheet.commission_team, sheet.margin_month * 0.04, places=2)
+        self.assertAlmostEqual(sheet.commission_cap_amount, sheet.margin_month * 0.20, places=2)
+        sheet.commission_rule_id = account_manager
+        self.assertAlmostEqual(sheet.commission_full, sheet.margin_month * 0.16, places=2)
+        self.assertEqual(sheet.commission_team, 0.0)
+        # Under the thresholds, nothing is due.
+        poor = self._sheet(daily_rate=400.0)
+        self.assertEqual(poor.commission_cap_amount, 0.0)
+
+    def test_the_calendar_costs_have_their_own_part_of_the_ring(self):
+        sheet = self._sheet(daily_cost_calendar=3.0, other_yearly=600.0)
+        parts = {part['key']: part['value'] for part in sheet.breakdown['segments']}
+        self.assertAlmostEqual(parts['calendar'], 3.0 * 365 / 12, places=2)
+        self.assertAlmostEqual(parts['other'], (600.0 + 200.0) / 12, places=2)
+        self.assertAlmostEqual(sum(parts.values()), sheet.revenue / 12, places=2)
+        keys = [part['key'] for part in sheet.breakdown['segments']]
+        self.assertLess(keys.index('allowances'), keys.index('calendar'))
+        self.assertLess(keys.index('calendar'), keys.index('overhead'))
+        self.assertNotIn('calendar', {part['key'] for part in self._sheet().breakdown['segments']})
+
+    def test_each_other_charge_has_a_note(self):
+        sheet = self._sheet(other_yearly=100.0, other_yearly_note="Insurance", daily_cost_calendar=2.0,
+                            daily_cost_calendar_note="Car", rebilled_monthly_note="Rent")
+        self.assertEqual(sheet.other_yearly_note, "Insurance")
+        for name in ('other_worked_daily', 'daily_cost_calendar', 'expenses_monthly', 'mileage_monthly',
+                     'training_yearly', 'ppe_yearly', 'equipment_yearly', 'other_yearly', 'rebilled_daily',
+                     'rebilled_monthly'):
+            self.assertIn(name + '_note', self.env['mission.margin']._fields)
 
     def test_the_billing_of_a_month_is_shared_between_the_consultant_the_costs_and_the_margin(self):
         sheet = self._sheet(igd_lodging=True, igd_lunch=True, other_yearly=1200.0)

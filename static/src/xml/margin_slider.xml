@@ -10,17 +10,13 @@
                    t-att-value="value" t-att-disabled="props.readonly or undefined"
                    t-on-input="onInput"/>
             <span class="text-muted text-nowrap"><t t-esc="props.max"/> %</span>
-            <strong class="o_margin_slider_value text-nowrap"><t t-esc="value"/> %</strong>
-            <span t-if="props.record.data.rate_manual" class="text-warning text-nowrap">
-                <t t-esc="actualLabel"/>
-            </span>
         </div>
     </t>
     <t t-name="mission_report.SalarySliderField">
         <div class="d-flex align-items-center gap-3 o_margin_slider">
             <span class="text-muted text-nowrap"><t t-esc="format(min)"/></span>
             <input type="range" class="form-range flex-grow-1"
-                   t-att-min="sliderMin" t-att-max="sliderMax" step="500"
+                   t-att-min="sliderMin" t-att-max="sliderMax" t-att-step="step"
                    t-att-value="value" t-att-disabled="props.readonly or undefined"
                    t-on-input="onInput"/>
             <span class="text-muted text-nowrap"><t t-esc="format(max)"/></span>

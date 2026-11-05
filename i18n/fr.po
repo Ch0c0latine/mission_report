@@ -337,6 +337,12 @@ msgid "Account Move Send"
 msgstr "Envoi de pièce comptable"
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/margin.py:0
+msgid "Account manager, business provider or co-optation"
+msgstr "Chargé d'affaires, apporteur d'affaires ou cooptation"
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__message_needaction
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__message_needaction
 msgid "Action Needed"
@@ -519,6 +525,11 @@ msgid "All Saints' Day"
 msgstr "Toussaint"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__igd_scale_choice
+msgid "Allowance rates"
+msgstr "Taux des indemnités"
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__igd_month
 msgid "Allowances a month"
 msgstr "Indemnités par mois"
@@ -686,6 +697,18 @@ msgid "Back to draft"
 msgstr "Remettre en brouillon"
 
 #. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid ""
+"Based on the forecast gross margin, or on the actual one when it is lower, over whole\n"
+"                                months only: the first and the last months, if incomplete, give no commission. The roles\n"
+"                                add up, within the cap of the company."
+msgstr ""
+"Base de calcul : le prévisionnel de marge brute, ou la marge réelle si elle "
+"est inférieure, sur des mois pleins uniquement : les mois incomplets de "
+"début et de fin de prestation ne donnent pas lieu à un intéressement. Les "
+"rôles s'additionnent, dans la limite du plafond de la société."
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/public_holiday_wizard.py:0
 msgid "Bastille Day"
@@ -741,6 +764,19 @@ msgid "Both"
 msgstr "Les deux"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__breakdown
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid "Breakdown of the monthly revenue"
+msgstr "Répartition du chiffre d'affaires mensuel"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_commission_rule__rate_referral
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__commission_rate_referral
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__commission_referral
+msgid "Business referral"
+msgstr "Apport d'affaire"
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/margin.py:0
 msgid "By month of the mission"
@@ -762,6 +798,19 @@ msgstr "Annuler"
 #: model_terms:ir.ui.view,arch_db:mission_report.hr_holidays_cancel_leave_form_inherit_mission_report
 msgid "Cancel the entry"
 msgstr "Annuler la saisie"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_commission_rule__rate_full
+#: model:ir.model.fields,help:mission_report.field_mission_margin__commission_rate_full
+msgid "Candidate side and client side together."
+msgstr "Côté candidat et côté client ensemble."
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__commission_cap
+#: model:ir.model.fields,field_description:mission_report.field_res_company__mission_commission_cap
+#: model:ir.model.fields,field_description:mission_report.field_res_config_settings__mission_commission_cap
+msgid "Cap (share of the gross margin of a business)"
+msgstr "Plafond (part de la marge brute d'une affaire)"
 
 #. module: mission_report
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_igd_wizard__state__choose
@@ -864,21 +913,6 @@ msgstr "Colonne ou cellule"
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_form
 msgid "Comment"
 msgstr "Commentaire"
-
-#. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_margin__commission_full_potential
-msgid "Commission Full Potential"
-msgstr "Commission potentielle (gestion complète)"
-
-#. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_margin__commission_management_potential
-msgid "Commission Management Potential"
-msgstr "Commission potentielle (gestion)"
-
-#. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_margin__commission_referral_potential
-msgid "Commission Referral Potential"
-msgstr "Commission potentielle (apport)"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_res_company__mission_commission_rule_ids
@@ -1749,8 +1783,22 @@ msgstr "À partir du mois"
 #: model:ir.model.fields,field_description:mission_report.field_mission_commission_rule__rate_full
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__commission_full
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__commission_rate_full
-msgid "Full management"
-msgstr "Gestion complète"
+msgid "Full management of the business"
+msgstr "Gestion complète de l'affaire"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_commission_rule__rate_candidate
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__commission_candidate
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__commission_rate_candidate
+msgid "Full management, candidate side"
+msgstr "Gestion complète côté candidat"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_commission_rule__rate_client
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__commission_client
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__commission_rate_client
+msgid "Full management, client side"
+msgstr "Gestion complète côté client"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_igd_wizard_view_form
@@ -2172,13 +2220,6 @@ msgid "Lunch"
 msgstr "Déjeuner"
 
 #. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_commission_rule__rate_management
-#: model:ir.model.fields,field_description:mission_report.field_mission_margin__commission_management
-#: model:ir.model.fields,field_description:mission_report.field_mission_margin__commission_rate_management
-msgid "Management of the service or sales"
-msgstr "Gestion de la prestation ou commerciale"
-
-#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report_template.py:0
 msgid "Manager signature"
@@ -2513,6 +2554,11 @@ msgid ""
 msgstr "Mois où le quota d'IGD d'un salarié diffère du montant prévu."
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__commission_cap_amount
+msgid "Most a business can give a month"
+msgstr "Maximum d'une affaire par mois"
+
+#. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_margin__margin_wanted
 msgid ""
 "Move the slider: the daily rate follows the margin wanted (rounded up to 5 "
@@ -2589,6 +2635,16 @@ msgstr "Nature de la saisie"
 #: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__needs_source_dates
 msgid "Needs Source Dates"
 msgstr "Dates de l'affaire d'origine à renseigner"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_commission_rule__rate_client
+#: model:ir.model.fields,help:mission_report.field_mission_margin__commission_rate_client
+msgid ""
+"Needs, technical and financial proposal, negotiation, follow-up of the "
+"mission, reporting."
+msgstr ""
+"Qualification des besoins, proposition technico-financière, négociation, "
+"suivi de mission, reportings."
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
@@ -2716,6 +2772,17 @@ msgid "No mission has an average monthly IGD set."
 msgstr "Aucune mission n'a d'IGD moyens prévus par mois."
 
 #. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_margin__commission_cap
+#: model:ir.model.fields,help:mission_report.field_res_company__mission_commission_cap
+#: model:ir.model.fields,help:mission_report.field_res_config_settings__mission_commission_cap
+msgid ""
+"No more than this share of the gross margin of a business can be given as "
+"commissions."
+msgstr ""
+"Pas plus de cette part de la marge brute d'une affaire ne peut être "
+"attribuée en intéressement."
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report_reminder.py:0
 #: code:addons/mission_report/models/volet.py:0
@@ -2736,6 +2803,17 @@ msgstr ""
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__note
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__daily_cost_calendar_note
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__equipment_yearly_note
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__expenses_monthly_note
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__mileage_monthly_note
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__other_worked_daily_note
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__other_yearly_note
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__ppe_yearly_note
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__rebilled_daily_note
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__rebilled_monthly_note
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__training_yearly_note
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
 msgid "Note"
 msgstr "Note"
 
@@ -2890,21 +2968,23 @@ msgid "Original order"
 msgstr "Affaire d'origine"
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/margin.py:0
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__daily_cost_calendar
 msgid "Other calendar costs"
 msgstr "Autres coûts calendaires"
 
 #. module: mission_report
-#. odoo-python
-#: code:addons/mission_report/models/margin.py:0
-#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
-msgid "Other costs"
-msgstr "Autres coûts"
-
-#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__other_worked_daily
 msgid "Other costs per day worked"
 msgstr "Autres coûts par jour travaillé"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/margin.py:0
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid "Other mission charges"
+msgstr "Autres charges de mission"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__expenses_monthly
@@ -2937,6 +3017,12 @@ msgstr "Jours de congés payés par an"
 msgid "Paid to the employee for each day worked, e.g. travel."
 msgstr ""
 "Versés au salarié pour chaque jour travaillé, par exemple les déplacements."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/margin.py:0
+msgid "Partner"
+msgstr "Associé"
 
 #. module: mission_report
 #. odoo-python
@@ -3127,23 +3213,6 @@ msgid "Rate of the long-distance allowances"
 msgstr "Tarif des indemnités de grand déplacement"
 
 #. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_margin__rate_manual
-msgid "Rate typed by hand"
-msgstr "Tarif saisi à la main"
-
-#. module: mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
-msgid ""
-"Rate typed by hand: move the slider to give the control back to the margin."
-msgstr ""
-"Tarif saisi à la main : déplacez le curseur pour rendre la main à la marge."
-
-#. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_margin__igd_scale_choice
-msgid "Allowance rates"
-msgstr "Taux des indemnités"
-
-#. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
 msgid "Rates of the company"
 msgstr "Taux de la société"
@@ -3171,15 +3240,14 @@ msgid "Reason of the monthly amount"
 msgstr "Motif du montant mensuel"
 
 #. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_margin__commission_referral
-msgid "Referral"
-msgstr "Apport"
-
-#. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_commission_rule__rate_referral
-#: model:ir.model.fields,field_description:mission_report.field_mission_margin__commission_rate_referral
-msgid "Referral of a candidate or a deal"
-msgstr "Apport de candidat ou d'affaire"
+#: model:ir.model.fields,help:mission_report.field_mission_commission_rule__rate_referral
+#: model:ir.model.fields,help:mission_report.field_mission_margin__commission_rate_referral
+msgid ""
+"Referral of a business: identification, qualification of the need and first "
+"negotiation."
+msgstr ""
+"Apport d'affaire : identification, qualification du besoin et première "
+"négociation avec le client."
 
 #. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_activity_report__user_id
@@ -3252,12 +3320,6 @@ msgid "Sales Order Line"
 msgstr "Ligne de commande client"
 
 #. module: mission_report
-#. odoo-python
-#: code:addons/mission_report/models/margin.py:0
-msgid "Salesperson"
-msgstr "Commercial"
-
-#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__igd_line_ids
 #: model:ir.model.fields,field_description:mission_report.field_res_company__mission_igd_rate_ids
 #: model:ir.model.fields,field_description:mission_report.field_res_config_settings__mission_igd_rate_ids
@@ -3322,6 +3384,23 @@ msgstr ""
 "Les journées validées des comptes rendus en font la quantité livrée."
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_commission_rule__rate_team
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__commission_rate_team
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__commission_team
+msgid "Services managed by the collaborators"
+msgstr "Prestations gérées par les collaborateurs"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_commission_rule__rate_team
+#: model:ir.model.fields,help:mission_report.field_mission_margin__commission_rate_team
+msgid ""
+"Services managed by the collaborators under the direct responsibility of the"
+" person."
+msgstr ""
+"Prestations gérées par les collaborateurs sous la responsabilité directe de "
+"la personne."
+
+#. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_margin__order_id
 msgid "Set once the order exists: the calculation then stays with it."
 msgstr "À renseigner une fois la commande créée : le calcul la suit alors."
@@ -3368,6 +3447,32 @@ msgstr "Afficher les intéressements"
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__snapshot
 msgid "Snapshot"
 msgstr "Chiffres validés"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_commission_rule__rate_sourcing
+#: model:ir.model.fields,help:mission_report.field_mission_margin__commission_rate_sourcing
+msgid ""
+"Sourcing (cooptation) of a candidate: first qualification and first talks."
+msgstr ""
+"Sourcing (cooptation) d'un candidat : qualification initiale et premiers "
+"échanges."
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_commission_rule__rate_sourcing
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__commission_rate_sourcing
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__commission_sourcing
+msgid "Sourcing of a candidate"
+msgstr "Sourcing d'un candidat"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_commission_rule__rate_candidate
+#: model:ir.model.fields,help:mission_report.field_mission_margin__commission_rate_candidate
+msgid ""
+"Sourcing, interviews, qualification, technical file, negotiation, HR follow-"
+"up, equipment."
+msgstr ""
+"Sourcing, entretiens, qualification, dossier technique, négociation, suivi "
+"RH, mise à disposition de matériel."
 
 #. module: mission_report
 #. odoo-python
@@ -3998,8 +4103,8 @@ msgstr "Total jours"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__other_costs
-msgid "Total other costs and allowances"
-msgstr "Total des autres coûts et indemnités"
+msgid "Total other mission charges and allowances"
+msgstr "Total des autres charges de mission et indemnités"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_rate__total
@@ -4209,12 +4314,6 @@ msgstr ""
 "global d'un mois du salarié, comme sur le bulletin de salaire."
 
 #. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_margin__breakdown
-#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
-msgid "Breakdown of the monthly revenue"
-msgstr "Répartition du chiffre d'affaires mensuel"
-
-#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/public_holiday_wizard.py:0
 msgid "Whit Monday"
@@ -4374,6 +4473,11 @@ msgid "e.g. travel, daily allowance."
 msgstr "ex. déplacements, indemnité journalière."
 
 #. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_margin__other_worked_daily_note
+msgid "e.g. what the amount is for."
+msgstr "ex. à quoi sert le montant."
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/billing_unit.py:0
 #: code:addons/mission_report/models/volet.py:0
@@ -4455,12 +4559,6 @@ msgstr "« %s » : une lettre de colonne (A) ou une cellule (B3)."
 #: code:addons/mission_report/models/activity_report_template.py:0
 msgid "“Day 1 column” takes a column letter, such as D."
 msgstr "« Colonne du jour 1 » attend une lettre de colonne, par exemple D."
-
-#. module: mission_report
-#. odoo-javascript
-#: code:addons/mission_report/static/src/js/margin_slider.js:0
-msgid "actual margin"
-msgstr "marge réelle"
 
 #. module: mission_report
 #. odoo-javascript
