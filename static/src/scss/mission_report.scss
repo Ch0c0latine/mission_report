@@ -211,6 +211,10 @@
 
 @media (max-width: 767.98px) {
     .o_form_view {
+        // Under the control panel of the form, which sticks to the top as well.
+        .o_margin_stickybar {
+            top: 3.9rem;
+        }
         .o_margin_slider input[type="range"] {
             min-height: 2.25rem;
         }
