@@ -120,7 +120,7 @@
                                 </div>
                                 <div class="o_margin_check">
                                     <field name="igd_expat" nolabel="1"/><label for="igd_expat"/>
-                                    <div class="o_margin_check_more d-flex align-items-center gap-2"
+                                    <div class="o_margin_check_more"
                                          invisible="not igd_expat">
                                         <field name="igd_expat_amount" nolabel="1" class="o_margin_amount"
                                                placeholder="per day"/>
