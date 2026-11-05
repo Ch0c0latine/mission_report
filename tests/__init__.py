@@ -14,3 +14,4 @@ from . import test_independence
 from . import test_heures
 from . import test_cas_limites
 from . import test_margin
+from . import test_translations

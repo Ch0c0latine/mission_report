@@ -4466,6 +4466,7 @@ msgstr "« Colonne du jour 1 » attend une lettre de colonne, par exemple D."
 msgid "actual margin"
 msgstr "marge réelle"
 
+#. module: mission_report
 #. odoo-javascript
 #: code:addons/mission_report/static/src/js/margin_donut.js:0
 msgid "The costs exceed the billing by"
