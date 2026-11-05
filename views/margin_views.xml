@@ -163,7 +163,7 @@
                         </group>
                     </group>
 
-                    <group string="Where a month of billing goes">
+                    <group string="Breakdown of the monthly revenue">
                         <field name="breakdown" widget="margin_donut" nolabel="1" colspan="2"/>
                     </group>
 

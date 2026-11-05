@@ -4209,14 +4209,10 @@ msgstr ""
 "global d'un mois du salarié, comme sur le bulletin de salaire."
 
 #. module: mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
-msgid "Where a month of billing goes"
-msgstr "Où va un mois de facturation"
-
-#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__breakdown
-msgid "Where the monthly billing goes"
-msgstr "Où va la facturation du mois"
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid "Breakdown of the monthly revenue"
+msgstr "Répartition du chiffre d'affaires mensuel"
 
 #. module: mission_report
 #. odoo-python

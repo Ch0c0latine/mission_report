@@ -112,9 +112,18 @@ export class SalarySliderField extends Component {
         return Math.ceil(this.props.record.data.salary_max || 80000);
     }
 
+    /** The cursor moves by steps of 500 from round numbers: the first notch is the minimum wage itself. */
+    get sliderMin() {
+        return Math.floor(this.min / 500) * 500;
+    }
+
+    get sliderMax() {
+        return Math.ceil(this.max / 500) * 500;
+    }
+
     get value() {
         const value = this.state.shown !== null ? this.state.shown : this.props.record.data[this.props.name] || 0;
-        return Math.min(Math.max(value, this.min), this.max);
+        return Math.min(Math.max(value, this.sliderMin), this.sliderMax);
     }
 
     format(amount) {
@@ -122,7 +131,7 @@ export class SalarySliderField extends Component {
     }
 
     async onInput(ev) {
-        this.state.shown = parseInt(ev.target.value, 10);
+        this.state.shown = Math.min(Math.max(parseInt(ev.target.value, 10), this.min), this.max);
         this.pending = this.state.shown;
         if (this.busy) {
             return;

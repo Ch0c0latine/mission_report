@@ -198,7 +198,7 @@ class MissionMargin(models.Model):
     commission_full_potential = fields.Monetary(compute='_compute_results')
     commission_management_potential = fields.Monetary(compute='_compute_results')
     commission_referral_potential = fields.Monetary(compute='_compute_results')
-    breakdown = fields.Json(string="Where the monthly billing goes", compute='_compute_results')
+    breakdown = fields.Json(string="Breakdown of the monthly revenue", compute='_compute_results')
     forecast_revenue = fields.Monetary(string="Forecast billing", compute='_compute_forecast')
     forecast_margin = fields.Monetary(string="Forecast margin", compute='_compute_forecast')
     forecast_days = fields.Float(string="Forecast worked days", compute='_compute_forecast')
