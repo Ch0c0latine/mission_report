@@ -148,8 +148,18 @@
                                 <field name="fixed_monthly_reason" placeholder="Reason" class="flex-grow-1"/>
                             </div>
                             <field name="duration_months"/>
+                            <field name="mission_days" placeholder="Full time" invisible="billing_mode == 'forfait'"/>
+                            <field name="mission_days" string="Days estimated for the work" placeholder="Full time"
+                                   invisible="billing_mode != 'forfait'"/>
                         </group>
                         <group string="Price and margin">
+                            <field name="billing_mode" widget="radio" options="{'horizontal': true}"/>
+                            <div class="text-muted" colspan="2" invisible="billing_mode != 'regie'">
+                                Time and materials (régie): the customer pays each day worked at the daily rate. The price follows the time spent: a longer mission is billed more.
+                            </div>
+                            <div class="text-muted" colspan="2" invisible="billing_mode != 'forfait'">
+                                Fixed price (forfait): you sell a price for a result, whatever the time spent. If the work needs more days than planned, the margin falls: the risk is yours, so estimate the days with care.
+                            </div>
                             <div colspan="2"><field name="margin_wanted" widget="margin_slider" nolabel="1"/></div>
                             <label for="margin_rate"/>
                             <div class="d-flex align-items-baseline gap-4">
@@ -161,7 +171,10 @@
                                        decoration-warning="margin_month &gt;= 0 and margin_month &lt; commission_threshold_amount"/>
                             </div>
                             <div colspan="2"><field name="daily_rate" widget="rate_slider" nolabel="1"/></div>
-                            <field name="daily_rate" class="fw-bold"/>
+                            <field name="fixed_price" class="fw-bold" invisible="billing_mode != 'forfait'"/>
+                            <field name="daily_rate" class="fw-bold" invisible="billing_mode == 'forfait'"/>
+                            <field name="daily_rate" string="Equivalent daily rate" invisible="billing_mode != 'forfait'"/>
+                            <field name="breakeven_days" invisible="billing_mode != 'forfait'"/>
                             <label for="target_rate_2" string="Indicative daily rate" class="text-muted"/>
                             <div class="o_margin_indicative d-flex flex-nowrap align-items-center gap-1 text-muted">
                                 <field name="target_rate_2" widget="percentage" class="o_margin_pct"/>
@@ -367,7 +380,8 @@
                             <field name="month_ids">
                                 <list editable="bottom">
                                     <field name="date"/>
-                                    <field name="leave_days"/>
+                                    <field name="days_planned" column_invisible="not parent.mission_days"/>
+                                    <field name="leave_days" column_invisible="parent.mission_days"/>
                                     <field name="working_days"/>
                                     <field name="revenue" sum="Total"/>
                                     <field name="margin" sum="Total"/>

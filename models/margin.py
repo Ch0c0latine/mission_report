@@ -119,6 +119,16 @@ class MissionMargin(models.Model):
     other_yearly_note = fields.Char(string="Note")
 
     # ---- Price --------------------------------------------------------------------------------
+    billing_mode = fields.Selection(
+        [('regie', "Time and materials (régie)"), ('forfait', "Fixed price (forfait)")],
+        string="Billing method", default='regie', required=True,
+        help="Time and materials (régie): the customer pays each day worked at the daily rate, so the price follows "
+             "the time spent.\n"
+             "Fixed price (forfait): the price is agreed for a result, whatever the time spent. If the work needs more "
+             "days than planned, the margin falls: the risk is yours.")
+    fixed_price = fields.Monetary(
+        string="Fixed price", compute='_compute_fixed_price', inverse='_inverse_fixed_price', readonly=False,
+        help="The price agreed for the whole work: the days estimated at the equivalent daily rate.")
     margin_wanted = fields.Integer(
         string="Margin slider (%)", default=20,
         help="Move the slider: the daily rate follows the margin wanted (rounded up to 5 €) when the costs "
@@ -130,6 +140,11 @@ class MissionMargin(models.Model):
     rebilled_monthly = fields.Monetary(string="Expenses re-invoiced per month")
     rebilled_monthly_note = fields.Char(string="Note")
     duration_months = fields.Float(string="Duration of the mission (months)", default=12.0)
+    mission_days = fields.Float(
+        string="Intervention days planned",
+        help="For a mission by the day (14 days over 6 months, for instance): the days planned in all. Empty: "
+             "the consultant works full time. The cost, the margin and the billing of a day stay the same; the "
+             "month and the mission follow the days planned.")
     start_date = fields.Date(string="Start", default=fields.Date.context_today)
     employee_charge_rate = fields.Float(
         string="Employee charges", digits=(16, 3), readonly=True, copy=True, default=0.23)
@@ -194,6 +209,10 @@ class MissionMargin(models.Model):
     # ---- Results ------------------------------------------------------------------------------
     days_per_year = fields.Float(string="Days worked a year", compute='_compute_results', digits=(16, 2))
     days_per_month = fields.Float(string="Days worked a month", compute='_compute_results', digits=(16, 2))
+    mission_days_total = fields.Float(string="Days of the mission", compute='_compute_results', digits=(16, 2))
+    breakeven_days = fields.Float(
+        string="Days before the margin is gone", compute='_compute_results', digits=(16, 1),
+        help="Days of work that the price pays: beyond, the mission loses money.")
     base_cost = fields.Monetary(string="Pay and charges a year", compute='_compute_results')
     overhead_cost = fields.Monetary(string="Fixed and indirect costs a year", compute='_compute_results')
     loaded_cost = fields.Monetary(string="Loaded cost a year", compute='_compute_results')
@@ -260,7 +279,8 @@ class MissionMargin(models.Model):
         'employer_charge_rate', 'overhead_rate', 'payslip_monthly_cost', 'freelance_daily_rate',
         'other_worked_daily', 'daily_cost_calendar', 'daily_cost_worked', 'fixed_monthly_amount', 'mileage_monthly',
         'expenses_monthly', 'training_yearly', 'ppe_yearly', 'equipment_yearly', 'other_yearly', 'daily_rate',
-        'rebilled_daily', 'rebilled_monthly', 'duration_months', 'employee_charge_rate', 'target_amount_1',
+        'rebilled_daily', 'rebilled_monthly', 'duration_months', 'mission_days', 'billing_mode', 'employee_charge_rate',
+        'target_amount_1',
         'target_amount_2', 'target_rate_1', 'target_rate_2', 'commission_threshold_rate',
         'commission_threshold_amount', 'commission_rule_id.rate_sourcing', 'commission_rule_id.rate_referral',
         'commission_rule_id.rate_candidate', 'commission_rule_id.rate_client', 'commission_rule_id.rate_full',
@@ -293,21 +313,26 @@ class MissionMargin(models.Model):
             total = base + overhead + others
             revenue = (m.daily_rate + rebilled) * days
             m.igd_daily = igd
-            m.igd_month = allowances / 12
             m.rebilled_total = rebilled
             margin = revenue - total
             per_day = (lambda amount: amount / days if days else 0.0)
-            monthly_days = days / 12
-            margin_month = margin / 12
+            # A mission by the day (14 days over 6 months): the month follows the days planned, a day costs and
+            # earns the same.
+            monthly_days = (m.mission_days / max(m.duration_months, 1.0)) if m.mission_days else days / 12
+            mission_days = m.mission_days or monthly_days * m.duration_months
+            m.igd_month = igd * monthly_days
+            margin_month = per_day(margin) * monthly_days
             rate = margin / revenue if revenue else 0.0
             m.days_per_year = days
             m.days_per_month = monthly_days
+            m.mission_days_total = mission_days
+            m.breakeven_days = ((m.daily_rate + rebilled) * mission_days) / per_day(total) if per_day(total) else 0.0
             m.base_cost = base
             m.overhead_cost = overhead
             m.loaded_cost = base + overhead
             m.other_costs = others
             m.total_cost = total
-            m.total_cost_month = total / 12
+            m.total_cost_month = per_day(total) * monthly_days
             m.cost_per_day = per_day(total)
             m.revenue = revenue
             m.price_per_day = m.daily_rate + rebilled
@@ -315,20 +340,22 @@ class MissionMargin(models.Model):
             m.margin_month = margin_month
             m.margin_day = per_day(margin)
             m.margin_rate = rate
-            m.margin_duration = margin_month * m.duration_months
+            m.margin_duration = per_day(margin) * mission_days
             # Daily rate that gives a target margin: the cost of a day plus what is wanted, less what is re-invoiced.
-            m.rate_target_1 = ((total / 12 + m.target_amount_1) / monthly_days - rebilled) if days else 0.0
-            m.rate_target_2 = ((total / 12 + m.target_amount_2) / monthly_days - rebilled) if days else 0.0
+            m.rate_target_1 = (per_day(total) + m.target_amount_1 / monthly_days - rebilled) \
+                if days and monthly_days else 0.0
+            m.rate_target_2 = (per_day(total) + m.target_amount_2 / monthly_days - rebilled) \
+                if days and monthly_days else 0.0
             m.rate_target_rate_1 = (per_day(total) / (1 - m.target_rate_1) - rebilled) \
                 if days and m.target_rate_1 < 1 else 0.0
             m.rate_target_rate_2 = (per_day(total) / (1 - m.target_rate_2) - rebilled) \
                 if days and m.target_rate_2 < 1 else 0.0
             net = 0.0 if freelance else m.gross_salary * (1 - m.employee_charge_rate)
-            m.net_salary_month = net / 12
+            m.net_salary_month = per_day(net) * monthly_days
             m.net_salary_day = per_day(net)
-            m.daily_fees_month = agreed / 12
+            m.daily_fees_month = per_day(agreed) * monthly_days
             m.daily_fees_day = per_day(agreed)
-            m.net_income_month = (net + agreed) / 12
+            m.net_income_month = per_day(net + agreed) * monthly_days
             m.net_income_day = per_day(net + agreed)
             m.net_income_year = net + agreed
             eligible = rate > m.commission_threshold_rate or margin_month > m.commission_threshold_amount
@@ -339,10 +366,12 @@ class MissionMargin(models.Model):
                 m['commission_' + role] = share if eligible and margin_month > 0 else 0.0
             m.commission_cap_amount = max(margin_month, 0.0) * m.commission_cap if eligible else 0.0
             calendar = m.daily_cost_calendar * 365
+            activity = monthly_days / (days / 12) if days else 0.0
             m.breakdown = m._breakdown(freelance, base, overhead, agreed + allowances, calendar,
-                                       others - agreed - allowances - calendar, margin, revenue)
+                                       others - agreed - allowances - calendar, margin, revenue, activity)
 
-    def _breakdown(self, freelance, base, overhead, paid_to_consultant, calendar, other, margin, revenue):
+    def _breakdown(self, freelance, base, overhead, paid_to_consultant, calendar, other, margin, revenue,
+                   activity=1.0):
         """Where a month of billing goes: the pay of the consultant (net, then the charges), the amounts paid
         to them, the fixed and indirect costs, the other costs and what stays with the company."""
         self.ensure_one()
@@ -360,12 +389,13 @@ class MissionMargin(models.Model):
             ('overhead', _("Fixed and indirect costs"), overhead),
             ('other', _("Other mission charges"), other),
             ('margin', _("Margin of the company"), margin)]
+        month = activity / 12
         return {
-            'total': revenue / 12,
-            'deficit': max(-margin, 0.0) / 12,
+            'total': revenue * month,
+            'deficit': max(-margin, 0.0) * month,
             'symbol': self.currency_id.symbol or '',
             'after': self.currency_id.position == 'after',
-            'segments': [{'key': key, 'label': label, 'value': value / 12}
+            'segments': [{'key': key, 'label': label, 'value': value * month}
                          for key, label, value in parts if value > 0.005],
         }
 
@@ -512,6 +542,30 @@ class MissionMargin(models.Model):
         self.rate_manual = False
         self._follow_margin()
 
+    def _days_for_price(self):
+        """The days a fixed price is shared between: the days estimated, or a full-time mission."""
+        self.ensure_one()
+        days = 365 - self.weekend_days - self.public_holidays - self.paid_leave_days - self.rtt_days
+        return self.mission_days or (max(days, 0.0) / 12 * self.duration_months)
+
+    @api.depends('daily_rate', 'mission_days', 'duration_months', 'weekend_days', 'public_holidays',
+                 'paid_leave_days', 'rtt_days')
+    def _compute_fixed_price(self):
+        for m in self:
+            m.fixed_price = m.daily_rate * m._days_for_price()
+
+    def _inverse_fixed_price(self):
+        for m in self:
+            days = m._days_for_price()
+            if days:
+                m.with_context(margin_follow=False).daily_rate = m.fixed_price / days
+
+    @api.onchange('fixed_price')
+    def _onchange_fixed_price(self):
+        days = self._days_for_price()
+        if days:
+            self.daily_rate = self.fixed_price / days
+
     @api.onchange('daily_rate')
     def _onchange_daily_rate(self):
         # Typed by hand: unless it is the rate the margin wanted gave (the sheet sets it itself).
@@ -582,11 +636,20 @@ class MissionMargin(models.Model):
             raise UserError(_("Choose the customer first."))
         if not self.project_id:
             self.action_create_project()
-        days = sum(self.month_ids.mapped('working_days')) or round(self.days_per_month * max(self.duration_months, 1))
+        days = sum(self.month_ids.mapped('working_days')) or round(self.mission_days_total)
         product = self._quote_product()
-        line = {'product_id': product.id, 'product_uom_qty': days, 'price_unit': self.daily_rate,
+        quantity, price = days, self.daily_rate
+        label = self.name
+        if self.billing_mode == 'forfait':
+            # Fixed price: one line for the whole work, the days estimated said in its description.
+            quantity, price = 1.0, round(self.fixed_price, 2)
+            label = _("%(name)s - fixed price (%(days)s days estimated)", name=self.name,
+                      days=("%g" % self.mission_days_total))
+        line = {'product_id': product.id, 'product_uom_qty': quantity, 'price_unit': price,
                 'project_id': self.project_id.id} if product else {
-            'name': self.name, 'product_uom_qty': days, 'price_unit': self.daily_rate}
+            'name': label, 'product_uom_qty': quantity, 'price_unit': price}
+        if product and self.billing_mode == 'forfait':
+            line['name'] = label
         values = {
             'partner_id': self.partner_id.id, 'project_id': self.project_id.id, 'mission_volet_number': 1,
             'order_line': [(0, 0, line)]}
@@ -611,10 +674,15 @@ class MissionMargin(models.Model):
             leave = {line.date: line.leave_days for line in m.month_ids}
             first = m.start_date.replace(day=1)
             count = max(int(round(m.duration_months)), 1) if m.duration_months else 1
+            # A mission by the day: the days planned are shared between the months (the first ones get the rest).
+            share, rest = divmod(int(round(m.mission_days)), count) if m.mission_days else (0, 0)
             commands = [(5, 0, 0)]
             for i in range(count):
                 month = date(first.year + (first.month - 1 + i) // 12, (first.month - 1 + i) % 12 + 1, 1)
-                commands.append((0, 0, {'date': month, 'leave_days': leave.get(month, 0.0)}))
+                values = {'date': month, 'leave_days': leave.get(month, 0.0)}
+                if m.mission_days:
+                    values['days_planned'] = share + (1 if i < rest else 0)
+                commands.append((0, 0, values))
             m.month_ids = commands
         return True
 
@@ -837,15 +905,22 @@ class MissionMarginMonth(models.Model):
     margin_id = fields.Many2one('mission.margin', required=True, ondelete='cascade')
     date = fields.Date(string="Month", required=True)
     leave_days = fields.Float(string="Planned leave, closure")
+    days_planned = fields.Float(
+        string="Days planned", help="For a mission by the day: the days of intervention planned this month.")
     working_days = fields.Float(string="Working days", compute='_compute_month')
     revenue = fields.Monetary(string="Monthly billing", compute='_compute_month', currency_field='currency_id')
     margin = fields.Monetary(string="Monthly margin", compute='_compute_month', currency_field='currency_id')
     currency_id = fields.Many2one(related='margin_id.currency_id')
 
-    @api.depends('date', 'leave_days', 'margin_id.price_per_day', 'margin_id.margin_day')
+    @api.depends('date', 'leave_days', 'days_planned', 'margin_id.mission_days', 'margin_id.price_per_day',
+                 'margin_id.margin_day')
     def _compute_month(self):
         for line in self:
-            days = working_days_of_month(self.env, line.date.replace(day=1), line.leave_days) if line.date else 0.0
+            if line.margin_id.mission_days:
+                days = line.days_planned
+            else:
+                days = working_days_of_month(self.env, line.date.replace(day=1), line.leave_days) \
+                    if line.date else 0.0
             line.working_days = days
             line.revenue = days * line.margin_id.price_per_day
             line.margin = days * line.margin_id.margin_day

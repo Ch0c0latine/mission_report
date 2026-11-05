@@ -89,6 +89,12 @@ msgstr ""
 #. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/margin.py:0
+msgid "%(name)s - fixed price (%(days)s days estimated)"
+msgstr "%(name)s - forfait (%(days)s jours estimés)"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/margin.py:0
 msgid "%(rate)s a day"
 msgstr "%(rate)s par jour"
 
@@ -738,6 +744,11 @@ msgid "Billing forecast"
 msgstr "Prévisionnel de facturation"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__billing_mode
+msgid "Billing method"
+msgstr "Mode de facturation"
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__price_per_day
 msgid "Billing per worked day"
 msgstr "Facturation par jour travaillé"
@@ -1220,14 +1231,40 @@ msgid "Days"
 msgstr "Jours"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__breakeven_days
+msgid "Days before the margin is gone"
+msgstr "Jours avant que la marge disparaisse"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid "Days estimated for the work"
+msgstr "Jours estimés pour le travail"
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_sale_order_line__mission_day_line
 msgid "Days line"
 msgstr "Ligne de journées"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__mission_days_total
+msgid "Days of the mission"
+msgstr "Jours de la mission"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_margin__breakeven_days
+msgid "Days of work that the price pays: beyond, the mission loses money."
+msgstr ""
+"Jours de travail que le prix paie : au-delà, la mission perd de l'argent."
+
+#. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_margin__rtt_days
 msgid "Days off of an employee on a day-based contract (forfait jour)."
 msgstr "Jours de repos d'un salarié au forfait jour."
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin_month__days_planned
+msgid "Days planned"
+msgstr "Jours prévus"
 
 #. module: mission_report
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_margin__igd_expat_basis__worked
@@ -1517,6 +1554,11 @@ msgid "Equipment (PC, tools, phone) a year"
 msgstr "Matériel (PC, outils, téléphone) par an"
 
 #. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid "Equivalent daily rate"
+msgstr "TJM équivalent"
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_volet_wizard__plan
 msgid "Estimate"
 msgstr "Prévisionnel"
@@ -1729,6 +1771,27 @@ msgid "Fixed and indirect costs a year"
 msgstr "Frais fixes et indirects par an"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__fixed_price
+msgid "Fixed price"
+msgstr "Prix forfaitaire"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_margin__billing_mode__forfait
+msgid "Fixed price (forfait)"
+msgstr "Forfait (prix fixe)"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid ""
+"Fixed price (forfait): you sell a price for a result, whatever the time "
+"spent. If the work needs more days than planned, the margin falls: the risk "
+"is yours, so estimate the days with care."
+msgstr ""
+"Au forfait, vous vendez un prix fixe pour un résultat, quel que soit le "
+"temps passé. Si le travail demande plus de jours que prévu, la marge baisse "
+": le risque est pour vous, estimez donc les jours avec prudence."
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__message_follower_ids
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__message_follower_ids
 msgid "Followers"
@@ -1749,6 +1812,25 @@ msgstr "Icône Font Awesome, p. ex. fa-tasks"
 #: model:ir.model.fields,help:mission_report.field_mission_activity_report_template_cell__block
 msgid "For a column: the block(s) of lines it applies to."
 msgstr "Pour une colonne : le ou les blocs de lignes concernés."
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_margin__mission_days
+msgid ""
+"For a mission by the day (14 days over 6 months, for instance): the days "
+"planned in all. Empty: the consultant works full time. The cost, the margin "
+"and the billing of a day stay the same; the month and the mission follow the"
+" days planned."
+msgstr ""
+"Pour une mission à la journée (14 jours sur 6 mois, par exemple) : les jours"
+" prévus en tout. Vide : le consultant travaille à temps plein. Le coût, la "
+"marge et la facturation d'une journée ne changent pas ; le mois et la "
+"mission suivent les jours prévus."
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_margin_month__days_planned
+msgid "For a mission by the day: the days of intervention planned this month."
+msgstr ""
+"Pour une mission à la journée : les jours d'intervention prévus ce mois-ci."
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__forecast_revenue
@@ -1831,6 +1913,11 @@ msgstr "Gestion complète côté candidat"
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__commission_rate_client
 msgid "Full management, client side"
 msgstr "Gestion complète côté client"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid "Full time"
+msgstr "Temps plein"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_igd_wizard_view_form
@@ -2078,6 +2165,11 @@ msgstr "Informations par jour"
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template__kind__internal
 msgid "Internal (missions and time off)"
 msgstr "Interne (missions et congés)"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__mission_days
+msgid "Intervention days planned"
+msgstr "Jours d'intervention prévus"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_sale_order__mission_invoice_partner_ids
@@ -3894,6 +3986,15 @@ msgid "The person, or the freelance, who does the mission."
 msgstr "La personne, ou le freelance, qui réalise la mission."
 
 #. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_margin__fixed_price
+msgid ""
+"The price agreed for the whole work: the days estimated at the equivalent "
+"daily rate."
+msgstr ""
+"Le prix convenu pour l'ensemble du travail : les jours estimés au TJM "
+"équivalent."
+
+#. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_margin__project_id
 msgid "The project of the mission, a draft one until the order is signed."
 msgstr ""
@@ -4057,6 +4158,29 @@ msgstr "Calendrier des congés"
 #: model:ir.model.fields,field_description:mission_report.field_hr_leave_report_calendar__holiday_status_id
 msgid "Time Off Type"
 msgstr "Type de congé"
+
+#. module: mission_report
+#: model:ir.model.fields.selection,name:mission_report.selection__mission_margin__billing_mode__regie
+msgid "Time and materials (régie)"
+msgstr "Régie (au temps passé)"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_margin__billing_mode
+msgid ""
+"Time and materials (régie): the customer pays each day worked at the daily rate, so the price follows the time spent.\n"
+"Fixed price (forfait): the price is agreed for a result, whatever the time spent. If the work needs more days than planned, the margin falls: the risk is yours."
+msgstr ""
+"En régie, le client paie chaque jour travaillé au tarif journalier (TJM) : le prix suit le temps passé.\n"
+"Au forfait, le prix est convenu pour un résultat, quel que soit le temps passé. Si le travail demande plus de jours que prévu, la marge baisse : le risque est pour vous."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid ""
+"Time and materials (régie): the customer pays each day worked at the daily "
+"rate. The price follows the time spent: a longer mission is billed more."
+msgstr ""
+"En régie, le client paie chaque jour travaillé au tarif journalier (TJM). Le"
+" prix suit le temps passé : une mission plus longue est facturée davantage."
 
 #. module: mission_report
 #. odoo-python

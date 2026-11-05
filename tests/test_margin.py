@@ -314,6 +314,71 @@ class TestMargin(TransactionCase):
             self.assertFalse(form.rate_manual)
             self.assertEqual(form.margin_wanted, 15)
 
+    def test_a_mission_by_the_day_follows_the_days_planned(self):
+        """14 days of intervention over 6 months: a day costs and earns what it did, the month and the mission
+        follow the days planned."""
+        full = self._sheet(duration_months=6.0)
+        daily = self._sheet(duration_months=6.0, mission_days=14.0)
+        self.assertAlmostEqual(daily.margin_day, full.margin_day, places=4)
+        self.assertAlmostEqual(daily.cost_per_day, full.cost_per_day, places=4)
+        self.assertAlmostEqual(daily.days_per_month, 14 / 6, delta=0.05)
+        self.assertAlmostEqual(daily.mission_days_total, 14.0, places=4)
+        self.assertAlmostEqual(daily.margin_month, daily.margin_day * 14 / 6, delta=0.05)
+        self.assertAlmostEqual(daily.margin_duration, daily.margin_day * 14, delta=0.05)
+        self.assertAlmostEqual(daily.total_cost_month, daily.cost_per_day * 14 / 6, delta=0.05)
+        self.assertAlmostEqual(daily.net_income_month, daily.net_income_day * 14 / 6, delta=0.05)
+        # The ring is the month of this mission: the parts add up to its billing.
+        parts = {part['key']: part['value'] for part in daily.breakdown['segments']}
+        self.assertAlmostEqual(daily.breakdown['total'], daily.price_per_day * 14 / 6, delta=0.05)
+        self.assertAlmostEqual(sum(parts.values()), daily.price_per_day * 14 / 6, delta=0.05)
+        # The rate for a margin of the month follows the days planned.
+        self.assertGreater(daily.rate_target_2, daily.cost_per_day)
+        # The months share the days planned; the order is for the days planned.
+        daily.start_date = '2031-05-01'
+        daily.action_generate_months()
+        self.assertEqual(daily.month_ids.mapped('days_planned'), [3.0, 3.0, 2.0, 2.0, 2.0, 2.0])
+        self.assertAlmostEqual(daily.forecast_days, 14.0)
+        self.assertAlmostEqual(daily.forecast_revenue, daily.price_per_day * 14, delta=0.5)
+        partner = self.env['res.partner'].create({'name': "Client journalier"})
+        daily.partner_id = partner
+        daily.action_create_order()
+        self.assertEqual(sum(daily.order_id.order_line.mapped('product_uom_qty')), 14.0)
+        # Full time is unchanged.
+        self.assertAlmostEqual(full.days_per_month, 218 / 12, delta=0.05)
+        self.assertAlmostEqual(full.margin_duration, full.margin_day * 218 / 12 * 6, delta=0.5)
+
+    def test_a_fixed_price_is_the_daily_rate_of_the_days_estimated(self):
+        sheet = self._sheet(billing_mode='forfait', mission_days=10.0, duration_months=2.0)
+        self.assertAlmostEqual(sheet.fixed_price, sheet.daily_rate * 10, delta=0.05)
+        self.assertAlmostEqual(sheet.margin_duration, sheet.margin_day * 10, delta=0.05)
+        # More than the days estimated, the margin is gone: the days the price pays.
+        self.assertAlmostEqual(sheet.breakeven_days, sheet.fixed_price / sheet.cost_per_day, delta=0.05)
+        self.assertGreater(sheet.breakeven_days, 10.0)
+        # Typing the price gives the equivalent daily rate.
+        sheet.fixed_price = 6000.0
+        self.assertAlmostEqual(sheet.daily_rate, 600.0, delta=0.05)
+        self.assertAlmostEqual(sheet.fixed_price, 6000.0, delta=0.05)
+        # In an unsaved form too.
+        from odoo.tests import Form
+        with Form(self.env['mission.margin']) as form:
+            form.billing_mode = 'forfait'
+            form.mission_days = 8.0
+            form.fixed_price = 4000.0
+            self.assertAlmostEqual(form.daily_rate, 500.0, delta=0.05)
+        # The quote is one line at the fixed price.
+        partner = self.env['res.partner'].create({'name': "Client au forfait"})
+        sheet.partner_id = partner
+        sheet.action_create_order()
+        line = sheet.order_id.order_line
+        self.assertEqual(len(line), 1)
+        self.assertEqual(line.product_uom_qty, 1.0)
+        self.assertAlmostEqual(line.price_unit, 6000.0, delta=0.05)
+        self.assertIn("10", line.name)
+        # Time and materials stays by the day.
+        regie = self._sheet(mission_days=10.0, partner_id=partner.id)
+        regie.action_create_order()
+        self.assertEqual(regie.order_id.order_line.product_uom_qty, 10.0)
+
     def test_the_billing_of_a_month_is_shared_between_the_consultant_the_costs_and_the_margin(self):
         sheet = self._sheet(igd_lodging=True, igd_lunch=True, other_yearly=1200.0)
         data = sheet.breakdown
