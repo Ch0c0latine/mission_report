@@ -58,9 +58,18 @@ class MissionMargin(models.Model):
     order_id = fields.Many2one(
         'sale.order', string="Order", index=True, tracking=True,
         help="Set once the order exists: the calculation then stays with it.")
-    partner_id = fields.Many2one('res.partner', string="Customer", compute='_compute_partner', store=True,
-                                 readonly=False)
-    consultant = fields.Char(string="Consultant", help="The person, or the freelance, who does the mission.")
+    partner_id = fields.Many2one(
+        'res.partner', string="Customer", compute='_compute_partner', store=True, readonly=False,
+        domain="['|', ('customer_rank', '>', 0), ('is_company', '=', True)]",
+        help="A customer: a company, or a contact that has already bought. It follows the order and the project.")
+    consultant_id = fields.Many2one(
+        'res.partner', string="Consultant", index=True, domain="[('id', 'in', consultant_partner_ids)]",
+        help="The person, or the freelance, who does the mission: someone of the team or a candidate (create it "
+             "here). The salary of a member of the team is read from their contract.")
+    consultant_partner_ids = fields.Many2many('res.partner', compute='_compute_consultant_partners', compute_sudo=True)
+    consultant = fields.Char(
+        string="Consultant name", compute='_compute_consultant', store=True, readonly=False,
+        help="The name of the consultant, kept when the person is not (yet) in the contacts.")
     note = fields.Html(string="Notes")
 
     state = fields.Selection(
@@ -274,6 +283,25 @@ class MissionMargin(models.Model):
     forecast_revenue = fields.Monetary(string="Forecast billing", compute='_compute_forecast')
     forecast_margin = fields.Monetary(string="Forecast margin", compute='_compute_forecast')
     forecast_days = fields.Float(string="Forecast worked days", compute='_compute_forecast')
+
+    _order_unique = models.Constraint(
+        'unique (order_id)', "This order already has its margin calculation: open it instead of making another.")
+
+    @api.depends('consultant_id')
+    def _compute_consultant(self):
+        for m in self:
+            if m.consultant_id:
+                m.consultant = m.consultant_id.name
+
+    def _compute_consultant_partners(self):
+        """The people to choose from: the contacts of the employees and the candidates."""
+        employees = self.env['hr.employee'].sudo().search([('work_contact_id', '!=', False)])
+        tag = self.env.ref('mission_report.partner_category_candidate', raise_if_not_found=False)
+        candidates = self.env['res.partner'].sudo().search([('category_id', 'in', tag.ids)]) if tag else \
+            self.env['res.partner']
+        people = employees.work_contact_id | candidates
+        for m in self:
+            m.consultant_partner_ids = people
 
     @api.depends('project_id', 'order_id', 'order_id.state')
     def _compute_state(self):
@@ -605,6 +633,92 @@ class MissionMargin(models.Model):
         for m in self:
             if m.billing_mode == 'forfait' and m.mission_days <= 0:
                 raise UserError(_("A fixed price needs the days estimated for the work."))
+
+    # ------------------------------------------------------------------
+    # The entry follows the deal: project -> order -> customer, consultant, conditions
+    # ------------------------------------------------------------------
+
+    def _orders_of_project(self, project):
+        """The orders of a project, the confirmed and the newest first."""
+        Order = self.env['sale.order']
+        orders = Order.search(['|', ('project_id', '=', project.id), ('order_line.project_id', '=', project.id),
+                               ('state', '!=', 'cancel')])
+        for name in ('sale_order_id', 'reinvoiced_sale_order_id'):
+            if name in project._fields:
+                orders |= project.sudo()[name]
+        orders = orders.filtered(lambda order: order.state != 'cancel')
+        return orders.sorted(key=lambda order: (order.state == 'sale', order.date_order or order.create_date),
+                             reverse=True)
+
+    def _sheet_of_order(self, order):
+        return self.search([('order_id', '=', order.id), ('id', '!=', self._origin.id)], limit=1)
+
+    def _consultant_of_order(self, order):
+        """The one person who has entries on the missions of the order, when there is only one."""
+        projects = order._mission_projects()
+        if not projects:
+            return self.env['res.partner']
+        employees = self.env['hr.leave'].sudo().search([('project_id', 'in', projects.ids)]).employee_id
+        return employees.work_contact_id if len(employees) == 1 else self.env['res.partner']
+
+    @api.onchange('project_id')
+    def _onchange_project_id(self):
+        project = self.project_id
+        if not project:
+            return
+        if self.order_id and (self.order_id.project_id == project or project in self.order_id._mission_projects()):
+            return
+        order = self._orders_of_project(project)[:1]
+        if order:
+            self.order_id = order
+        elif project.partner_id:
+            self.partner_id = project.partner_id
+
+    @api.onchange('order_id')
+    def _onchange_order_id(self):
+        order = self.order_id
+        if not order:
+            return
+        other = self._sheet_of_order(order)
+        if other:
+            self.order_id = False
+            return {'warning': {
+                'title': _("This order already has its calculation"),
+                'message': _("The calculation \"%(name)s\" is already made for %(order)s: open it instead of "
+                             "making another.", name=other.name, order=order.name)}}
+        self.partner_id = order.partner_id
+        project = order.project_id or order._mission_projects()[:1]
+        if project and not self.project_id:
+            self.project_id = project
+        if not self.consultant_id:
+            self.consultant_id = self._consultant_of_order(order)
+        self._apply_order_conditions(order)
+
+    def _apply_order_conditions(self, order):
+        """The conditions of the order into the calculation: the daily rate, the days, the dates. The margin shows
+        at once."""
+        lines = order.order_line.filtered(lambda line: not line.display_type and line.product_uom_qty)
+        if not lines or order.mission_billing_unit == 'hour':
+            return
+        self.billing_mode = 'regie'
+        self.daily_rate = lines[0].price_unit
+        self.mission_days = sum(lines.mapped('product_uom_qty'))
+        start, end = order.mission_date_start, order.mission_date_end
+        if start:
+            self.start_date = start
+            if end and end >= start:
+                self.duration_months = max(round(((end - start).days + 1) / 30.44, 1), 1.0)
+
+    @api.onchange('consultant_id')
+    def _onchange_consultant_id(self):
+        """A member of the team: the salary of the contract (monthly, over twelve months)."""
+        partner = self.consultant_id
+        if not partner:
+            return
+        employee = self.env['hr.employee'].sudo().search([('work_contact_id', '=', partner.id)], limit=1)
+        if employee and employee.contract_wage:
+            self.cost_origin = 'employee'
+            self.gross_salary = employee.contract_wage * 12
 
     def _days_for_price(self):
         """The days a fixed price is shared between: the days estimated, or a full-time mission."""

@@ -319,6 +319,15 @@ msgstr ""
 "facturation..."
 
 #. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_margin__partner_id
+msgid ""
+"A customer: a company, or a contact that has already bought. It follows the "
+"order and the project."
+msgstr ""
+"Un client : une entreprise, ou un contact qui a déjà acheté. Il suit la "
+"commande et le projet."
+
+#. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_res_company__igd_real_meal_product_ids
 #: model:ir.model.fields,help:mission_report.field_res_config_settings__igd_real_meal_product_ids
 msgid "A day that carries an actual meal gets no meal IGD."
@@ -826,6 +835,11 @@ msgid "Cancel the entry"
 msgstr "Annuler la saisie"
 
 #. module: mission_report
+#: model:res.partner.category,name:mission_report.partner_category_candidate
+msgid "Candidate"
+msgstr "Candidat"
+
+#. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
 msgid "Candidate side"
 msgstr "Côté candidat"
@@ -1045,10 +1059,20 @@ msgid "Config Settings"
 msgstr "Paramètres de configuration"
 
 #. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_margin__consultant
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__consultant_id
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
 msgid "Consultant"
 msgstr "Consultant"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__consultant_partner_ids
+msgid "Consultant Partner"
+msgstr "Contact du consultant"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__consultant
+msgid "Consultant name"
+msgstr "Nom du consultant"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__cost_origin
@@ -4035,6 +4059,16 @@ msgstr "Les indemnités s'ajoutent aux frais refacturés par jour."
 #. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/margin.py:0
+msgid ""
+"The calculation \"%(name)s\" is already made for %(order)s: open it instead "
+"of making another."
+msgstr ""
+"Le calcul « %(name)s » est déjà fait pour %(order)s : ouvrez-le plutôt que "
+"d'en faire un autre."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/margin.py:0
 msgid "The calculation (%(mine)s) differs from the order (%(order)s)."
 msgstr "Le calcul (%(mine)s) s'écarte de la commande (%(order)s)."
 
@@ -4216,6 +4250,15 @@ msgid "The mission rows of template “%s” are inconsistent."
 msgstr "Les lignes de mission du modèle « %s » sont incohérentes."
 
 #. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_margin__consultant
+msgid ""
+"The name of the consultant, kept when the person is not (yet) in the "
+"contacts."
+msgstr ""
+"Le nom du consultant, conservé quand la personne n'est pas (encore) dans les"
+" contacts."
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/volet.py:0
 msgid ""
@@ -4287,9 +4330,15 @@ msgstr ""
 "» se chevauchent."
 
 #. module: mission_report
-#: model:ir.model.fields,help:mission_report.field_mission_margin__consultant
-msgid "The person, or the freelance, who does the mission."
-msgstr "La personne, ou le freelance, qui réalise la mission."
+#: model:ir.model.fields,help:mission_report.field_mission_margin__consultant_id
+msgid ""
+"The person, or the freelance, who does the mission: someone of the team or a"
+" candidate (create it here). The salary of a member of the team is read from"
+" their contract."
+msgstr ""
+"La personne, ou le freelance, qui fait la mission : quelqu'un de l'équipe ou"
+" un candidat (à créer ici). Le salaire d'un membre de l'équipe est lu dans "
+"son contrat."
 
 #. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_margin__fixed_price
@@ -4426,6 +4475,21 @@ msgid ""
 msgstr ""
 "Cette saisie figure dans le compte rendu « %(report)s » (%(state)s) : ses "
 "journées ne peuvent plus être modifiées."
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/margin.py:0
+msgid "This order already has its calculation"
+msgstr "Cette commande a déjà son calcul"
+
+#. module: mission_report
+#: model:ir.model.constraint,message:mission_report.constraint_mission_margin_order_unique
+msgid ""
+"This order already has its margin calculation: open it instead of making "
+"another."
+msgstr ""
+"Cette commande a déjà son calcul de marge : ouvrez-le plutôt que d'en faire "
+"un autre."
 
 #. module: mission_report
 #. odoo-python

@@ -98,9 +98,10 @@ class TestMargin(TransactionCase):
     def test_the_name_follows_the_customer_in_a_form(self):
         partner = self.env['res.partner'].create({'name': "Client formulaire"})
         from odoo.tests import Form
+        alex = self.env['res.partner'].create({'name': "Alex"})
         with Form(self.env['mission.margin']) as form:
             form.partner_id = partner
-            form.consultant = "Alex"
+            form.consultant_id = alex
         self.assertIn("Client formulaire", form.record.name)
         self.assertIn("Alex", form.record.name)
 
@@ -435,6 +436,70 @@ class TestMargin(TransactionCase):
         self.assertAlmostEqual(sheet.mission_cost, sheet.cost_per_day * 14, delta=0.5)
         self.assertAlmostEqual(sheet.mission_revenue, sheet.price_per_day * 14, delta=0.5)
         self.assertAlmostEqual(sheet.mission_revenue - sheet.mission_cost, sheet.margin_duration, delta=1.0)
+
+    def _deal(self, rate=480.0, days=100.0, project_partner=True):
+        """A customer, a project and an order of the project, as the sales people have them."""
+        partner = self.env['res.partner'].create({'name': "Client affaire", 'is_company': True})
+        project = self.env['project.project'].create({'name': "Affaire", 'partner_id': partner.id})
+        product = self.env['mission.margin']._quote_product()
+        order = self.env['sale.order'].create({
+            'partner_id': partner.id, 'project_id': project.id,
+            'order_line': [(0, 0, {'product_id': product.id, 'product_uom_qty': days, 'price_unit': rate,
+                                   'project_id': project.id})]})
+        return partner, project, order
+
+    def test_the_people_to_choose_as_consultant(self):
+        team = self.env['hr.employee'].create({
+            'name': "Consultant maison",
+            'work_contact_id': self.env['res.partner'].create({'name': "Consultant maison"}).id})
+        candidate = self.env['res.partner'].create({
+            'name': "Candidat X", 'category_id': [(4, self.env.ref('mission_report.partner_category_candidate').id)]})
+        stranger = self.env['res.partner'].create({'name': "Fournisseur quelconque"})
+        people = self._sheet().consultant_partner_ids
+        self.assertIn(team.work_contact_id, people)
+        self.assertIn(candidate, people)
+        self.assertNotIn(stranger, people)
+
+    def test_the_project_gives_the_order_the_customer_and_the_conditions(self):
+        from odoo.tests import Form
+        partner, project, order = self._deal(rate=480.0, days=100.0)
+        with Form(self.env['mission.margin']) as form:
+            form.project_id = project
+            self.assertEqual(form.order_id, order)
+            self.assertEqual(form.partner_id, partner)
+            self.assertAlmostEqual(form.daily_rate, 480.0)
+            self.assertAlmostEqual(form.mission_days, 100.0)
+            self.assertTrue(form.margin_rate)
+        sheet = form.record
+        self.assertEqual(sheet.order_id, order)
+        self.assertEqual(sheet.project_id, project)
+        self.assertFalse(sheet.order_gap)
+
+    def test_the_consultant_gives_the_salary_of_the_contract(self):
+        from odoo.tests import Form
+        employee = self.env['hr.employee'].create({
+            'name': "Salarié du contrat",
+            'work_contact_id': self.env['res.partner'].create({'name': "Salarié du contrat"}).id})
+        employee.sudo().write({'wage': 3500.0})
+        if not employee.sudo().contract_wage:
+            self.skipTest("no wage on the contract in this version")
+        with Form(self.env['mission.margin']) as form:
+            form.consultant_id = employee.work_contact_id
+            self.assertAlmostEqual(form.gross_salary, 3500.0 * 12)
+            self.assertEqual(form.cost_origin, 'employee')
+
+    def test_an_order_has_one_calculation(self):
+        from psycopg2 import IntegrityError
+        from odoo.tools import mute_logger
+        partner, project, order = self._deal()
+        first = self._sheet(order_id=order.id, partner_id=partner.id)
+        with self.assertRaises(IntegrityError), mute_logger('odoo.sql_db'), self.cr.savepoint():
+            self._sheet(order_id=order.id)
+        # In the form, choosing that order says where the calculation is, and leaves the order empty.
+        new = self.env['mission.margin'].new({'order_id': order.id})
+        result = new._onchange_order_id()
+        self.assertIn(first.name, result['warning']['message'])
+        self.assertFalse(new.order_id)
 
     def test_the_billing_of_a_month_is_shared_between_the_consultant_the_costs_and_the_margin(self):
         sheet = self._sheet(igd_lodging=True, igd_lunch=True, other_yearly=1200.0)
