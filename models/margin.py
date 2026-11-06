@@ -322,13 +322,13 @@ class MissionMargin(models.Model):
         """The price of the calculation against the one of the order: the order only changes when the user says so."""
         for m in self:
             order = m.order_id.sudo()
-            lines = order.order_line.filtered(lambda line: not line.display_type) if order else order.order_line
+            lines = m._day_lines(order)
             m.order_price = m.order_gap = False
             m.order_gap_text = m.order_gap_short = False
             if not order or order.state == 'cancel' or not lines:
                 continue
             forfait = m.billing_mode == 'forfait'
-            price = sum(lines.mapped('price_subtotal')) if forfait else lines[0].price_unit
+            price = sum(lines.mapped('price_subtotal')) if forfait else m._day_price(lines)
             mine = m.fixed_price if forfait else m.daily_rate
             m.order_price = price
             if m.currency_id.compare_amounts(mine, price):
@@ -694,14 +694,27 @@ class MissionMargin(models.Model):
             self.consultant_id = self._consultant_of_order(order)
         self._apply_order_conditions(order)
 
+    @api.model
+    def _day_lines(self, order):
+        """The lines of the days of the mission (services): not the expenses re-invoiced, not the notes."""
+        lines = order.order_line.filtered('mission_day_line') if order else order.order_line
+        return lines.filtered('product_uom_qty') or order.order_line.filtered(
+            lambda line: not line.display_type and line.product_uom_qty) if order else lines
+
+    @api.model
+    def _day_price(self, lines):
+        """The daily rate of those lines: their total over their days."""
+        days = sum(lines.mapped('product_uom_qty'))
+        return round(sum(lines.mapped('price_subtotal')) / days, 2) if days else 0.0
+
     def _apply_order_conditions(self, order):
         """The conditions of the order into the calculation: the daily rate, the days, the dates. The margin shows
         at once."""
-        lines = order.order_line.filtered(lambda line: not line.display_type and line.product_uom_qty)
+        lines = self._day_lines(order)
         if not lines or order.mission_billing_unit == 'hour':
             return
         self.billing_mode = 'regie'
-        self.daily_rate = lines[0].price_unit
+        self.daily_rate = self._day_price(lines)
         self.mission_days = sum(lines.mapped('product_uom_qty'))
         start, end = order.mission_date_start, order.mission_date_end
         if start:
@@ -946,7 +959,7 @@ class MissionMarginConditionWizard(models.TransientModel):
                               "raise...)."))
         if getattr(order, 'locked', False) and order.state == 'sale':
             raise UserError(_("The order is locked: unlock it to change its price."))
-        lines = order.order_line.filtered(lambda line: not line.display_type)
+        lines = margin._day_lines(order)
         old, new = margin.order_price, self.new_price
         if margin.billing_mode == 'forfait':
             if len(lines) != 1:

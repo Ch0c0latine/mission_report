@@ -442,10 +442,15 @@ class TestMargin(TransactionCase):
         partner = self.env['res.partner'].create({'name': "Client affaire", 'is_company': True})
         project = self.env['project.project'].create({'name': "Affaire", 'partner_id': partner.id})
         product = self.env['mission.margin']._quote_product()
+        expenses = self.env['product.product'].create({
+            'name': "Frais à refacturer", 'type': 'service', 'can_be_expensed': True})
         order = self.env['sale.order'].create({
             'partner_id': partner.id, 'project_id': project.id,
-            'order_line': [(0, 0, {'product_id': product.id, 'product_uom_qty': days, 'price_unit': rate,
-                                   'project_id': project.id})]})
+            'order_line': [
+                (0, 0, {'product_id': product.id, 'product_uom_qty': days, 'price_unit': rate,
+                        'project_id': project.id}),
+                # The expenses re-invoiced are not days: they must not count in the conditions.
+                (0, 0, {'product_id': expenses.id, 'product_uom_qty': 2000.0, 'price_unit': 1.0})]})
         return partner, project, order
 
     def test_the_people_to_choose_as_consultant(self):
