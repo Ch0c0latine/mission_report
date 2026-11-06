@@ -732,6 +732,13 @@ class MissionMargin(models.Model):
         if employee and employee.contract_wage:
             self.cost_origin = 'employee'
             self.gross_salary = employee.contract_wage * 12
+        elif employee:
+            return {'warning': {
+                'title': _("Salary missing"),
+                'message': _("The contract of %(name)s has no salary: the margin uses the salary of the sheet "
+                             "(%(salary)s a year) until it is entered. Enter it on the form of the employee, in the "
+                             "\"Payroll\" tab, field \"Salary\".", name=employee.name,
+                             salary=format_amount(self.env, self.gross_salary, self.currency_id))}}
 
     def _days_for_price(self):
         """The days a fixed price is shared between: the days estimated, or a full-time mission."""

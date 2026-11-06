@@ -3685,6 +3685,12 @@ msgid "SMS Delivery error"
 msgstr "Erreur d'envoi SMS"
 
 #. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/margin.py:0
+msgid "Salary missing"
+msgstr "Salaire manquant"
+
+#. module: mission_report
 #: model:ir.model,name:mission_report.model_sale_order
 msgid "Sales Order"
 msgstr "Commande client"
@@ -4114,6 +4120,18 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
 msgid "The consultant"
 msgstr "Le consultant"
+
+#. module: mission_report
+#. odoo-python
+#: code:addons/mission_report/models/margin.py:0
+msgid ""
+"The contract of %(name)s has no salary: the margin uses the salary of the "
+"sheet (%(salary)s a year) until it is entered. Enter it on the form of the "
+"employee, in the \"Payroll\" tab, field \"Salary\"."
+msgstr ""
+"Le contrat de %(name)s n'a pas de salaire : la marge utilise le salaire de "
+"la fiche (%(salary)s par an) tant qu'il n'est pas saisi. Saisissez-le sur la"
+" fiche du salarié, onglet « Paie », champ « Salaire »."
 
 #. module: mission_report
 #. odoo-javascript

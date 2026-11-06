@@ -493,6 +493,15 @@ class TestMargin(TransactionCase):
             self.assertAlmostEqual(form.gross_salary, 3500.0 * 12)
             self.assertEqual(form.cost_origin, 'employee')
 
+    def test_a_consultant_without_a_salary_is_said(self):
+        employee = self.env['hr.employee'].create({
+            'name': "Sans salaire",
+            'work_contact_id': self.env['res.partner'].create({'name': "Sans salaire"}).id})
+        new = self.env['mission.margin'].new({'consultant_id': employee.work_contact_id.id})
+        result = new._onchange_consultant_id()
+        self.assertIn("Sans salaire", result['warning']['message'])
+        self.assertAlmostEqual(new.gross_salary, 40000.0)
+
     def test_an_order_has_one_calculation(self):
         from psycopg2 import IntegrityError
         from odoo.tools import mute_logger
