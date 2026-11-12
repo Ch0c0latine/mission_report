@@ -33,6 +33,33 @@ class TestIgd(TestSaleDelivery):
         return self.env['hr.expense'].search([
             ('employee_id', '=', self.employee.id), ('igd_generated', '=', True)], order='date, id')
 
+    def test_the_position_tells_what_is_left_to_catch_up(self):
+        """After a month is generated, the position gives the quota, the adjustments, what was created and the balance."""
+        self._generated()
+        position = self.env['mission.igd.position'].search([
+            ('project_id', '=', self.project_a.id), ('employee_id', '=', self.employee.id)])
+        self.assertEqual(len(position), 1)
+        created = 9 * 48.30 + 2 * 36.40
+        self.assertEqual(position.months, 1)
+        self.assertAlmostEqual(position.quota, 500.0)
+        self.assertAlmostEqual(position.paid, created)
+        self.assertAlmostEqual(position.balance, 500.0 - created)
+        # An adjustment is read at once, without generating again: the balance follows it.
+        self.env['mission.igd.adjustment'].create({
+            'project_id': self.project_a.id, 'employee_id': self.employee.id,
+            'month': date(2031, 5, 1), 'amount': 100.0})
+        position.invalidate_recordset()
+        self.assertAlmostEqual(position.adjustment, 100.0)
+        self.assertAlmostEqual(position.balance, 600.0 - created)
+        # Generating again keeps one line, and the button recomputes it from the IGD created.
+        self._generated()
+        self.assertEqual(self.env['mission.igd.position'].search_count([('project_id', '=', self.project_a.id)]), 1)
+        position.write({'months': 0, 'last_month': False})
+        self.project_a.action_igd_refresh_position()
+        position.invalidate_recordset()
+        self.assertEqual(position.months, 1)
+        self.assertEqual(position.last_month, date(2031, 5, 1))
+
     def test_lodging_first_then_meals_up_to_the_budget(self):
         expenses = self._generated()
         lodging = expenses.filtered(lambda e: e.product_id == self.lodging)

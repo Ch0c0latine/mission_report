@@ -91,6 +91,22 @@
                             <field name="reason"/>
                         </list>
                     </field>
+                    <field name="igd_position_ids" colspan="2" invisible="not igd_monthly_budget">
+                        <list create="0" delete="0" decoration-warning="balance &gt; 0" decoration-info="balance &lt; 0">
+                            <field name="employee_id"/>
+                            <field name="last_month" widget="date" options="{'format': 'MM/yyyy'}" optional="hide"/>
+                            <field name="months" optional="hide"/>
+                            <field name="quota"/>
+                            <field name="adjustment"/>
+                            <field name="paid"/>
+                            <field name="balance"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                    <div colspan="2" invisible="not igd_monthly_budget">
+                        <button name="action_igd_refresh_position" type="object" class="btn btn-secondary btn-sm"
+                                string="Update the situation"/>
+                    </div>
                     <div class="text-muted" colspan="2">
                         "Generate the IGD" (Expenses application) uses it to create the IGD of the month.
                         An adjustment adds (or removes) its amount to the quota of the month it targets, without being carried over to the following months.

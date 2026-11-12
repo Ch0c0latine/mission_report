@@ -96,10 +96,97 @@ class ProjectProject(models.Model):
     igd_adjustment_ids = fields.One2many(
         'mission.igd.adjustment', 'project_id', string="Quota adjustments", groups=IGD_GROUP,
         help="Months in which the IGD quota of an employee differs from the planned amount.")
+    igd_position_ids = fields.One2many(
+        'mission.igd.position', 'project_id', string="Quota position", groups=IGD_GROUP,
+        help="Where each employee stands with the IGD quota of this mission, as of the last month generated.")
+
+    def action_igd_refresh_position(self):
+        """Recompute the position of every employee who has IGD on the mission.
+
+        The position is kept each time the IGD of a month are generated; this one also covers the IGD
+        created before it existed, from the last month in which each employee has some.
+        """
+        Expense = self.env['hr.expense'].sudo()
+        Position = self.env['mission.igd.position'].sudo()
+        company = self.env.company
+        products = (company.igd_lodging_product_id | company.igd_meal_product_id).ids
+        for project in self.filtered('igd_monthly_budget'):
+            domain = [('project_id', '=', project.id), ('product_id', 'in', products), ('state', '!=', 'refused')]
+            if project.igd_start:
+                domain.append(('date', '>=', project.igd_start.replace(day=1)))
+            last = {}
+            for expense in Expense.search(domain):
+                if expense.date and expense.date > last.get(expense.employee_id, date.min):
+                    last[expense.employee_id] = expense.date
+            for employee, day in last.items():
+                month = day.replace(day=1)
+                report = self.env['mission.activity.report'].sudo().new({'employee_id': employee.id, 'date_from': month})
+                Position._igd_keep(project, employee, month, report._igd_months_with_presence(project))
+        return True
 
     def _compute_igd_currency_id(self):
         for project in self:
             project.igd_currency_id = project.company_id.currency_id or self.env.company.currency_id
+
+
+class MissionIgdPosition(models.Model):
+    _name = 'mission.igd.position'
+    _description = "IGD quota position of an employee on a mission"
+    _order = 'project_id, employee_id'
+
+    _unique_position = models.Constraint(
+        'unique (project_id, employee_id)', "An employee has one position per mission.")
+
+    project_id = fields.Many2one(
+        'project.project', string="Mission", required=True, ondelete='cascade', index=True)
+    employee_id = fields.Many2one(
+        'hr.employee', string="Employee", required=True, ondelete='cascade', index=True)
+    last_month = fields.Date(string="Last month generated", readonly=True)
+    months = fields.Integer(string="Months counted", readonly=True)
+    currency_id = fields.Many2one('res.currency', compute='_compute_igd_amounts')
+    quota = fields.Monetary(string="Quota to date", compute='_compute_igd_amounts', currency_field='currency_id')
+    adjustment = fields.Monetary(string="Adjustments", compute='_compute_igd_amounts', currency_field='currency_id')
+    paid = fields.Monetary(string="IGD created", compute='_compute_igd_amounts', currency_field='currency_id')
+    balance = fields.Monetary(
+        string="Left to catch up", compute='_compute_igd_amounts', currency_field='currency_id',
+        help="Quota to date plus the adjustments, minus the IGD created. Positive: still to catch up over "
+             "the coming months. Negative: paid in advance, deducted from the following months.")
+
+    @api.depends('project_id.igd_monthly_budget', 'project_id.igd_start', 'months', 'last_month')
+    def _compute_igd_amounts(self):
+        company = self.env.company
+        products = (company.igd_lodging_product_id | company.igd_meal_product_id).ids
+        for position in self:
+            project = position.project_id
+            position.currency_id = project.company_id.currency_id or company.currency_id
+            position.quota = project.igd_monthly_budget * position.months
+            if not position.last_month:
+                position.adjustment = position.paid = position.balance = 0.0
+                continue
+            since = [('month', '>=', project.igd_start.replace(day=1))] if project.igd_start else []
+            adjustments = self.env['mission.igd.adjustment'].sudo().search([
+                ('project_id', '=', project.id), ('employee_id', '=', position.employee_id.id),
+                ('month', '<=', position.last_month)] + since)
+            position.adjustment = sum(adjustments.mapped('amount'))
+            end = fields.Date.end_of(position.last_month, 'month')
+            since = [('date', '>=', project.igd_start.replace(day=1))] if project.igd_start else []
+            expenses = self.env['hr.expense'].sudo().search([
+                ('employee_id', '=', position.employee_id.id), ('project_id', '=', project.id),
+                ('product_id', 'in', products), ('state', '!=', 'refused'), ('date', '<=', end)] + since)
+            position.paid = sum(expenses.mapped('total_amount'))
+            position.balance = position.quota + position.adjustment - position.paid
+
+    @api.model
+    def _igd_keep(self, project, employee, month, months):
+        """Note the months counted for the employee on the mission, as of the month generated."""
+        position = self.sudo().search([('project_id', '=', project.id), ('employee_id', '=', employee.id)], limit=1)
+        values = {'last_month': month, 'months': months}
+        if position:
+            # A month generated again, or an earlier one: the latest wins.
+            if not position.last_month or position.last_month <= month:
+                position.write(values)
+        else:
+            self.sudo().create(dict(values, project_id=project.id, employee_id=employee.id))
 
 
 class MissionIgdAdjustment(models.Model):
@@ -442,6 +529,7 @@ class MissionActivityReport(models.Model):
             before = sum(Expense.search(base + since + [('date', '<', self.date_from)]).mapped('total_amount'))
             month = Expense.search(base + [('date', '>=', self.date_from), ('date', '<=', self.date_to)])
             months = self._igd_months_with_presence(project)
+            self.env['mission.igd.position']._igd_keep(project, self.employee_id, self.date_from.replace(day=1), months)
             adjust = self._igd_adjustment(project)
             target = project.igd_monthly_budget * months - before + adjust
             left = target - sum(month.mapped('total_amount'))

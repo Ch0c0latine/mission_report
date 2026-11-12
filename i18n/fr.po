@@ -5260,3 +5260,48 @@ msgstr "Erreur"
 #: code:addons/mission_report/static/src/js/margin_donut.js:0
 msgid "The costs exceed the billing by %(amount)s a month"
 msgstr "Les coûts dépassent la facturation de %(amount)s par mois"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__last_month
+msgid "Last month generated"
+msgstr "Dernier mois généré"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__months
+msgid "Months counted"
+msgstr "Mois comptés"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__quota
+msgid "Quota to date"
+msgstr "Quota à ce jour"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__adjustment
+msgid "Adjustments"
+msgstr "Ajustements"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__balance
+msgid "Left to catch up"
+msgstr "Reste à rattraper"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_project_project__igd_position_ids
+msgid "Quota position"
+msgstr "Situation du quota"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_igd_position__balance
+msgid "Quota to date plus the adjustments, minus the IGD created. Positive: still to catch up over the coming months. Negative: paid in advance, deducted from the following months."
+msgstr "Quota à ce jour plus les ajustements, moins les IGD créées. Positif : reste à rattraper sur les mois à venir. Négatif : versé d'avance, déduit des mois suivants."
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_project_project__igd_position_ids
+msgid "Where each employee stands with the IGD quota of this mission, as of the last month generated."
+msgstr "Où en est chaque salarié du quota d'IGD de cette mission, au dernier mois généré."
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.project_project_view_form_igd
+msgid "Update the situation"
+msgstr "Actualiser la situation"

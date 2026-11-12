@@ -12,6 +12,7 @@ access_mission_igd_wizard,mission.igd.wizard,model_mission_igd_wizard,base.group
 access_mission_volet_wizard,mission.volet.wizard,model_mission_volet_wizard,sales_team.group_sale_salesman,1,1,1,1
 access_mission_igd_adjustment_user,mission.igd.adjustment.user,model_mission_igd_adjustment,base.group_user,1,0,0,0
 access_mission_igd_adjustment_admin,mission.igd.adjustment.admin,model_mission_igd_adjustment,base.group_system,1,1,1,1
+access_mission_igd_position_admin,mission.igd.position.admin,model_mission_igd_position,base.group_system,1,0,0,0
 access_mission_activity_report_note_user,mission.activity.report.note.user,model_mission_activity_report_note,base.group_user,1,1,1,1
 access_mission_margin_sales,mission.margin.sales,model_mission_margin,sales_team.group_sale_salesman,1,1,1,0
 access_mission_margin_project,mission.margin.project,model_mission_margin,project.group_project_manager,1,1,1,1
