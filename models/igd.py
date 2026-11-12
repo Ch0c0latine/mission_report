@@ -148,7 +148,7 @@ class MissionIgdPosition(models.Model):
     adjustment = fields.Monetary(string="Adjustments", compute='_compute_igd_amounts', currency_field='currency_id')
     paid = fields.Monetary(string="IGD created", compute='_compute_igd_amounts', currency_field='currency_id')
     balance = fields.Monetary(
-        string="Left to catch up", compute='_compute_igd_amounts', currency_field='currency_id',
+        string="To catch up", compute='_compute_igd_amounts', currency_field='currency_id',
         help="Quota to date plus the adjustments, minus the IGD created. Positive: still to catch up over "
              "the coming months. Negative: paid in advance, deducted from the following months.")
 

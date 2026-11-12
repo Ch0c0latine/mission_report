@@ -2193,6 +2193,7 @@ msgstr "Catégorie IGD"
 #. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/igd.py:0
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__paid
 msgid "IGD created"
 msgstr "IGD créées"
 
@@ -5283,8 +5284,8 @@ msgstr "Ajustements"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__balance
-msgid "Left to catch up"
-msgstr "Reste à rattraper"
+msgid "To catch up"
+msgstr "À rattraper"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_project_project__igd_position_ids
