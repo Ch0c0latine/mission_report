@@ -308,7 +308,7 @@ class TestMargin(TransactionCase):
             form.gross_salary = 40000.0
             form.daily_rate = 600.0
             self.assertTrue(form.rate_manual)
-            self.assertEqual(form.margin_wanted, min(max(int(round(form.margin_rate * 100)), 10), 40))
+            self.assertEqual(form.margin_wanted, min(max(int(round(form.margin_rate * 100)), 0), 90))
             self.assertGreater(form.margin_wanted, 20)
             # Moving the margin slider gives the control back to the margin.
             form.margin_wanted = 15
@@ -492,6 +492,31 @@ class TestMargin(TransactionCase):
             form.consultant_id = employee.work_contact_id
             self.assertAlmostEqual(form.gross_salary, 3500.0 * 12)
             self.assertEqual(form.cost_origin, 'employee')
+
+    def test_the_payslip_cost_takes_precedence_over_the_salary(self):
+        plain = self._sheet(daily_cost_worked=0.0, duration_months=12.0)
+        slip = self._sheet(daily_cost_worked=0.0, payslip_monthly_cost=5000.0, gross_salary=40000.0)
+        # The cost of the pay is the payslip, with no employer charges added on top of it.
+        self.assertAlmostEqual(slip.base_cost, 5000.0 * 12, delta=0.01)
+        self.assertAlmostEqual(slip.loaded_cost, 5000.0 * 12 * 1.10, delta=0.01)
+        self.assertGreater(slip.total_cost, plain.total_cost)
+        # The salary of the sheet no longer moves the cost, the margin or the net income.
+        before = (slip.total_cost, slip.margin, slip.net_income_month, slip.net_salary_month)
+        slip.gross_salary = 90000.0
+        self.assertEqual(before, (slip.total_cost, slip.margin, slip.net_income_month, slip.net_salary_month))
+        # The salary behind the payslip: what the cost holds once the employer charges are taken off.
+        gross = 5000.0 * 12 / 1.457
+        self.assertAlmostEqual(slip.gross_used, gross, delta=0.01)
+        self.assertAlmostEqual(slip.net_salary_month, gross * 0.77 / 12, delta=0.01)
+        # The ring tells the same story: net + charges of the employee + employer charges = the payslip.
+        parts = {part['key']: part['value'] for part in slip.breakdown['segments']}
+        self.assertAlmostEqual(parts['net'] + parts['employee'] + parts['employer'], 5000.0, delta=0.01)
+        self.assertAlmostEqual(sum(parts.values()), slip.revenue / 12, delta=0.01)
+        # Without a payslip, the salary of the sheet is the one used.
+        self.assertAlmostEqual(plain.gross_used, 40000.0, delta=0.01)
+        # The help of the salary says it, only when the payslip is filled.
+        view = self.env['mission.margin'].get_views([(False, 'form')])['views']['form']['arch']
+        self.assertIn("takes precedence", view)
 
     def test_a_consultant_without_a_salary_is_said(self):
         employee = self.env['hr.employee'].create({

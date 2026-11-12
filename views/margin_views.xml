@@ -138,9 +138,13 @@
                         <group string="The consultant">
                             <field name="cost_origin" widget="radio" options="{'horizontal': true}"/>
                             <div colspan="2" invisible="cost_origin != 'employee'">
-                                <field name="gross_salary" widget="salary_slider" nolabel="1"/>
+                                <field name="gross_salary" widget="salary_slider" nolabel="1"
+                                       decoration-muted="payslip_monthly_cost"/>
                             </div>
-                            <field name="gross_salary" invisible="cost_origin != 'employee'"/>
+                            <field name="gross_salary" invisible="cost_origin != 'employee' or payslip_monthly_cost"/>
+                            <field name="gross_salary" class="text-muted"
+                                   invisible="cost_origin != 'employee' or not payslip_monthly_cost"
+                                   help="The monthly total cost (payslip) takes precedence over the salary in the profitability calculation: this amount is only informative."/>
                             <field name="freelance_daily_rate" invisible="cost_origin != 'freelance'"/>
                             <label for="igd_lodging" string="Allowances per day worked"
                                    invisible="cost_origin != 'employee'"/>
@@ -332,7 +336,7 @@
                         <page string="Net income" name="net" invisible="cost_origin != 'employee'">
                             <group>
                                 <group string="Consultant">
-                                    <field name="gross_salary" readonly="1"/>
+                                    <field name="gross_used"/>
                                     <field name="employee_charge_rate" widget="percentage" class="o_margin_pct text-muted"/>
                                     <field name="net_salary_month"/>
                                     <field name="net_salary_day"/>

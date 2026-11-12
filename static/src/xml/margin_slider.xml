@@ -4,12 +4,13 @@
 <templates xml:space="preserve">
     <t t-name="mission_report.MarginSliderField">
         <div class="d-flex align-items-center gap-3 o_margin_slider">
-            <span class="text-muted text-nowrap"><t t-esc="props.min"/> %</span>
+            <span class="text-muted text-nowrap"><t t-esc="bounds[0]"/> %</span>
             <input type="range" class="form-range flex-grow-1"
-                   t-att-min="props.min" t-att-max="props.max" step="1"
+                   t-att-min="bounds[0]" t-att-max="bounds[1]" step="1"
                    t-att-value="value" t-att-disabled="props.readonly or undefined" t-att-aria-label="label"
+                   t-on-pointerdown="onDragStart" t-on-pointerup="onDragEnd" t-on-pointercancel="onDragEnd"
                    t-on-input="onInput"/>
-            <span class="text-muted text-nowrap"><t t-esc="props.max"/> %</span>
+            <span class="text-muted text-nowrap"><t t-esc="bounds[1]"/> %</span>
         </div>
     </t>
     <t t-name="mission_report.SalarySliderField">
@@ -18,6 +19,7 @@
             <input type="range" class="form-range flex-grow-1"
                    t-att-min="sliderMin" t-att-max="sliderMax" t-att-step="step"
                    t-att-value="value" t-att-disabled="props.readonly or undefined" t-att-aria-label="label"
+                   t-on-pointerdown="onDragStart" t-on-pointerup="onDragEnd" t-on-pointercancel="onDragEnd"
                    t-on-input="onInput"/>
             <span class="text-muted text-nowrap"><t t-esc="format(max)"/></span>
         </div>

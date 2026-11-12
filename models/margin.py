@@ -238,6 +238,10 @@ class MissionMargin(models.Model):
     days_per_year = fields.Float(string="Days worked a year", compute='_compute_results', digits=(16, 2))
     days_per_month = fields.Float(string="Days worked a month", compute='_compute_results', digits=(16, 2))
     mission_days_total = fields.Float(string="Days of the mission", compute='_compute_results', digits=(16, 2))
+    gross_used = fields.Monetary(
+        string="Gross yearly salary used", compute='_compute_results',
+        help="The salary of the sheet, or, when the monthly total cost (payslip) is filled, the salary that cost holds "
+             "once the employer charges are taken off.")
     mission_cost = fields.Monetary(string="Cost of the mission", compute='_compute_results')
     mission_revenue = fields.Monetary(string="Billing of the mission", compute='_compute_results')
     breakeven_days = fields.Float(
@@ -436,7 +440,13 @@ class MissionMargin(models.Model):
                 if days and m.target_rate_1 < 1 else 0.0
             m.rate_target_rate_2 = (per_day(total) / (1 - m.target_rate_2) - rebilled) \
                 if days and m.target_rate_2 < 1 else 0.0
-            net = 0.0 if freelance else m.gross_salary * (1 - m.employee_charge_rate)
+            # The monthly total cost of the payslip takes precedence over the salary and the employer charges: the gross
+            # salary behind it is what that cost holds once the employer charges are taken off, so that the net
+            # salary, the net income and the ring tell the same story as the cost.
+            gross = (m.payslip_monthly_cost * 12 / (1 + m.employer_charge_rate)
+                     if m.payslip_monthly_cost and not freelance else m.gross_salary)
+            m.gross_used = 0.0 if freelance else gross
+            net = 0.0 if freelance else gross * (1 - m.employee_charge_rate)
             m.net_salary_month = per_day(net) * monthly_days
             m.net_salary_day = per_day(net)
             m.daily_fees_month = per_day(agreed) * monthly_days
@@ -453,22 +463,23 @@ class MissionMargin(models.Model):
             m.commission_cap_amount = max(margin_month, 0.0) * m.commission_cap if eligible else 0.0
             calendar = m.daily_cost_calendar * 365
             activity = monthly_days / (days / 12) if days else 0.0
-            m.breakdown = m._breakdown(freelance, base, overhead, agreed + allowances, calendar,
+            m.breakdown = m._breakdown(freelance, base, gross, overhead, agreed + allowances, calendar,
                                        others - agreed - allowances - calendar, margin, revenue, activity)
 
-    def _breakdown(self, freelance, base, overhead, paid_to_consultant, calendar, other, margin, revenue,
+    def _breakdown(self, freelance, base, gross, overhead, paid_to_consultant, calendar, other, margin, revenue,
                    activity=1.0):
         """Where a month of billing goes: the pay of the consultant (net, then the charges), the amounts paid
         to them, the fixed and indirect costs, the other costs and what stays with the company."""
         self.ensure_one()
         parts = []
-        if freelance or self.payslip_monthly_cost:
-            parts.append(('pay', _("Freelance") if freelance else _("Pay and charges"), base))
+        if freelance:
+            parts.append(('pay', _("Freelance"), base))
         else:
+            # The gross salary behind the cost: the sheet salary, or what the payslip cost holds.
             parts += [
-                ('net', _("Net salary of the consultant"), self.gross_salary * (1 - self.employee_charge_rate)),
-                ('employee', _("Employee charges"), self.gross_salary * self.employee_charge_rate),
-                ('employer', _("Employer charges"), self.gross_salary * self.employer_charge_rate)]
+                ('net', _("Net salary of the consultant"), gross * (1 - self.employee_charge_rate)),
+                ('employee', _("Employee charges"), gross * self.employee_charge_rate),
+                ('employer', _("Employer charges"), gross * self.employer_charge_rate)]
         parts += [
             ('allowances', _("Allowances and amounts paid to the consultant"), paid_to_consultant),
             ('calendar', _("Other calendar costs"), calendar),
@@ -622,7 +633,7 @@ class MissionMargin(models.Model):
     @api.onchange('margin_wanted')
     def _onchange_margin_wanted(self):
         # The slider placed by the daily rate typed or slid (it follows the rate): the rate stays.
-        if self.rate_manual and self.margin_wanted == min(max(int(round(self.margin_rate * 100)), 10), 40):
+        if self.rate_manual and self.margin_wanted == min(max(int(round(self.margin_rate * 100)), 0), 90):
             return
         # Moving the slider gives the control back to the margin.
         self.rate_manual = False
@@ -771,7 +782,7 @@ class MissionMargin(models.Model):
             self.rate_manual = True
         # The margin slider follows the daily rate it did not give (within its limits of 10 to 40 %).
         if self.rate_manual and self.revenue:
-            self.margin_wanted = min(max(int(round(self.margin_rate * 100)), 10), 40)
+            self.margin_wanted = min(max(int(round(self.margin_rate * 100)), 0), 90)
 
     @api.model_create_multi
     def create(self, vals_list):

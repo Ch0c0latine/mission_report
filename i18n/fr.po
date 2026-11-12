@@ -2088,6 +2088,11 @@ msgid "Gross yearly salary"
 msgstr "Salaire brut annuel"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__gross_used
+msgid "Gross yearly salary used"
+msgstr "Salaire brut annuel retenu"
+
+#. module: mission_report
 #: model:ir.model.fields.selection,name:mission_report.selection__hr_leave__mission_duration__half
 msgid "Half day"
 msgstr "Demi-journée"
@@ -3322,8 +3327,6 @@ msgid "Partner"
 msgstr "Associé"
 
 #. module: mission_report
-#. odoo-python
-#: code:addons/mission_report/models/margin.py:0
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
 msgid "Pay and charges"
 msgstr "Rémunération et charges"
@@ -4268,6 +4271,15 @@ msgid "The mission rows of template “%s” are inconsistent."
 msgstr "Les lignes de mission du modèle « %s » sont incohérentes."
 
 #. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid ""
+"The monthly total cost (payslip) takes precedence over the salary in the "
+"profitability calculation: this amount is only informative."
+msgstr ""
+"Le coût global mensuel (bulletin de salaire) prime sur le salaire dans le "
+"calcul de rentabilité : ce montant est donné à titre indicatif."
+
+#. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_margin__consultant
 msgid ""
 "The name of the consultant, kept when the person is not (yet) in the "
@@ -4402,6 +4414,16 @@ msgid ""
 msgstr ""
 "Le compte rendu retourne au salarié, qui peut le corriger et le soumettre à "
 "nouveau."
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_margin__gross_used
+msgid ""
+"The salary of the sheet, or, when the monthly total cost (payslip) is "
+"filled, the salary that cost holds once the employer charges are taken off."
+msgstr ""
+"Le salaire de la fiche ou, quand le coût global mensuel (bulletin de "
+"salaire) est rempli, le salaire que ce coût contient une fois les charges "
+"patronales retirées."
 
 #. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_sale_order__mission_expenses_text
