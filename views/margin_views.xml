@@ -390,7 +390,7 @@
                                     </div>
                                 </group>
                                 <group string="Partner commission a month"
-                                       groups="mission_report.group_mission_partner">
+                                       groups="mission_report.group_mission_partner,base.group_system">
                                     <label for="commission_team"/>
                                     <div class="d-flex align-items-center gap-2">
                                         <field name="commission_rate_team" widget="percentage" class="o_margin_pct text-muted"/>
