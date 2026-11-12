@@ -349,48 +349,50 @@
                             </group>
                         </page>
                         <page string="Commissions" name="commissions" invisible="not show_commissions">
-                            <group>
+                            <group col="3" class="o_margin_commissions">
                                 <group string="Conditions">
+                                    <field name="commission_rule_id" options="{'no_create': True, 'no_open': True}"/>
                                     <field name="commission_threshold_rate" widget="percentage" class="o_margin_pct text-muted"/>
                                     <field name="commission_threshold_amount" class="text-muted"/>
                                     <field name="commission_cap" widget="percentage" class="o_margin_pct text-muted"/>
                                     <field name="commission_eligible"/>
-                                    <field name="commission_cap_amount" class="text-muted"/>
                                 </group>
                                 <group string="Gross commission a month">
-                                    <field name="commission_rule_id" options="{'no_create': True, 'no_open': True}"/>
                                     <label for="commission_sourcing"/>
-                                    <div class="d-flex align-items-center gap-3">
+                                    <div class="d-flex align-items-center gap-2">
                                         <field name="commission_rate_sourcing" widget="percentage" class="o_margin_pct text-muted"/>
                                         <div>&#8594;</div>
                                         <field name="commission_sourcing" class="oe_inline fw-bold"/>
                                     </div>
                                     <label for="commission_referral"/>
-                                    <div class="d-flex align-items-center gap-3">
+                                    <div class="d-flex align-items-center gap-2">
                                         <field name="commission_rate_referral" widget="percentage" class="o_margin_pct text-muted"/>
                                         <div>&#8594;</div>
                                         <field name="commission_referral" class="oe_inline fw-bold"/>
                                     </div>
                                     <label for="commission_candidate"/>
-                                    <div class="d-flex align-items-center gap-3">
+                                    <div class="d-flex align-items-center gap-2">
                                         <field name="commission_rate_candidate" widget="percentage" class="o_margin_pct text-muted"/>
                                         <div>&#8594;</div>
                                         <field name="commission_candidate" class="oe_inline fw-bold"/>
                                     </div>
                                     <label for="commission_client"/>
-                                    <div class="d-flex align-items-center gap-3">
+                                    <div class="d-flex align-items-center gap-2">
                                         <field name="commission_rate_client" widget="percentage" class="o_margin_pct text-muted"/>
                                         <div>&#8594;</div>
                                         <field name="commission_client" class="oe_inline fw-bold"/>
                                     </div>
                                     <label for="commission_full"/>
-                                    <div class="d-flex align-items-center gap-3">
+                                    <div class="d-flex align-items-center gap-2">
                                         <field name="commission_rate_full" widget="percentage" class="o_margin_pct text-muted"/>
                                         <div>&#8594;</div>
                                         <field name="commission_full" class="oe_inline fw-bold"/>
                                     </div>
-                                    <label for="commission_team" invisible="not commission_rate_team"/>
-                                    <div class="d-flex align-items-center gap-3" invisible="not commission_rate_team">
+                                </group>
+                                <group string="Partner commission a month"
+                                       groups="mission_report.group_mission_partner">
+                                    <label for="commission_team"/>
+                                    <div class="d-flex align-items-center gap-2">
                                         <field name="commission_rate_team" widget="percentage" class="o_margin_pct text-muted"/>
                                         <div>&#8594;</div>
                                         <field name="commission_team" class="oe_inline fw-bold"/>

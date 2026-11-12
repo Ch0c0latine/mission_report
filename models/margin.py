@@ -1073,6 +1073,9 @@ class MissionCommissionRule(models.Model):
     rate_team = fields.Float(
         string="Services managed by the collaborators", digits=(16, 3),
         help="Services managed by the collaborators under the direct responsibility of the person.")
+    group_id = fields.Many2one(
+        'res.groups', string="Offered to", ondelete='set null',
+        help="Only the users of this group can choose this status on a margin calculation. Empty: everyone.")
 
 
 class ResConfigSettings(models.TransientModel):
@@ -1153,10 +1156,12 @@ class ResCompany(models.Model):
         """The rules of Green Engine (version B): the partners, then the account managers, business providers
         and co-optations placed under a partner."""
         self.ensure_one()
+        partner_group = self.env.ref('mission_report.group_mission_partner', raise_if_not_found=False)
         return [
             {'company_id': self.id, 'sequence': 1, 'name': _("Partner"), 'rate_sourcing': 0.05,
              'rate_referral': 0.05, 'rate_candidate': 0.10, 'rate_client': 0.10, 'rate_full': 0.20,
-             'rate_team': 0.04},
+             'rate_team': 0.04,
+             'group_id': partner_group.id if partner_group else False},
             {'company_id': self.id, 'sequence': 2, 'name': _("Account manager, business provider or co-optation"),
              'rate_sourcing': 0.04, 'rate_referral': 0.04, 'rate_candidate': 0.08, 'rate_client': 0.08,
              'rate_full': 0.16, 'rate_team': 0.0},

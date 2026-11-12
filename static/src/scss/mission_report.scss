@@ -185,6 +185,12 @@
 
 // Calcul de marge sur téléphone : les résultats restent en vue pendant la saisie, les curseurs se saisissent du doigt,
 // les cases passent sur une seule colonne.
+// Les commissions : trois colonnes qui passent l'une sous l'autre quand la place manque (téléphone compris).
+.o_form_view .o_margin_commissions > .o_inner_group {
+    min-width: 17rem;
+    flex: 1 1 17rem;
+}
+
 .o_form_view .o_margin_stickybar {
     position: sticky;
     top: 0;

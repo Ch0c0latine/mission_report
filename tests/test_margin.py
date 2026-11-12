@@ -518,6 +518,37 @@ class TestMargin(TransactionCase):
         view = self.env['mission.margin'].get_views([(False, 'form')])['views']['form']['arch']
         self.assertIn("takes precedence", view)
 
+    def _seller(self, login, partner=False):
+        groups = [self.env.ref('base.group_user').id, self.env.ref('sales_team.group_sale_salesman').id]
+        if partner:
+            groups.append(self.env.ref('mission_report.group_mission_partner').id)
+        return self.env['res.users'].create({'name': login, 'login': login, 'group_ids': [(6, 0, groups)]})
+
+    def test_the_status_of_the_partners_is_only_offered_to_the_partners(self):
+        Rule = self.env['mission.commission.rule']
+        associate = Rule.search([('rate_team', '>', 0)], limit=1)
+        manager = Rule.search([('rate_team', '=', 0), ('rate_full', '>', 0)], limit=1)
+        self.assertEqual(associate.group_id, self.env.ref('mission_report.group_mission_partner'))
+        account_manager = self._seller('chargedaffaires_zz@example.com')
+        partner = self._seller('associe_zz@example.com', partner=True)
+        self.assertNotIn(associate, Rule.with_user(account_manager).search([]))
+        self.assertIn(manager, Rule.with_user(account_manager).search([]))
+        self.assertIn(associate, Rule.with_user(partner).search([]))
+        self.assertIn(manager, Rule.with_user(partner).search([]))
+        # An account manager starts with their own status.
+        sheet = self.env['mission.margin'].with_user(account_manager).create({'name': "Du chargé d'affaires"})
+        self.assertEqual(sheet.commission_rule_id, manager)
+
+    def test_the_commission_page_has_three_columns_for_a_partner_and_two_for_the_others(self):
+        def arch(user):
+            return self.env['mission.margin'].with_user(user).get_views([(False, 'form')])['views']['form']['arch']
+        plain = arch(self._seller('colonnes_a_zz@example.com'))
+        partner = arch(self._seller('colonnes_b_zz@example.com', partner=True))
+        self.assertIn('commission_full', plain)
+        self.assertNotIn('commission_rate_team', plain)
+        self.assertIn('commission_rate_team', partner)
+        self.assertNotIn('commission_cap_amount', plain + partner)
+
     def test_a_consultant_without_a_salary_is_said(self):
         employee = self.env['hr.employee'].create({
             'name': "Sans salaire",

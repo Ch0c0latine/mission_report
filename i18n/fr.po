@@ -2524,6 +2524,7 @@ msgstr "Calcul de marge"
 #: model:ir.model.fields,field_description:mission_report.field_project_project__margin_ids
 #: model:ir.ui.menu,name:mission_report.menu_mission_margin_project
 #: model:ir.ui.menu,name:mission_report.menu_mission_margin_sale
+#: model:res.groups.privilege,name:mission_report.res_groups_privilege_margin
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_list
 #: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
 msgid "Margin calculations"
@@ -3147,6 +3148,11 @@ msgstr ""
 "diminue, et une saisie qui n'a plus aucun jour est refusée."
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_commission_rule__group_id
+msgid "Offered to"
+msgstr "Proposé à"
+
+#. module: mission_report
 #. odoo-javascript
 #: code:addons/mission_report/static/src/js/presence_status.js:0
 #: code:addons/mission_report/static/src/xml/avatar_card_resource_popover.xml:0
@@ -3194,6 +3200,15 @@ msgstr "Seul un compte rendu soumis peut être validé."
 #: code:addons/mission_report/models/activity_report.py:0
 msgid "Only draft activity reports can be deleted."
 msgstr "Seuls les comptes rendus en brouillon peuvent être supprimés."
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_commission_rule__group_id
+msgid ""
+"Only the users of this group can choose this status on a margin calculation."
+" Empty: everyone."
+msgstr ""
+"Seuls les utilisateurs de ce groupe peuvent choisir ce statut sur un calcul "
+"de marge. Vide : tout le monde."
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_igd_wizard_view_form
@@ -3325,6 +3340,16 @@ msgstr ""
 #: code:addons/mission_report/models/margin.py:0
 msgid "Partner"
 msgstr "Associé"
+
+#. module: mission_report
+#: model:res.groups,name:mission_report.group_mission_partner
+msgid "Partner (associate)"
+msgstr "Associé"
+
+#. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
+msgid "Partner commission a month"
+msgstr "Intéressement associé par mois"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
@@ -3739,6 +3764,15 @@ msgstr "Voir dans la vue d'ensemble"
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_igd_wizard_view_form
 msgid "See the IGD created"
 msgstr "Voir les IGD créées"
+
+#. module: mission_report
+#: model:res.groups,comment:mission_report.group_mission_partner
+msgid ""
+"Sees every commission status of the margin calculations, and the commission "
+"of the services managed by the collaborators."
+msgstr ""
+"Voit tous les statuts d'intéressement des calculs de marge, et "
+"l'intéressement sur les prestations gérées par les collaborateurs."
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.view_order_form_mission_invoicing
