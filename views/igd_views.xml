@@ -96,10 +96,10 @@
                             <field name="employee_id"/>
                             <field name="last_month" widget="date" options="{'format': 'MM/yyyy'}" optional="hide"/>
                             <field name="months" optional="hide"/>
+                            <field name="balance"/>
                             <field name="quota"/>
                             <field name="adjustment"/>
                             <field name="paid"/>
-                            <field name="balance"/>
                             <field name="currency_id" column_invisible="1"/>
                         </list>
                     </field>
