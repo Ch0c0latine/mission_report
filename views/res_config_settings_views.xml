@@ -95,7 +95,7 @@
                                         <field name="rate_client" widget="percentage" string="Client side"/>
                                         <field name="rate_full" widget="percentage" string="Full"/>
                                         <field name="rate_team" widget="percentage" string="Collaborators"/>
-                                        <field name="group_id" options="{'no_create': True}"/>
+                                        <field name="partners_only"/>
                                     </list>
                                 </field>
                             </div>

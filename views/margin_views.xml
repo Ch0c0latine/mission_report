@@ -110,6 +110,7 @@
                         <h1><field name="name" placeholder="Filled in from the customer and the consultant"/></h1>
                     </div>
                     <field name="consultant_partner_ids" invisible="1"/>
+                    <field name="viewer_is_partner" invisible="1"/>
                     <group>
                         <group>
                             <field name="project_id"
@@ -389,8 +390,7 @@
                                         <field name="commission_full" class="oe_inline fw-bold"/>
                                     </div>
                                 </group>
-                                <group string="Partner commission a month"
-                                       groups="mission_report.group_mission_partner,base.group_system">
+                                <group string="Partner commission a month" invisible="not viewer_is_partner">
                                     <label for="commission_team"/>
                                     <div class="d-flex align-items-center gap-2">
                                         <field name="commission_rate_team" widget="percentage" class="o_margin_pct text-muted"/>

@@ -518,36 +518,68 @@ class TestMargin(TransactionCase):
         view = self.env['mission.margin'].get_views([(False, 'form')])['views']['form']['arch']
         self.assertIn("takes precedence", view)
 
-    def _seller(self, login, partner=False):
-        groups = [self.env.ref('base.group_user').id, self.env.ref('sales_team.group_sale_salesman').id]
-        if partner:
-            groups.append(self.env.ref('mission_report.group_mission_partner').id)
-        return self.env['res.users'].create({'name': login, 'login': login, 'group_ids': [(6, 0, groups)]})
+    def _seller(self, login, department=None):
+        """A salesperson, with an employee in a department when one is given."""
+        user = self.env['res.users'].create({
+            'name': login, 'login': login,
+            'group_ids': [(6, 0, [self.env.ref('base.group_user').id,
+                                  self.env.ref('sales_team.group_sale_salesman').id])]})
+        if department is not None:
+            self.env['hr.employee'].create({'name': login, 'user_id': user.id, 'department_id': department.id})
+        return user
 
-    def test_the_status_of_the_partners_is_only_offered_to_the_partners(self):
+    def _partner_department(self):
+        return self.env['hr.department'].create({'name': "Associé", 'mission_partner': True})
+
+    def test_the_status_of_the_partners_is_offered_to_the_members_of_the_partner_department(self):
         Rule = self.env['mission.commission.rule']
         associate = Rule.search([('rate_team', '>', 0)], limit=1)
         manager = Rule.search([('rate_team', '=', 0), ('rate_full', '>', 0)], limit=1)
-        self.assertEqual(associate.group_id, self.env.ref('mission_report.group_mission_partner'))
-        account_manager = self._seller('chargedaffaires_zz@example.com')
-        partner = self._seller('associe_zz@example.com', partner=True)
-        self.assertNotIn(associate, Rule.with_user(account_manager).search([]))
-        self.assertIn(manager, Rule.with_user(account_manager).search([]))
-        self.assertIn(associate, Rule.with_user(partner).search([]))
-        self.assertIn(manager, Rule.with_user(partner).search([]))
+        self.assertTrue(associate.partners_only)
+        self.assertFalse(manager.partners_only)
+        partners = self._partner_department()
+        sub = self.env['hr.department'].create({'name': "Sous-associés", 'parent_id': partners.id})
+        consultants = self.env['hr.department'].create({'name': "Consultants"})
+        member = self._seller('membre_zz@example.com', partners)
+        sub_member = self._seller('sous_membre_zz@example.com', sub)
+        account_manager = self._seller('chargedaffaires_zz@example.com', consultants)
+        no_employee = self._seller('sansfiche_zz@example.com')
+        for user, partner in ((member, True), (sub_member, True), (account_manager, False), (no_employee, False)):
+            self.assertEqual(user.mission_is_partner, partner, user.login)
+            offered = Rule.with_user(user).search([])
+            self.assertEqual(associate in offered, partner, user.login)
+            self.assertIn(manager, offered)
+            sheet = self.env['mission.margin'].with_user(user).new({})
+            self.assertEqual(sheet.viewer_is_partner, partner, user.login)
         # An account manager starts with their own status.
         sheet = self.env['mission.margin'].with_user(account_manager).create({'name': "Du chargé d'affaires"})
         self.assertEqual(sheet.commission_rule_id, manager)
+        # An administrator sees everything.
+        admin = self.env.ref('base.user_admin')
+        self.assertTrue(admin.mission_is_partner)
+        self.assertIn(associate, Rule.with_user(admin).search([]))
 
-    def test_the_commission_page_has_three_columns_for_a_partner_and_two_for_the_others(self):
-        def arch(user):
-            return self.env['mission.margin'].with_user(user).get_views([(False, 'form')])['views']['form']['arch']
-        plain = arch(self._seller('colonnes_a_zz@example.com'))
-        partner = arch(self._seller('colonnes_b_zz@example.com', partner=True))
-        self.assertIn('commission_full', plain)
-        self.assertNotIn('commission_rate_team', plain)
-        self.assertIn('commission_rate_team', partner)
-        self.assertNotIn('commission_cap_amount', plain + partner)
+    def test_a_change_of_department_changes_what_the_user_sees(self):
+        partners = self._partner_department()
+        consultants = self.env['hr.department'].create({'name': "Consultants"})
+        user = self._seller('mobile_zz@example.com', consultants)
+        self.assertFalse(user.mission_is_partner)
+        user.employee_ids.department_id = partners
+        user.invalidate_recordset()
+        self.assertTrue(user.mission_is_partner)
+        # The flag of the department, not its name, tells who the partners are.
+        partners.name = "Direction"
+        user.invalidate_recordset()
+        self.assertTrue(user.mission_is_partner)
+        partners.mission_partner = False
+        user.invalidate_recordset()
+        self.assertFalse(user.mission_is_partner)
+
+    def test_the_commission_page_has_a_column_for_the_partners_only(self):
+        arch = self.env['mission.margin'].get_views([(False, 'form')])['views']['form']['arch']
+        self.assertIn('commission_rate_team', arch)
+        self.assertIn('viewer_is_partner', arch)
+        self.assertNotIn('commission_cap_amount', arch)
 
     def test_a_consultant_without_a_salary_is_said(self):
         employee = self.env['hr.employee'].create({

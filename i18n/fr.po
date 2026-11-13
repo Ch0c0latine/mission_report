@@ -519,6 +519,11 @@ msgid "Adjustment"
 msgstr "Ajustement"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__adjustment
+msgid "Adjustments"
+msgstr "Ajustements"
+
+#. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_margin__overhead_rate
 msgid ""
 "Administrative charges (payroll, HR), premises, IT equipment, software, "
@@ -625,6 +630,11 @@ msgstr ""
 #: model:ir.model.constraint,message:mission_report.constraint_mission_activity_report_employee_month_unique
 msgid "An employee has a single activity report per month."
 msgstr "Un salarié n'a qu'un compte rendu d'activité par mois."
+
+#. module: mission_report
+#: model:ir.model.constraint,message:mission_report.constraint_mission_igd_position_unique_position
+msgid "An employee has one position per mission."
+msgstr "Un salarié n'a qu'une position par mission."
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
@@ -1170,6 +1180,7 @@ msgstr "Dépense créée"
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__create_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_commission_rule__create_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__create_uid
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__create_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_rate__create_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__create_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__create_uid
@@ -1189,6 +1200,7 @@ msgstr "Créé par"
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__create_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_commission_rule__create_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__create_date
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__create_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_rate__create_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__create_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__create_date
@@ -1202,6 +1214,7 @@ msgstr "Créé le"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__currency_id
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__currency_id
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_rate__currency_id
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__currency_id
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin_condition_wizard__currency_id
@@ -1426,6 +1439,11 @@ msgid "Delivery date"
 msgstr "Date de livraison"
 
 #. module: mission_report
+#: model:ir.model,name:mission_report.model_hr_department
+msgid "Department"
+msgstr "Département"
+
+#. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_sale_order__mission_description
 #: model_terms:ir.ui.view,arch_db:mission_report.view_order_form_mission_volet
 msgid "Description of the service"
@@ -1450,6 +1468,7 @@ msgstr "Annuler"
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_account_move__display_name
 #: model:ir.model.fields,field_description:mission_report.field_account_move_send__display_name
+#: model:ir.model.fields,field_description:mission_report.field_hr_department__display_name
 #: model:ir.model.fields,field_description:mission_report.field_hr_employee__display_name
 #: model:ir.model.fields,field_description:mission_report.field_hr_employee_public__display_name
 #: model:ir.model.fields,field_description:mission_report.field_hr_expense__display_name
@@ -1462,6 +1481,7 @@ msgstr "Annuler"
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__display_name
 #: model:ir.model.fields,field_description:mission_report.field_mission_commission_rule__display_name
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__display_name
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__display_name
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_rate__display_name
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__display_name
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__display_name
@@ -1538,11 +1558,11 @@ msgstr "Modifier"
 #: model:ir.model,name:mission_report.model_hr_employee
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__employee_id
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__employee_id
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__employee_id
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__employee
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_margin__cost_origin__employee
 #: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_search
-#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__employee_id
 msgid "Employee"
 msgstr "Employé"
 
@@ -2151,6 +2171,7 @@ msgstr "Affichage de l'icône RH"
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_account_move__id
 #: model:ir.model.fields,field_description:mission_report.field_account_move_send__id
+#: model:ir.model.fields,field_description:mission_report.field_hr_department__id
 #: model:ir.model.fields,field_description:mission_report.field_hr_employee__id
 #: model:ir.model.fields,field_description:mission_report.field_hr_employee_public__id
 #: model:ir.model.fields,field_description:mission_report.field_hr_expense__id
@@ -2163,6 +2184,7 @@ msgstr "Affichage de l'icône RH"
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__id
 #: model:ir.model.fields,field_description:mission_report.field_mission_commission_rule__id
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__id
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__id
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_rate__id
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__id
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__id
@@ -2207,6 +2229,11 @@ msgstr "IGD à partir du"
 #: model:ir.model,name:mission_report.model_mission_igd_adjustment
 msgid "IGD quota adjustment of a month"
 msgstr "Ajustement du quota d'IGD d'un mois"
+
+#. module: mission_report
+#: model:ir.model,name:mission_report.model_mission_igd_position
+msgid "IGD quota position of an employee on a mission"
+msgstr "Position de quota d'IGD d'un salarié sur une mission"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report__activity_exception_icon
@@ -2338,6 +2365,7 @@ msgstr "Fête du Travail"
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__write_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_commission_rule__write_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__write_uid
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__write_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_rate__write_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__write_uid
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__write_uid
@@ -2357,6 +2385,7 @@ msgstr "Dernière mise à jour par"
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template_cell__write_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_commission_rule__write_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__write_date
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__write_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_rate__write_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_wizard__write_date
 #: model:ir.model.fields,field_description:mission_report.field_mission_margin__write_date
@@ -2381,6 +2410,11 @@ msgstr ""
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__mission_last_row
 msgid "Last mission row"
 msgstr "Dernière ligne de mission"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__last_month
+msgid "Last month generated"
+msgstr "Dernier mois généré"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_mission_activity_report_template__absence_last_row
@@ -2526,7 +2560,6 @@ msgstr "Calcul de marge"
 #: model:ir.model.fields,field_description:mission_report.field_project_project__margin_ids
 #: model:ir.ui.menu,name:mission_report.menu_mission_margin_project
 #: model:ir.ui.menu,name:mission_report.menu_mission_margin_sale
-#: model:res.groups.privilege,name:mission_report.res_groups_privilege_margin
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_list
 #: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
 msgid "Margin calculations"
@@ -2624,6 +2657,7 @@ msgstr "Salarié manquant"
 #: code:addons/mission_report/models/activity_report_template.py:0
 #: model:ir.model.fields,field_description:mission_report.field_hr_leave__project_id
 #: model:ir.model.fields,field_description:mission_report.field_mission_igd_adjustment__project_id
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__project_id
 #: model:ir.model.fields.selection,name:mission_report.selection__hr_leave__entry_type__mission
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_activity_report_template_cell__value__project
 #: model_terms:ir.ui.view,arch_db:mission_report.activity_report_grid
@@ -2812,6 +2846,11 @@ msgstr "Coût global mensuel (bulletin de salaire)"
 #: code:addons/mission_report/static/src/xml/calendar_year_button.xml:0
 msgid "Monthly view"
 msgstr "Vue mensuelle"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__months
+msgid "Months counted"
+msgstr "Mois comptés"
 
 #. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_project_project__igd_adjustment_ids
@@ -3150,11 +3189,6 @@ msgstr ""
 "diminue, et une saisie qui n'a plus aucun jour est refusée."
 
 #. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_commission_rule__group_id
-msgid "Offered to"
-msgstr "Proposé à"
-
-#. module: mission_report
 #. odoo-javascript
 #: code:addons/mission_report/static/src/js/presence_status.js:0
 #: code:addons/mission_report/static/src/xml/avatar_card_resource_popover.xml:0
@@ -3204,13 +3238,13 @@ msgid "Only draft activity reports can be deleted."
 msgstr "Seuls les comptes rendus en brouillon peuvent être supprimés."
 
 #. module: mission_report
-#: model:ir.model.fields,help:mission_report.field_mission_commission_rule__group_id
+#: model:ir.model.fields,help:mission_report.field_mission_commission_rule__partners_only
 msgid ""
-"Only the users of this group can choose this status on a margin calculation."
-" Empty: everyone."
+"Only the partners (the members of the departments flagged Partners, and the "
+"administrators) can choose this status on a margin calculation."
 msgstr ""
-"Seuls les utilisateurs de ce groupe peuvent choisir ce statut sur un calcul "
-"de marge. Vide : tout le monde."
+"Seuls les associés (les membres des départements repérés « Associés », et "
+"les administrateurs) peuvent choisir ce statut sur un calcul de marge."
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_igd_wizard_view_form
@@ -3344,7 +3378,7 @@ msgid "Partner"
 msgstr "Associé"
 
 #. module: mission_report
-#: model:res.groups,name:mission_report.group_mission_partner
+#: model:ir.model.fields,field_description:mission_report.field_res_users__mission_is_partner
 msgid "Partner (associate)"
 msgstr "Associé"
 
@@ -3352,6 +3386,11 @@ msgstr "Associé"
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
 msgid "Partner commission a month"
 msgstr "Intéressement associé par mois"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_hr_department__mission_partner
+msgid "Partners (associates)"
+msgstr "Associés"
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_margin_view_form
@@ -3546,6 +3585,27 @@ msgid "Quota adjustments"
 msgstr "Ajustements du quota"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_project_project__igd_position_ids
+msgid "Quota position"
+msgstr "Situation du quota"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__quota
+msgid "Quota to date"
+msgstr "Quota à ce jour"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_igd_position__balance
+msgid ""
+"Quota to date plus the adjustments, minus the IGD created. Positive: still "
+"to catch up over the coming months. Negative: paid in advance, deducted from"
+" the following months."
+msgstr ""
+"Quota à ce jour plus les ajustements, moins les IGD créées. Positif : reste "
+"à rattraper sur les mois à venir. Négatif : versé d'avance, déduit des mois "
+"suivants."
+
+#. module: mission_report
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_margin__state__quote
 msgid "Quote"
 msgstr "Devis"
@@ -3678,6 +3738,11 @@ msgid "Reports"
 msgstr "Comptes rendus"
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_commission_rule__partners_only
+msgid "Reserved to the partners"
+msgstr "Réservé aux associés"
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report.py:0
 msgid "Reset the report to draft before changing its employee or month."
@@ -3766,15 +3831,6 @@ msgstr "Voir dans la vue d'ensemble"
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_igd_wizard_view_form
 msgid "See the IGD created"
 msgstr "Voir les IGD créées"
-
-#. module: mission_report
-#: model:res.groups,comment:mission_report.group_mission_partner
-msgid ""
-"Sees every commission status of the margin calculations, and the commission "
-"of the services managed by the collaborators."
-msgstr ""
-"Voit tous les statuts d'intéressement des calculs de marge, et "
-"l'intéressement sur les prestations gérées par les collaborateurs."
 
 #. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.view_order_form_mission_invoicing
@@ -4263,6 +4319,18 @@ msgid "The margin is under the thresholds: no commission is due."
 msgstr "La marge est sous les seuils : aucun intéressement n'est dû."
 
 #. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_hr_department__mission_partner
+msgid ""
+"The members of this department, and of its sub-departments, are the partners"
+" of the company: they see every commission status of the margin calculations"
+" and the commission of the services managed by the collaborators."
+msgstr ""
+"Les membres de ce département, et de ses sous-départements, sont les "
+"associés de la société : ils voient tous les statuts d'intéressement des "
+"calculs de marge et l'intéressement sur les prestations gérées par les "
+"collaborateurs."
+
+#. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_margin__salary_min
 #: model:ir.model.fields,help:mission_report.field_res_company__mission_salary_min
 #: model:ir.model.fields,help:mission_report.field_res_config_settings__mission_salary_min
@@ -4478,6 +4546,14 @@ msgstr ""
 "Les lignes de congé du modèle « %s » doivent suivre les lignes de mission."
 
 #. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_res_users__mission_is_partner
+msgid ""
+"The user is an administrator, or belongs to a department flagged Partners."
+msgstr ""
+"L'utilisateur est administrateur, ou appartient à un département repéré « "
+"Associés »."
+
+#. module: mission_report
 #: model:ir.model.fields,help:mission_report.field_mission_activity_report_template__file_generated
 msgid "The workbook is the module's blank one: module updates remake it."
 msgstr ""
@@ -4679,6 +4755,11 @@ msgid "To be changed, if needed, in the order itself."
 msgstr "À modifier, si besoin, dans l'affaire elle-même."
 
 #. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__balance
+msgid "To catch up"
+msgstr "À rattraper"
+
+#. module: mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.res_config_settings_view_form_mission_report
 msgid ""
 "To generate for each year before preparing a phase: without them, public "
@@ -4821,6 +4902,11 @@ msgid "Untick to hide the commissions of the margin calculations."
 msgstr "Décochez pour masquer les commissions des calculs de marge."
 
 #. module: mission_report
+#: model_terms:ir.ui.view,arch_db:mission_report.project_project_view_form_igd
+msgid "Update the situation"
+msgstr "Actualiser la situation"
+
+#. module: mission_report
 #. odoo-python
 #: code:addons/mission_report/models/activity_report.py:0
 msgid "Use the Submit, Validate and Reset buttons to change the status."
@@ -4884,6 +4970,11 @@ msgstr "Valeur"
 #: code:addons/mission_report/models/public_holiday_wizard.py:0
 msgid "Victory in Europe Day"
 msgstr "Victoire 1945"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_margin__viewer_is_partner
+msgid "Viewer Is Partner"
+msgstr "Le lecteur est associé"
 
 #. module: mission_report
 #: model:ir.model.fields,field_description:mission_report.field_res_company__mission_cost_coefficient
@@ -4962,6 +5053,15 @@ msgid ""
 msgstr ""
 "S'il est renseigné, remplace le salaire et les charges patronales : le coût "
 "global d'un mois du salarié, comme sur le bulletin de salaire."
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_project_project__igd_position_ids
+msgid ""
+"Where each employee stands with the IGD quota of this mission, as of the "
+"last month generated."
+msgstr ""
+"Où en est chaque salarié du quota d'IGD de cette mission, au dernier mois "
+"généré."
 
 #. module: mission_report
 #. odoo-python
@@ -5262,48 +5362,3 @@ msgstr "Erreur"
 #: code:addons/mission_report/static/src/js/margin_donut.js:0
 msgid "The costs exceed the billing by %(amount)s a month"
 msgstr "Les coûts dépassent la facturation de %(amount)s par mois"
-
-#. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__last_month
-msgid "Last month generated"
-msgstr "Dernier mois généré"
-
-#. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__months
-msgid "Months counted"
-msgstr "Mois comptés"
-
-#. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__quota
-msgid "Quota to date"
-msgstr "Quota à ce jour"
-
-#. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__adjustment
-msgid "Adjustments"
-msgstr "Ajustements"
-
-#. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__balance
-msgid "To catch up"
-msgstr "À rattraper"
-
-#. module: mission_report
-#: model:ir.model.fields,field_description:mission_report.field_project_project__igd_position_ids
-msgid "Quota position"
-msgstr "Situation du quota"
-
-#. module: mission_report
-#: model:ir.model.fields,help:mission_report.field_mission_igd_position__balance
-msgid "Quota to date plus the adjustments, minus the IGD created. Positive: still to catch up over the coming months. Negative: paid in advance, deducted from the following months."
-msgstr "Quota à ce jour plus les ajustements, moins les IGD créées. Positif : reste à rattraper sur les mois à venir. Négatif : versé d'avance, déduit des mois suivants."
-
-#. module: mission_report
-#: model:ir.model.fields,help:mission_report.field_project_project__igd_position_ids
-msgid "Where each employee stands with the IGD quota of this mission, as of the last month generated."
-msgstr "Où en est chaque salarié du quota d'IGD de cette mission, au dernier mois généré."
-
-#. module: mission_report
-#: model_terms:ir.ui.view,arch_db:mission_report.project_project_view_form_igd
-msgid "Update the situation"
-msgstr "Actualiser la situation"

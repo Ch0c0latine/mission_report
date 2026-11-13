@@ -204,6 +204,7 @@ class MissionMargin(models.Model):
     commission_rate_team = fields.Float(
         related='commission_rule_id.rate_team', string="Services managed by the collaborators")
     show_commissions = fields.Boolean(related='company_id.mission_show_commissions')
+    viewer_is_partner = fields.Boolean(compute='_compute_viewer_is_partner')
 
     # ---- Long-distance allowances --------------------------------------------------------------
     igd_lodging = fields.Boolean(string="Lodging")
@@ -296,6 +297,12 @@ class MissionMargin(models.Model):
         for m in self:
             if m.consultant_id:
                 m.consultant = m.consultant_id.name
+
+    @api.depends_context('uid')
+    def _compute_viewer_is_partner(self):
+        partner = self.env.user.mission_is_partner
+        for m in self:
+            m.viewer_is_partner = partner
 
     def _compute_consultant_partners(self):
         """The people to choose from: the contacts of the employees and the candidates."""
@@ -1073,9 +1080,10 @@ class MissionCommissionRule(models.Model):
     rate_team = fields.Float(
         string="Services managed by the collaborators", digits=(16, 3),
         help="Services managed by the collaborators under the direct responsibility of the person.")
-    group_id = fields.Many2one(
-        'res.groups', string="Offered to", ondelete='set null',
-        help="Only the users of this group can choose this status on a margin calculation. Empty: everyone.")
+    partners_only = fields.Boolean(
+        string="Reserved to the partners",
+        help="Only the partners (the members of the departments flagged Partners, and the administrators) can "
+             "choose this status on a margin calculation.")
 
 
 class ResConfigSettings(models.TransientModel):
@@ -1156,12 +1164,11 @@ class ResCompany(models.Model):
         """The rules of Green Engine (version B): the partners, then the account managers, business providers
         and co-optations placed under a partner."""
         self.ensure_one()
-        partner_group = self.env.ref('mission_report.group_mission_partner', raise_if_not_found=False)
         return [
             {'company_id': self.id, 'sequence': 1, 'name': _("Partner"), 'rate_sourcing': 0.05,
              'rate_referral': 0.05, 'rate_candidate': 0.10, 'rate_client': 0.10, 'rate_full': 0.20,
              'rate_team': 0.04,
-             'group_id': partner_group.id if partner_group else False},
+             'partners_only': True},
             {'company_id': self.id, 'sequence': 2, 'name': _("Account manager, business provider or co-optation"),
              'rate_sourcing': 0.04, 'rate_referral': 0.04, 'rate_candidate': 0.08, 'rate_client': 0.08,
              'rate_full': 0.16, 'rate_team': 0.0},
@@ -1259,3 +1266,30 @@ class SaleOrder(models.Model):
         self.ensure_one()
         return self.env['mission.margin']._action_open_margins(
             [('order_id', '=', self.id)], {'default_order_id': self.id, 'default_project_id': self.project_id.id})
+
+
+class HrDepartment(models.Model):
+    _inherit = 'hr.department'
+
+    mission_partner = fields.Boolean(
+        string="Partners (associates)",
+        help="The members of this department, and of its sub-departments, are the partners of the company: they see "
+             "every commission status of the margin calculations and the commission of the services managed by the "
+             "collaborators.")
+
+
+class ResUsers(models.Model):
+    _inherit = 'res.users'
+
+    mission_is_partner = fields.Boolean(
+        string="Partner (associate)", compute='_compute_mission_is_partner', compute_sudo=True,
+        help="The user is an administrator, or belongs to a department flagged Partners.")
+
+    @api.depends_context('uid')
+    def _compute_mission_is_partner(self):
+        flagged = self.env['hr.department'].sudo().search([('mission_partner', '=', True)])
+        departments = self.env['hr.department'].sudo().search([('id', 'child_of', flagged.ids)]) if flagged else flagged
+        for user in self:
+            user.mission_is_partner = bool(
+                user.sudo().has_group('base.group_system')
+                or (departments and user.sudo().employee_ids.filtered(lambda e: e.department_id in departments)))
