@@ -1542,6 +1542,7 @@ msgstr "Modifier"
 #: model:ir.model.fields.selection,name:mission_report.selection__mission_margin__cost_origin__employee
 #: model_terms:ir.ui.view,arch_db:mission_report.hr_leave_view_search_mission_report
 #: model_terms:ir.ui.view,arch_db:mission_report.mission_activity_report_view_search
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__employee_id
 msgid "Employee"
 msgstr "Employé"
 
