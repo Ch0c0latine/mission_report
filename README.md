@@ -51,6 +51,11 @@ catch-up of the earlier months. The result window says what was created (the
 detail by month is shown to administrators only) or why nothing was, with a link
 to the person's entries of that month.
 
+Mission days removed afterwards (entry deleted or refused) take away the IGD of
+that month still in draft: generating again follows the days left. On the
+mission, the quota table shows apart the IGD of months with no day entered and
+no adjustment, which count for no quota.
+
 ## Overview
 
 The overview opens on the year. A click on an entry opens it; a click on a day

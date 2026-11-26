@@ -5362,3 +5362,19 @@ msgstr "Erreur"
 #: code:addons/mission_report/static/src/js/margin_donut.js:0
 msgid "The costs exceed the billing by %(amount)s a month"
 msgstr "Les coûts dépassent la facturation de %(amount)s par mois"
+
+#. module: mission_report
+#: model:ir.model.fields,field_description:mission_report.field_mission_igd_position__unbacked
+msgid "Without days"
+msgstr "Sans journées"
+
+#. module: mission_report
+#: model:ir.model.fields,help:mission_report.field_mission_igd_position__unbacked
+msgid ""
+"IGD created in months with no day entered on the mission and no adjustment: "
+"these months count for no quota. Enter the days of the month, or an "
+"adjustment, or remove these IGD."
+msgstr ""
+"IGD créées sur des mois sans aucune journée saisie sur la mission ni "
+"ajustement : ces mois ne comptent pour aucun quota. Saisir les journées du "
+"mois, ou un ajustement, ou retirer ces IGD."

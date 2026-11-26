@@ -60,6 +60,54 @@ class TestIgd(TestSaleDelivery):
         self.assertEqual(position.months, 1)
         self.assertEqual(position.last_month, date(2031, 5, 1))
 
+    def test_days_removed_after_generating_take_the_drafts_away(self):
+        """Mission days removed once the IGD are generated: the month's drafts go, the others stay."""
+        entry = self.env['hr.leave'].search([
+            ('employee_id', '=', self.employee.id), ('project_id', '=', self.project_a.id),
+            ('request_date_from', '=', date(2031, 5, 5))])
+        expenses = self._generated()
+        self.assertTrue(expenses)
+        # Days added to another mission of the month: the IGD of mission A stay.
+        self._entry(self.project_b, '2031-05-19', '2031-05-20')
+        self.assertTrue(expenses.exists())
+        # The entry refused: its days are gone, so are the drafts of the month.
+        entry.action_refuse()
+        self.assertFalse(expenses.exists())
+        self.assertFalse(self._generated(), "no day left, nothing generated")
+
+    def test_an_entry_deleted_after_generating_takes_the_drafts_away(self):
+        entry = self._entry(self.project_a, '2031-06-02', '2031-06-06')
+        wizard = self.env['mission.igd.wizard'].create({
+            'employee_ids': [(6, 0, self.employee.ids)], 'report_month': '6', 'report_year': '2031'})
+        wizard.action_generate()
+        june = wizard.created_expense_ids
+        self.assertTrue(june)
+        may = self._generated() - june
+        self.assertTrue(may)
+        entry.unlink()
+        self.assertFalse(june.exists())
+        self.assertEqual(may.exists(), may, "the other months keep their IGD")
+
+    def test_the_position_shows_igd_without_days(self):
+        """IGD of a month without any day and without adjustment are shown apart."""
+        self._generated()
+        position = self.env['mission.igd.position'].search([
+            ('project_id', '=', self.project_a.id), ('employee_id', '=', self.employee.id)])
+        self.assertAlmostEqual(position.unbacked, 0.0)
+        # An IGD entered by hand in June, a month without any day on the mission.
+        june = self.env['hr.expense'].create({
+            'name': 'IGD juin', 'employee_id': self.employee.id, 'product_id': self.lodging.id,
+            'date': date(2031, 6, 10), 'quantity': 1, 'project_id': self.project_a.id})
+        position.write({'last_month': date(2031, 6, 1)})
+        position.invalidate_recordset()
+        self.assertAlmostEqual(position.unbacked, june.total_amount)
+        # An adjustment on June gives the month a reason: nothing left apart.
+        self.env['mission.igd.adjustment'].create({
+            'project_id': self.project_a.id, 'employee_id': self.employee.id,
+            'month': date(2031, 6, 1), 'amount': 48.30})
+        position.invalidate_recordset()
+        self.assertAlmostEqual(position.unbacked, 0.0)
+
     def test_lodging_first_then_meals_up_to_the_budget(self):
         expenses = self._generated()
         lodging = expenses.filtered(lambda e: e.product_id == self.lodging)

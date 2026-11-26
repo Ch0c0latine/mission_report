@@ -151,17 +151,22 @@ class MissionIgdPosition(models.Model):
         string="To catch up", compute='_compute_igd_amounts', currency_field='currency_id',
         help="Quota to date plus the adjustments, minus the IGD created. Positive: still to catch up over "
              "the coming months. Negative: paid in advance, deducted from the following months.")
+    unbacked = fields.Monetary(
+        string="Without days", compute='_compute_igd_amounts', currency_field='currency_id',
+        help="IGD created in months with no day entered on the mission and no adjustment: these months "
+             "count for no quota. Enter the days of the month, or an adjustment, or remove these IGD.")
 
     @api.depends('project_id.igd_monthly_budget', 'project_id.igd_start', 'months', 'last_month')
     def _compute_igd_amounts(self):
         company = self.env.company
         products = (company.igd_lodging_product_id | company.igd_meal_product_id).ids
+        Report = self.env['mission.activity.report'].sudo()
         for position in self:
             project = position.project_id
             position.currency_id = project.company_id.currency_id or company.currency_id
             position.quota = project.igd_monthly_budget * position.months
             if not position.last_month:
-                position.adjustment = position.paid = position.balance = 0.0
+                position.adjustment = position.paid = position.balance = position.unbacked = 0.0
                 continue
             since = [('month', '>=', project.igd_start.replace(day=1))] if project.igd_start else []
             adjustments = self.env['mission.igd.adjustment'].sudo().search([
@@ -175,6 +180,15 @@ class MissionIgdPosition(models.Model):
                 ('product_id', 'in', products), ('state', '!=', 'refused'), ('date', '<=', end)] + since)
             position.paid = sum(expenses.mapped('total_amount'))
             position.balance = position.quota + position.adjustment - position.paid
+            adjusted = {adjustment.month.replace(day=1) for adjustment in adjustments}
+            by_month = {}
+            for expense in expenses:
+                month = expense.date.replace(day=1)
+                by_month[month] = by_month.get(month, 0.0) + expense.total_amount
+            position.unbacked = sum(
+                amount for month, amount in by_month.items()
+                if month not in adjusted
+                and not Report._igd_report_of(position.employee_id, month)._igd_has_presence(project))
 
     @api.model
     def _igd_keep(self, project, employee, month, months):
@@ -239,6 +253,76 @@ class HrExpense(models.Model):
     # est installé, et la colonne survit à la désinstallation de l'un ou de l'autre.
     project_id = fields.Many2one('project.project')
     igd_generated = fields.Boolean(readonly=True, copy=False, groups=IGD_GROUP)
+
+
+class HrLeave(models.Model):
+    """Des journées de mission retirées après la génération : les IGD du mois encore en
+    brouillon ne correspondent plus à rien et sont retirées ; la génération les refait."""
+    _inherit = 'hr.leave'
+
+    IGD_DAY_FIELDS = (
+        'request_date_from', 'request_date_to', 'date_from', 'date_to', 'request_hour_from',
+        'request_hour_to', 'request_unit_half', 'request_unit_hours', 'mission_duration',
+        'project_id', 'employee_id', 'state', 'active')
+
+    def _igd_months(self):
+        """(salarié, mission, mois) touchés par ces saisies, pour les missions à IGD."""
+        keys = set()
+        for leave in self.sudo():
+            project = leave.project_id
+            if not (project and project.igd_monthly_budget and leave.employee_id
+                    and leave.request_date_from and leave.request_date_to):
+                continue
+            month = leave.request_date_from.replace(day=1)
+            while month <= leave.request_date_to:
+                keys.add((leave.employee_id.id, project.id, month))
+                month = fields.Date.add(month, months=1)
+        return keys
+
+    def _igd_presence(self, keys):
+        """Jours de présence de chaque (salarié, mission, mois), d'après les saisies actuelles."""
+        Report = self.env['mission.activity.report'].sudo()
+        Project = self.env['project.project'].sudo()
+        reports, presence = {}, {}
+        for employee_id, project_id, month in keys:
+            if (employee_id, month) not in reports:
+                report = Report.new({'employee_id': employee_id, 'date_from': month})
+                reports[(employee_id, month)] = (report, report._compute_report_data())
+            report, data = reports[(employee_id, month)]
+            presence[(employee_id, project_id, month)] = set(
+                report._igd_presence_days(data, Project.browse(project_id)))
+        return presence
+
+    def _igd_drop_drafts(self, keys, before):
+        after = self._igd_presence(keys)
+        Expense = self.env['hr.expense'].sudo()
+        for key in keys:
+            if not before.get(key, set()) - after[key]:
+                continue  # aucune journée retirée
+            employee_id, project_id, month = key
+            Expense.search([
+                ('employee_id', '=', employee_id), ('project_id', '=', project_id),
+                ('igd_generated', '=', True), ('state', '=', 'draft'),
+                ('date', '>=', month), ('date', '<=', fields.Date.end_of(month, 'month'))]).unlink()
+
+    def write(self, vals):
+        if self.env.context.get('igd_watch') or not any(name in vals for name in self.IGD_DAY_FIELDS):
+            return super().write(vals)
+        keys = self._igd_months()
+        before = self._igd_presence(keys)
+        result = super(HrLeave, self.with_context(igd_watch=True)).write(vals)
+        keys |= self._igd_months()
+        self._igd_drop_drafts(keys, before)
+        return result
+
+    def unlink(self):
+        if self.env.context.get('igd_watch'):
+            return super().unlink()
+        keys = self._igd_months()
+        before = self._igd_presence(keys)
+        result = super(HrLeave, self.with_context(igd_watch=True)).unlink()
+        self.env['hr.leave']._igd_drop_drafts(keys, before)
+        return result
 
 
 class ProductProduct(models.Model):
@@ -486,14 +570,19 @@ class MissionActivityReport(models.Model):
         months = sorted({day.replace(day=1) for day in recorded.mapped('date')} | {last})
         count = 0
         for month in months:
-            if month == last:
-                report = self
-            else:
-                report = self.search([('employee_id', '=', self.employee_id.id), ('date_from', '=', month)],
-                                     limit=1) or self.new({'employee_id': self.employee_id.id, 'date_from': month})
-            if report._igd_presence_days(report._get_report_data(), project):
+            report = self if month == last else self._igd_report_of(self.employee_id, month)
+            if report._igd_has_presence(project):
                 count += 1
         return count
+
+    @api.model
+    def _igd_report_of(self, employee, month):
+        """Le rapport du mois s'il est enregistré, sinon calculé à la volée sans être créé."""
+        return self.search([('employee_id', '=', employee.id), ('date_from', '=', month)], limit=1) \
+            or self.new({'employee_id': employee.id, 'date_from': month})
+
+    def _igd_has_presence(self, project):
+        return bool(self._igd_presence_days(self._get_report_data(), project))
 
     def _igd_generate(self, notes=None, summary=None):
         """Crée les IGD du mois.
